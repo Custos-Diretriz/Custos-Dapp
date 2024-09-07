@@ -169,7 +169,7 @@
   border-radius: inherit; /* Match the border radius of the card */
   padding: 1px; /* Adjust the width of the border */
   background: linear-gradient(90deg, #0094ff 0%, #a02294 100%);
-
+  
   /* Masking the background so that the gradient appears only on the border */
   -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
   mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
@@ -282,6 +282,8 @@ button .text-transparent {
   animation: star-move 5s linear infinite;
 }
 
+
+
 /* eclipse */
 
 .shape {
@@ -290,15 +292,11 @@ button .text-transparent {
   border-radius: 100%;
   top: 0;
   left: 0;
-  border-top-color: #19b1d2; /* Primary color */
-  border-bottom-color: #0094ff; /* Secondary color */
-  background: radial-gradient(
-    circle at center,
-    transparent 80%,
-    #00000000 80%
-  ); /* Center hollow effect */
+  border-top-color: #19B1D2; /* Primary color */
+  border-bottom-color: #0094FF; /* Secondary color */
+  background: radial-gradient(circle at center, transparent 80%, #00000000 80%); /* Center hollow effect */
   box-shadow: 24px 20px 44px 48px rgba(160, 34, 148, 0.23),
-    0 4px 20px 24px rgba(25, 177, 210, 0.6);
+              0 4px 20px 24px rgba(25, 177, 210, 0.6);
   opacity: 0.6;
   transform-style: preserve-3d;
   animation: roll 10s infinite linear;
@@ -314,55 +312,9 @@ button .text-transparent {
   }
 }
 
+
+
+
 .underlined-border-gradient {
-  border-image: linear-gradient(to right, #0094ff, #a02294) 1;
-}
-
-.image-container {
-  width: 350px;
-  height: 250px;
-  overflow: hidden;
-  transition: transform 0.5s ease; /* Smooth transition for the container */
-}
-
-.image-container img {
-  width: 100%;
-  height: 100%;
-}
-
-.image-container:hover {
-  transform: scale(1.2); /* Scale the container on image hover */
-}
-
-.launch-pad-button-container {
-  width: 200px;
-  height: 60px;
-  overflow: hidden;
-  transition: transform 0.5s ease; /* Smooth transition for the container */
-}
-
-.launch-pad-button-container:hover {
-  transform: scale(1.2); /* Scale the container on image hover */
-}
-
-.eclipse-container {
-  perspective: 1000px; /* Enable 3D perspective */
-
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.eclipse {
-  animation: rotate 5s infinite linear; /* Infinite rotation */
-  transform-style: preserve-3d; /* Preserve the 3D effect */
-}
-
-@keyframes rotate {
-  0% {
-    transform: rotateX(0deg) rotateY(0deg);
-  }
-  100% {
-    transform: rotateX(360deg) rotateY(360deg);
-  }
+  border-image: linear-gradient(to right, #0094FF, #A02294) 1;
 }

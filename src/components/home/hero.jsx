@@ -5,24 +5,14 @@ import Image from "next/image";
 // import Agree from "./agree";
 // import gsap from "gsap";
 import { useEffect, useState, useRef } from "react";
-import ShowLaunchDapps from "../showLaunchDapps";
-
 const Hero = () => {
-    const [showLaunchDapps, setShowLaunchDapps] = useState(false);
   const starRef = useRef(null);
-
-   const toggleLaunchDapps = () => {
-     setShowLaunchDapps(!showLaunchDapps);
-   };
-  const closeModal = () => {
-    setShowLaunchDapps(false);
-  };
 
   useEffect(() => {}, []);
   return (
     <main className="flex items-center justify-center min-h-screen">
       <div className="text-white py-20 mx-auto flex flex-col justify-center items-center w-full px-4">
-        <div onClick={toggleLaunchDapps} className=" flex w-fit h-fit">
+        <a href="/services" className=" flex w-fit h-fit">
           <button className="relative br w-full text-white shadow-lg py-3 px-6 transform hover:scale-105 transition-transform duration-300 border-gradient bg-opacity-50  backdrop-filter backdrop-blur-lg flex items-center justify-center ">
             <span className="flex items-center">Launch Custos Dapp</span>
             <img
@@ -31,10 +21,8 @@ const Hero = () => {
               alt="Star Icon"
             />
           </button>
-        </div>
-        {showLaunchDapps && (
-          <ShowLaunchDapps closeModal={closeModal} />
-        )}
+        </a>
+
         <p className="text-4xl font-bold my-6 bg-gradient-to-r from-[#EAF9FF] to-[#8E9A9A] bg-clip-text text-transparent text-center w-full p-3">
           The new blockchain safe
         </p>
@@ -42,13 +30,9 @@ const Hero = () => {
           Custos will secure your evidence and legal agreements
         </p>
 
-        {/* <div class="image-container">
-          <img src="./herod.png" alt="Zoom Image" />
-        </div> */}
-
-        <div className="flex flex-col lg:flex-row justify-center w-fit gap-[4em] mt-[4rem]">
-          {/* <div className="p-2 transform transition-transform duration-300 hover:scale-110">
-            <div className="w-fit sm:w-[20em] rounded-[1.1em] bg-[#5c80b50c] shadow-lg border-gradient backdrop-filter backdrop-blur-[1px] flex flex-col items-center relative h-[20em] overflow-clip">
+        <div className="flex flex-col lg:flex-row justify-center w-fit gap-4 mt-[4rem]">
+          <div className="p-2 transform transition-transform duration-300 hover:scale-110">
+            <div className="w-fit sm:w-[20em] rounded-[1.1em] shadow-lg border-gradient bg-opacity-95 backdrop-filter backdrop-blur-[10px] flex flex-col items-center relative h-[20em] overflow-clip">
               <div className="py-2 text-center h-full">
                 <div className="font-bold text-[1.2em] mb-2 bg-gradient-to-r from-[#0094FF] to-[#A02294] bg-clip-text text-transparent">
                   Crime scene recorder
@@ -68,19 +52,9 @@ const Hero = () => {
                 />
               </div>
             </div>
-          </div> */}
-
-          <div class="image-container">
-            <img src="./herod.png" alt="Zoom Image" />
-          </div>
-          <div class="image-container">
-            <img src="./middle.png" alt="Zoom Image" />
-          </div>
-          <div class="image-container">
-            <img src="./herod2.png" alt="Zoom Image" />
           </div>
 
-          {/* <div className="p-2 transform transition-transform duration-300 hover:scale-110">
+          <div className="p-2 transform transition-transform duration-300 hover:scale-110">
             <div className="w-fit sm:w-[20em] rounded-[1.1em] shadow-lg border-gradient bg-opacity-95 backdrop-filter backdrop-blur-[10px] flex flex-col items-center relative h-[20em] overflow-clip">
               <div className="py-2 text-center h-full">
                 <div className="font-bold text-[1.2em] mb-2 bg-gradient-to-r from-[#0094FF] to-[#A02294] bg-clip-text text-transparent">
@@ -102,9 +76,9 @@ const Hero = () => {
                 />
               </div>
             </div>
-          </div> */}
+          </div>
 
-          {/* <div className="p-2 transform transition-transform duration-300 hover:scale-110">
+          <div className="p-2 transform transition-transform duration-300 hover:scale-110">
             <div className="w-fit sm:w-[20em] rounded-[1.1em] shadow-lg border-gradient bg-opacity-95 backdrop-filter backdrop-blur-[10px] flex flex-col items-center relative h-[20em] overflow-clip">
               <div className="py-2 text-center h-full">
                 <div className="font-bold text-[1.2em] mb-2 bg-gradient-to-r from-[#0094FF] to-[#A02294] bg-clip-text text-transparent">
@@ -125,7 +99,7 @@ const Hero = () => {
                 />
               </div>
             </div>
-          </div> */}
+          </div>
         </div>
       </div>
     </main>

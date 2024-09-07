@@ -7,7 +7,7 @@ export default function Home() {
   return (
     <div className="min-h-screen kanit">
       <main className="kanit">
-        <div className="mb-10">
+        <div className="mb-10 px-6">
           <Navbar />
         </div>
         <Hero />
