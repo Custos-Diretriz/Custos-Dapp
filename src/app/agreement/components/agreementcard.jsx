@@ -160,7 +160,7 @@ export const PendingAgreementCard = ({
               />
             )}
           </div>
-          <div className="br w-[75%] overflow-hidden flex px-4 font-bold  text-[10px] text-[#f3f2f294] whitespace-nowrap border-gradient">
+          <div className="br w-[75%] overflow-hidden flex px-4 font-bold min-h-[4em] max-h-[4em] text-[10px] text-[#f3f2f294] whitespace-nowrap border-gradient">
             <p className="py-2 whitespace-nowrap overflow-hidden overflow-ellipsis">Second Party Address: {agreement.second_party_address}</p>
           </div>
           <div className="w-fit font-bold flex items-center justify-start text-center space-x-14 text-[0.7em] text-white">

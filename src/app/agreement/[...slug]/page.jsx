@@ -92,6 +92,8 @@ const Page = ({ params }) => {
   };
 
   const handleSave = async () => {
+    setIsEditing(!true);
+
     try {
       const formData = new FormData();
       Object.entries(editableFields).forEach(([key, value]) => {
@@ -203,54 +205,142 @@ const Page = ({ params }) => {
 
         <div className="space-y-4">
           <div className="flex flex-col gap-2">
-            <strong className="text-sm">Agreement ID:</strong>
-            <span>{agreement.agreement_id || "N/A"}</span>
+            <strong className="text-lg">Agreement Title:</strong>
+            <span className="text-sm">
+              {/* {agreement.agreement_id || "N/A"} */}
+              <div className="box w-fit p-2">
+                <sh></sh>
+                <p className="">Employment Contract Between Custos Direct'z and Mercy</p>
+              </div>
+            </span>
           </div>
           <div className="flex flex-col gap-2">
-            <strong className="text-sm">Content:</strong>
+            <strong className="text-lg">Content:</strong>
             {isEditing ? (
-              <>
+              <div className="w-full">
                 <textarea
                   value={editableFields.content}
-                  onChange={(e) => handleInputChange('content', e.target.value)}
+                  onChange={(e) => handleInputChange("content", e.target.value)}
                   rows="10"
                   className="w-full p-2 bg-[#091219] text-[#EAFBFF] border border-[#19B1D2] rounded"
                 />
                 <select
                   value={contentFormat}
                   onChange={(e) => setContentFormat(e.target.value)}
-                  className="mt-2 p-2 bg-[#091219] text-[#EAFBFF] border border-[#19B1D2] rounded"
+                  className="mt-2 w-full p-2 bg-[#091219] text-[#EAFBFF] border border-[#19B1D2] rounded"
                 >
                   <option value="plain">Plain Text</option>
                   <option value="html">HTML</option>
                   <option value="markdown">Markdown</option>
                 </select>
-              </>
+              </div>
             ) : (
-              <div className=" p-4 rounded-lg">
-                {renderContent(agreement.content)}
+              <div className=" py-4 rounded-lg font-normal text-sm">
+                {/* {renderContent(agreement.content)} */}
+                Below is a draft of a Non-Disclosure Employment Contract between
+                Custos Diretriz and Mercy. This contract includes
+                confidentiality, employment terms, and other essential clauses
+                to protect both parties' interests. --- ### Non-Disclosure
+                Employment Contract **This Employment Agreement** ("Agreement")
+                is made and entered into on this [Day] day of [Month], [Year],
+                by and between: **Custos Diretriz** [Address] [City, State, Zip
+                Code] ("Employer") and **Mercy** [Address] [City, State, Zip
+                Code] ("Employee") ### 1. **Employment Terms** 1.1 **Position**:
+                The Employer agrees to employ the Employee in the position of
+                [Position Title]. 1.2 **Start Date**: The Employee shall
+                commence employment on [Start Date]. 1.3 **Duties**: The
+                Employee agrees to perform the duties and responsibilities
+                assigned by the Employer, including but not limited to [brief
+                description of duties]. 1.4 **Compensation**: The Employee will
+                receive a salary of [Salary Amount] per [Month/Year], paid
+                [Weekly/Bi-weekly/Monthly]. 1.5 **Benefits**: The Employee will
+                be eligible for benefits including [list benefits, e.g., health
+                insurance, retirement plans, etc.]. ### 2. **Confidential
+                Information** 2.1 **Definition**: For the purposes of this
+                Agreement, "Confidential Information" shall include any and all
+                non-public information, knowledge, or data disclosed to the
+                Employee by the Employer, whether oral, written, graphic, or
+                electronic, including but not limited to: - Business plans and
+                strategies - Financial information - Marketing plans - Product
+                designs - Customer and supplier lists - Trade secrets -
+                Intellectual property 2.2 **Obligations**: The Employee agrees:
+                - Not to disclose Confidential Information to any third party
+                without the Employer's written consent. - To use the
+                Confidential Information only for the purposes of fulfilling
+                their employment duties. - To take all necessary precautions to
+                protect the confidentiality of the information. 2.3 **Return of
+                Materials**: Upon termination of employment, the Employee agrees
+                to return all documents, materials, and property belonging to
+                the Employer, including any Confidential Information. ### 3.
+                **Intellectual Property** 3.1 **Assignment**: The Employee
+                agrees that any work product, inventions, designs, or
+                developments created during the course of employment that relate
+                to the Employer’s business shall be the property of the
+                Employer. 3.2 **Disclosure**: The Employee agrees to disclose
+                promptly any such work product to the Employer. ### 4. **Term
+                and Termination** 4.1 **Term**: This Agreement shall continue
+                until terminated by either party in accordance with this
+                Section. 4.2 **Termination by Employer**: The Employer may
+                terminate this Agreement at any time with or without cause,
+                provided [notice period, e.g., two weeks’] notice is given. 4.3
+                **Termination by Employee**: The Employee may terminate this
+                Agreement at any time by providing [notice period, e.g., two
+                weeks’] written notice to the Employer. 4.4 **Effect of
+                Termination**: Upon termination, the Employee shall cease all
+                use of Confidential Information and shall return all materials
+                as outlined in Section 2.3. ### 5. **Non-Competition and
+                Non-Solicitation** 5.1 **Non-Competition**: During the term of
+                employment and for a period of [duration, e.g., one year]
+                following termination, the Employee agrees not to engage in any
+                business that competes directly with the Employer. 5.2
+                **Non-Solicitation**: During the term of employment and for a
+                period of [duration, e.g., one year] following termination, the
+                Employee agrees not to solicit or induce any employee or
+                contractor of the Employer to leave their position or work for a
+                competing business. ### 6. **General Provisions** 6.1
+                **Governing Law**: This Agreement shall be governed by and
+                construed in accordance with the laws of the State of [State].
+                6.2 **Entire Agreement**: This Agreement constitutes the entire
+                agreement between the parties and supersedes all prior
+                agreements or understandings, whether written or oral, relating
+                to the subject matter hereof. 6.3 **Amendments**: This Agreement
+                may only be amended or modified by a written instrument signed
+                by both parties. 6.4 **Severability**: If any provision of this
+                Agreement is found to be invalid or unenforceable, the remaining
+                provisions shall remain in full force and effect. 6.5
+                **Waiver**: The waiver by either party of any breach of this
+                Agreement shall not operate as a waiver of any subsequent
+                breach. **IN WITNESS WHEREOF**, the parties have executed this
+                Agreement as of the day and year first above written. ---
+                **Employer** Custos Diretriz By: _______________________________
+                Name: [Name] Title: [Title] Date: [Date] --- **Employee** Mercy
+                By: _______________________________ Name: Mercy Date: [Date] ---
+                Feel free to customize the placeholders (like [Position Title],
+                [Start Date], [Salary Amount], [State], etc.) to fit the
+                specific details of your agreement. If you need further
+                customization or additional clauses, let me know!
               </div>
             )}
           </div>
           <div className="flex flex-col gap-2">
-            <strong className="text-sm">Email:</strong>
+            <strong className="text-lg">Email:</strong>
             {isEditing ? (
               <input
                 type="email"
                 value={editableFields.email}
-                onChange={(e) => handleInputChange('email', e.target.value)}
+                onChange={(e) => handleInputChange("email", e.target.value)}
                 className="w-full p-2 bg-[#091219] text-[#EAFBFF] border border-[#19B1D2] rounded"
               />
             ) : (
-              <span>{agreement.email || "N/A"}</span>
+              <span className="text-sm">{agreement.email || "N/A"}</span>
             )}
           </div>
           <div className="flex flex-col gap-2">
-            <strong className="text-sm">First Party Address:</strong>
-            <span>{agreement.first_party_address}</span>
+            <strong className="text-lg">First Party Address:</strong>
+            <span className="text-sm">{agreement.first_party_address}</span>
           </div>
           <div className="flex flex-col gap-2">
-            <strong className="text-sm">First Party Valid ID:</strong>
+            <strong className="text-lg">First Party Valid ID:</strong>
             <img
               src={agreement.first_party_valid_id}
               alt="First Party ID"
@@ -258,29 +348,33 @@ const Page = ({ params }) => {
             />
           </div>
           <div className="flex flex-col gap-2">
-            <strong className="text-sm">First Party Country:</strong>
+            <strong className="text-lg">First Party Country:</strong>
             {isEditing ? (
               <input
                 type="text"
                 value={editableFields.first_party_country}
-                onChange={(e) => handleInputChange('first_party_country', e.target.value)}
+                onChange={(e) =>
+                  handleInputChange("first_party_country", e.target.value)
+                }
                 className="w-full p-2 bg-[#091219] text-[#EAFBFF] border border-[#19B1D2] rounded"
               />
             ) : (
-              <span>{agreement.first_party_country || "N/A"}</span>
+              <span className="text-sm">{agreement.first_party_country || "N/A"}</span>
             )}
           </div>
           <div className="flex flex-col gap-2">
-            <strong className="text-sm">First Party ID Type:</strong>
+            <strong className="text-lg">First Party ID Type:</strong>
             {isEditing ? (
               <input
                 type="text"
                 value={editableFields.first_party_id_type}
-                onChange={(e) => handleInputChange('first_party_id_type', e.target.value)}
+                onChange={(e) =>
+                  handleInputChange("first_party_id_type", e.target.value)
+                }
                 className="w-full p-2 bg-[#091219] text-[#EAFBFF] border border-[#19B1D2] rounded"
               />
             ) : (
-              <span>{agreement.first_party_id_type}</span>
+              <span className="text-sm">{agreement.first_party_id_type}</span>
             )}
           </div>
           <div className="flex flex-col gap-2">
@@ -292,28 +386,28 @@ const Page = ({ params }) => {
             />
           </div>
           <div className="flex flex-col gap-2">
-            <strong className="text-sm">Second Party Address:</strong>
-            <span>{agreement.second_party_address}</span>
+            <strong className="text-lg">Second Party Address:</strong>
+            <span className="text-sm">{agreement.second_party_address}</span>
           </div>
           <div className="flex flex-col gap-2">
-            <strong className="text-sm">Second Party Valid ID:</strong>
-            <span>{agreement.second_party_valid_id || "N/A"}</span>
+            <strong className="text-lg">Second Party Valid ID:</strong>
+            <span className="text-sm">{agreement.second_party_valid_id || "N/A"}</span>
           </div>
           <div className="flex flex-col gap-2">
-            <strong className="text-sm">Second Party Country:</strong>
-            <span>{agreement.second_party_country || "N/A"}</span>
+            <strong className="text-lg">Second Party Country:</strong>
+            <span className="text-sm">{agreement.second_party_country || "N/A"}</span>
           </div>
           <div className="flex flex-col gap-2">
-            <strong className="text-sm">Second Party ID Type:</strong>
-            <span>{agreement.second_party_id_type || "N/A"}</span>
+            <strong className="text-lg">Second Party ID Type:</strong>
+            <span className="text-sm">{agreement.second_party_id_type || "N/A"}</span>
           </div>
           <div className="flex flex-col gap-2">
-            <strong className="text-sm">Second Party Signature:</strong>
-            <span>{agreement.second_party_signature || "N/A"}</span>
+            <strong className="text-lg">Second Party Signature:</strong>
+            <span className="text-sm">{agreement.second_party_signature || "N/A"}</span>
           </div>
           <div className="flex flex-col gap-2">
-            <strong className="text-sm">Created At:</strong>
-            <span>{new Date(agreement.created_at).toLocaleString()}</span>
+            <strong className="text-lg">Created At:</strong>
+            <span className="text-sm">{new Date(agreement.created_at).toLocaleString()}</span>
           </div>
         </div>
       </div>

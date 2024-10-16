@@ -31,7 +31,7 @@ export const Header = ({ onToggle }) => {
           <input
             type="search"
             placeholder="Search"
-            className="w-full pl-10 py-2 bg-[#3A3A3A] hidden border rounded-[2em] md:block focus:outline-none 
+            className="w-full pl-10 text-white py-2 bg-[#3A3A3A] hidden border rounded-[2em] md:block focus:outline-none 
                        text-transparent bg-clip-text"
             style={{
               backgroundImage: "linear-gradient(to right, #EAF9FF, #8E9A9A)",
