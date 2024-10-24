@@ -2,10 +2,16 @@ import Image from "next/image";
 import React, { useState } from "react";
 import { FaBars, FaTimes } from "react-icons/fa";
 import ConnectButtoncomponent from "@/components/connect";
+import { UseReadContractData } from '@/utils/fetchcontract'
 
 export const Header = ({ onToggle }) => {
   const [isOpen, setIsOpen] = useState(false);
   const [darkMode, setDarkMode] = useState(false);
+  const [searchTerm, setSearchTerm] = useState('');
+  const [searchResult, setSearchResult] = useState(null);
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState('');
+  const { fetchData } = UseReadContractData();
 
   const toggleDarkMode = () => {
     setDarkMode(!darkMode);
@@ -14,60 +20,65 @@ export const Header = ({ onToggle }) => {
   const toggleMenu = () => {
     const newState = !isOpen;
     setIsOpen(newState);
-    onToggle(newState); // Pass the new state to parent
+    onToggle(newState); 
+  };
+
+  const handleSearch = async (e) => {
+    e.preventDefault();
+    setIsLoading(true);
+    setError('');
+    setSearchResult(null);
+
+    try {
+      const agreementId = parseInt(searchTerm, 10);
+      if (isNaN(agreementId)) {
+        throw new Error('Please enter a valid agreement ID (number)');
+      }
+
+      const result = await fetchData('agreement', 'get_agreement_details', [{ low: agreementId, high: 0 }]);
+      setSearchResult(result);
+    } catch (err) {
+      setError(err.message || 'An error occurred while searching');
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (
-    <div className="flex flex-col sm:flex-row justify-between items-center w-full p-2">
+    <div className="flex items-center justify-between w-full px-4 sm:py-4 py-6 bg-transparent">
       {/* Logo on the left */}
-      <div className="flex items-center md:hidden flex-grow mb-2 sm:mb-0">
-        <a href="/"><Image src="/logo.png" alt="Logo" width={300} height={300} /></a>
+      <div className="flex items-center md:hidden">
+        <a href="/"><Image src="/logo.png" alt="Logo" width={250} height={250} /></a>
       </div>
 
       {/* Main Header Content */}
       <div className="flex items-center justify-between flex-grow w-full">
         {/* Search Input */}
-        <div className="relative w-full sm:w-fit justify-end items-end m-auto mb-4 sm:mb-0">
+        <div className="relative mx-auto max-w-md w-full hidden md:block">
           <input
             type="search"
             placeholder="Search"
-            className="w-full pl-10 text-white py-2 bg-[#3A3A3A] hidden border rounded-[2em] md:block focus:outline-none 
-                       text-transparent bg-clip-text"
-            style={{
-              backgroundImage: "linear-gradient(to right, #EAF9FF, #8E9A9A)",
-              WebkitBackgroundClip: "text",
-              color: "contain",
-            }}
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            className="w-full pl-10 pr-4 py-2 bg-[#1E1E1E] text-white border border-gray-600 rounded-full focus:outline-none focus:border-[#00A3FF]"
           />
-          <div className="absolute inset-y-0 left-0 md:flex items-center pl-3 pointer-events-none hidden">
-            <Image src="/search-normal.svg" alt="Search" width={20} height={20} />
+          <div className="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
+            <img src="/search-normal.svg" alt="Search" className="w-5 h-5" />
           </div>
         </div>
 
         {/* Dark Mode Toggle */}
-        <div className="flex items-end justify-end gap-4 sm:ml-4  ">
-          {/* <div onClick={toggleDarkMode} className="cursor-pointer">
-            {darkMode ? (
-              <Image src="/lightmode.svg" alt="Light Mode" width={30} height={20} />
-            ) : (
-              <Image src="/darkmodeicon.svg" alt="Dark Mode" width={30} height={20} />
-            )}
-          </div> */}
-
-          {/* Notification Icon */}
-          <div className="cursor-pointer hidden md:block">
-            <Image src="/bell.svg" alt="Notifications" width={30} height={20} />
+        <div className="flex items-center space-x-7">
+          <button onClick={toggleDarkMode} className="text-white hidden md:block">
+            <img src="/darkmodeicon.svg" alt="Dark Mode" className="w-5 h-5" />
+          </button>
+          <button className="text-white hidden md:block">
+            <img src="/bell.svg" alt="Notifications" className="w-5 h-5" />
+          </button>
+          <div className="hidden md:block">
+            <ConnectButtoncomponent />
           </div>
         </div>
-      </div>
-
-      {/* Collapse Menu Toggle and Connect Wallet Button on the right */}
-      <div className="md:flex w-fit hidden items-center sm:ml-4">
-        {/* Show Connect Button only when the menu is open */}
-         <ConnectButtoncomponent />
-
-        {/* Toggle Button for Mobile */}
-        
       </div>
     </div>
   );

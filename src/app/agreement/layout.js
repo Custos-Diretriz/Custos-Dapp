@@ -30,38 +30,16 @@ export default function RootLayout({ children }) {
     }
   }, [isSidepaneOpen]);
 
-  // Function to close sidepane if clicked outside
-  const handleOutsideClick = (e) => {
-    console.log("triggered");
-    if (!e.target.closest(".sidepane")) {
-      setSidepaneOpen(false);
-    }
-  };
-
-
-
   return (
-    <div
-      className={`flex min-h-[100vh] w-full ${
-        isSidepaneOpen ? "sidepane-open backdrop-blur-lg" : ""
-      }`}
-      onClick={handleOutsideClick}
-    >
+    <div className="flex min-h-[100vh] w-full">
       {/* Sidepane */}
-      <div
-        className={`w-fit ${
-          isSidepaneOpen ? "absolute" : "hidden"
-        } h-full z-20 md:flex top-0 left-0 sidepane`}
-      >
-        <Sidepane />
-      </div>
+      <Sidepane 
+        isOpen={isSidepaneOpen} 
+        onClose={() => setSidepaneOpen(false)}
+      />
 
       {/* Main content area */}
-      <div
-        className={`flex flex-col w-full  h-[100vh] overflow-y-scroll scrollbar-hide md:pl-0 ${
-          isSidepaneOpen ? "backdrop-blur-lg" : ""
-        }`}
-      >
+      <div className="flex flex-col w-full h-[100vh] overflow-y-scroll scrollbar-hide md:pl-0">
         {/* Header */}
         <div className="flex backdrop-filter backdrop-blur-[10px] w-full bg-[#ffffff0a] sticky top-0 z-[400]">
           <Header />
