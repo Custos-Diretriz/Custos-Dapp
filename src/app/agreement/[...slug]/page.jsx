@@ -244,14 +244,14 @@ const AgreementSlug = ({ params }, agreementparam) => {
           <div className="w-full px-3 max-md:px-0">
             <span className="text-sm">Agreement Type</span>
             <span className="text-[0.8em] mt-2 w-fit flex text-wrap font-bold bg-gradient-to-r br border-slate-800 px-2 py-[0.8em] border border-gradient from-[#19B1D2] to-[#0094FF] bg-clip-text text-transparent">
-              {agreement.agreementType}
+              {agreement?.agreementType}
             </span>
           </div>
 
           <div className="w-full px-3 max-md:px-0">
             <span className="text-sm">Second Party Address</span>
             <span className="br w-fit mt-2 overflow-hidden flex border-slate-800 px-2 py-[0.8em] border border-gradient text-[0.7em] text-[#9B9292] whitespace-nowrap overflow-ellipsis">
-              {agreement.second_party_address}
+              {agreement?.second_party_address}
             </span>
           </div>
           <div className="flex-col w-full items-end text-end gap-3 flex">
@@ -275,8 +275,8 @@ const AgreementSlug = ({ params }, agreementparam) => {
               <span className="flex-shrink-0 text-sm">Time Stamp:</span>
               <span className="bg-gradient-to-r from-[#19B1D2] to-[#0094FF] bg-clip-text text-left text-transparent">
                 {key == "onchain"
-                  ? agreement.created_at
-                  : formatDate(agreement.created_at)}
+                  ? agreement?.created_at
+                  : formatDate(agreement?.created_at)}
               </span>
             </div>
           </div>
@@ -320,7 +320,7 @@ const AgreementSlug = ({ params }, agreementparam) => {
               </div>
             ) : (
               <div className=" py-4 rounded-lg font-normal text-sm">
-                {renderContent(agreement.content)}
+                {renderContent(agreement?.content)}
               </div>
             )}
           </div>
@@ -345,12 +345,12 @@ const AgreementSlug = ({ params }, agreementparam) => {
           )}
           <div className="flex flex-col gap-2">
             <strong className="text-lg">First Party Address:</strong>
-            <span className="text-sm">{agreement.first_party_address}</span>
+            <span className="text-sm">{agreement?.first_party_address}</span>
           </div>
           <div className="flex flex-col gap-2">
             <strong className="text-lg">First Party Valid ID:</strong>
             <Image
-              src={agreement?.first_party_valid_id}
+              src={agreement?.first_party_valid_id || "/not-found-image.png"}
               alt="First Party ID"
               className="w-[16em] h-[10em] bg-[#091219] object-cover rounded-lg"
               width={100}
@@ -374,7 +374,7 @@ const AgreementSlug = ({ params }, agreementparam) => {
                   />
                 ) : (
                   <span className="text-sm">
-                    {agreement.first_party_country || "N/A"}
+                    {agreement?.first_party_country || "N/A"}
                   </span>
                 )}
               </div>
@@ -391,14 +391,14 @@ const AgreementSlug = ({ params }, agreementparam) => {
                   />
                 ) : (
                   <span className="text-sm">
-                    {agreement.first_party_id_type}
+                    {agreement?.first_party_id_type}
                   </span>
                 )}
               </div>
               <div className="flex flex-col gap-2">
                 <strong className="text-sm">First Party Signature:</strong>
                 <Image
-                  src={agreement?.first_party_signature}
+                  src={agreement?.first_party_signature || "/not-found-image.png"}
                   alt="First Party Signature"
                   className="w-[16em] h-[10em] bg-white object-cover rounded-lg"
                   width={100}
@@ -424,7 +424,7 @@ const AgreementSlug = ({ params }, agreementparam) => {
                   />
                 ) : (
                   <span className="text-sm">
-                    {agreement.first_party_country || "N/A"}
+                    {agreement?.first_party_country || "N/A"}
                   </span>
                 )}
               </div>
@@ -433,7 +433,7 @@ const AgreementSlug = ({ params }, agreementparam) => {
                 {isEditing ? (
                   <input
                     type="text"
-                    value={editableFields.first_party_id_type}
+                    value={editableFields?.first_party_id_type}
                     onChange={(e) =>
                       handleInputChange("first_party_id_type", e.target.value)
                     }
@@ -441,14 +441,14 @@ const AgreementSlug = ({ params }, agreementparam) => {
                   />
                 ) : (
                   <span className="text-sm">
-                    {agreement.first_party_id_type}
+                    {agreement?.first_party_id_type}
                   </span>
                 )}
               </div>
               <div className="flex flex-col gap-2">
                 <strong className="text-sm">First Party Signature:</strong>
                 <Image
-                  src={agreement.first_party_signature}
+                  src={agreement?.first_party_signature || "/not-found-image.png"}
                   alt="First Party Signature"
                   width={20}
                   height={20}
@@ -465,7 +465,7 @@ const AgreementSlug = ({ params }, agreementparam) => {
             <strong className="text-lg">Second Party Valid ID:</strong>
             <span className="text-sm">
               <Image
-                src={agreement.second_party_valid_id}
+                src={agreement?.second_party_valid_id || "/not-found-image.png"}
                 alt="First Party Signature"
                 width={20}
                 height={20}
@@ -493,7 +493,9 @@ const AgreementSlug = ({ params }, agreementparam) => {
               <div className="flex flex-col gap-2">
                 <strong className="text-sm">Second Party Signature:</strong>
                 <Image
-                  src={agreement.second_party_signature}
+                  src={
+                    agreement?.second_party_signature || "/not-found-image.png"
+                  }
                   alt="First Party Signature"
                   width={20}
                   height={20}

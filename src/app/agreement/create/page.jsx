@@ -2,7 +2,7 @@
 // /* eslint-disable react/no-unescaped-entities */
 "use client";
 import { UseWriteToContract } from "@/utils/fetchcontract";
-import { useState, useContext, useRef } from "react";
+import { useState, useContext, useRef, useEffect } from "react";
 import { FaArrowLeft } from "react-icons/fa";
 import { Header } from "../components/AgreementNav";
 import { redirect } from "next/navigation";
@@ -11,7 +11,6 @@ import Modal from "react-modal";
 import SuccessScreen from "../components/Success";
 import SignaturePad from "react-signature-canvas";
 import { base64ToImageFile } from "@/utils/serializer";
-
 
 const AgreementModal = () => {
   const [modalStep, setModalStep] = useState(1);
@@ -30,9 +29,44 @@ const AgreementModal = () => {
   const [secondPartyAddress, setSecondPartyAddress] = useState("");
   const [firstpartyFullname, setfirstpartyFullname] = useState("");
   const [secondPartyFullname, setSecondPartyFullname] = useState("");
-  
+
+  const [countries, setCountries] = useState([]);
+  const [searchTerm, setSearchTerm] = useState("");
+  const [filteredCountries, setFilteredCountries] = useState([]);
+  const [selectedCountry, setSelectedCountry] = useState("");
+  const [dropdownVisible, setDropdownVisible] = useState(false);
+
   const [errors, setErrors] = useState({});
   const { address } = useContext(WalletContext);
+
+  // Fetch country list from API
+  useEffect(() => {
+    const fetchCountries = async () => {
+      try {
+        const response = await fetch(
+          "https://countrylist-j.vercel.app/api/countries"
+        );
+        const data = await response.json();
+        setCountries(data);
+        setFilteredCountries(data);
+      } catch (error) {
+        console.error("Error fetching countries:", error);
+      }
+    };
+    fetchCountries();
+  }, []);
+
+  // Filter countries based on search term
+  useEffect(() => {
+    if (searchTerm.trim() === "") {
+      setFilteredCountries(countries);
+    } else {
+      const filtered = countries.filter((country) =>
+        country.name.toLowerCase().includes(searchTerm.toLowerCase())
+      );
+      setFilteredCountries(filtered);
+    }
+  }, [searchTerm, countries]);
 
   const {
     sendTransaction,
@@ -49,11 +83,10 @@ const AgreementModal = () => {
     idNumber,
   ]);
 
-
   const handleSignatureUpload = (e) => {
     const file = e.target.files[0];
     if (file) {
-      setUploadedSignature(file); 
+      setUploadedSignature(file);
     }
   };
   // const creatoraddress = useAccount()?.address;
@@ -63,10 +96,10 @@ const AgreementModal = () => {
     const formData = new FormData();
     formData.append("agreementType", agreementType);
     formData.append("content", content);
-    formData.append("country", country);
+    formData.append("country", searchTerm);
     formData.append("first_party_address", address);
     formData.append("first_party_id_type", idType);
-    formData.append("first_party_valid_id", idImage); 
+    formData.append("first_party_valid_id", idImage);
     formData.append("second_party_address", secondPartyAddress);
     formData.append("first_party_fullname", firstpartyFullname);
     formData.append("second_party_fullname", secondPartyFullname);
@@ -77,13 +110,13 @@ const AgreementModal = () => {
         return;
       }
       const base64Signature = signaturePadRef.current.toDataURL();
-      console.log(base64Signature)
+      console.log(base64Signature);
       let signatureData = base64ToImageFile(base64Signature, "signature.png");
-      formData.append("first_party_signature", signatureData)
+      formData.append("first_party_signature", signatureData);
     }
 
     if (signatureType === "upload" && uploadedSignature) {
-      formData.append("first_party_signature", uploadedSignature)
+      formData.append("first_party_signature", uploadedSignature);
     }
 
     try {
@@ -140,7 +173,7 @@ const AgreementModal = () => {
     switch (modalStep) {
       case 1:
         return (
-          <div className="text-white flex flex-col items-center justify-center space-y-6 mb-8">
+          <div className="text-white flex flex-col items-center justify-center space-y-6 mb-8 ">
             <label
               htmlFor="agreementType"
               className="font-[500] text-[24px] text-white"
@@ -227,6 +260,7 @@ const AgreementModal = () => {
           </>
         );
       case 3:
+        
         return (
           <>
             <div className="text-white flex flex-col">
@@ -236,15 +270,43 @@ const AgreementModal = () => {
               >
                 Country
               </label>
+              {/* Search Input */}
               <input
                 type="text"
                 id="country"
-                name="country"
-                value={country}
-                onChange={(e) => setCountry(e.target.value)}
-                className="mt-1 focus:outline-none w-full border-[#BEBDBD] focus-visible:top-10 focus:border-[#19B1D2] active:border-[#0094FF] px-2 py-3 rounded-md bg-transparent border shadow-sm text-white sm:text-sm"
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                onFocus={() => setDropdownVisible(true)} // Show dropdown on focus
+                onBlur={() => setTimeout(() => setDropdownVisible(false), 200)} // Hide dropdown with a slight delay
+                placeholder="Search for a country"
+                className="focus:outline-none w-full border-[#BEBDBD] focus:border-[#19B1D2] px-2 py-3 rounded-md bg-transparent border shadow-sm text-white sm:text-sm"
               />
+
+              {/* Dropdown List */}
+              {dropdownVisible && (
+                <div className="absolute bg-gray-800 border border-gray-700 rounded-md mt-20 max-h-40 overflow-y-auto z-10">
+                  {filteredCountries.map((country) => (
+                    <div
+                      key={country.code}
+                      onClick={() => {
+                        setSelectedCountry(country.name);
+                        setSearchTerm(country.name); // Set the selected country as the search term
+                        setDropdownVisible(false); // Hide dropdown
+                      }}
+                      className="cursor-pointer px-3 py-2 hover:bg-gray-700"
+                    >
+                      {country.name}
+                    </div>
+                  ))}
+                </div>
+              )}
             </div>
+            {/* {selectedCountry && (
+              <p className="mt-2 text-sm text-gray-400">
+                Selected Country:{" "}
+                <span className="font-medium">{selectedCountry}</span>
+              </p>
+            )} */}
             <div className="mb-4">
               <label
                 htmlFor="idType"
@@ -363,41 +425,39 @@ const AgreementModal = () => {
               />
             </div>
 
-
             <strong>Signature Type</strong>
-                <select
-                  value={signatureType}
-                  onChange={(e) => setSignatureType(e.target.value)}
-                  className="mt-1 w-full border-[#BEBDBD] px-2 py-3 rounded-md bg-transparent border shadow-sm text-[#9B9292] sm:text-sm"
+            <select
+              value={signatureType}
+              onChange={(e) => setSignatureType(e.target.value)}
+              className="mt-1 w-full border-[#BEBDBD] px-2 py-3 rounded-md bg-transparent border shadow-sm text-[#9B9292] sm:text-sm"
+            >
+              <option value="">Select Signature Type</option>
+              <option value="draw">Draw Signature</option>
+              <option value="upload">Upload Signature</option>
+            </select>
+
+            {signatureType === "draw" && (
+              <div className="signature-draw-container my-4 border border-[#ffffff46] rounded-lg p-4">
+                <SignaturePad
+                  ref={signaturePadRef}
+                  canvasProps={{
+                    className: "signature-pad w-full h-32 bg-white",
+                  }}
+                />
+                <button
+                  className="text-red-500 mt-2"
+                  onClick={() => signaturePadRef.current.clear()}
                 >
-                  <option value="">Select Signature Type</option>
-                  <option value="draw">Draw Signature</option>
-                  <option value="upload">Upload Signature</option>
-                </select>
+                  Clear Signature
+                </button>
+              </div>
+            )}
 
-                {signatureType === "draw" && (
-                  <div className="signature-draw-container my-4 border border-[#ffffff46] rounded-lg p-4">
-                    <SignaturePad
-                      ref={signaturePadRef}
-                      canvasProps={{
-                        className: "signature-pad w-full h-32 bg-white",
-                      }}
-                    />
-                    <button
-                      className="text-red-500 mt-2"
-                      onClick={() => signaturePadRef.current.clear()}
-                    >
-                      Clear Signature
-                    </button>
-                  </div>
-                )}
-
-                {signatureType === "upload" && (
-                  <div className="upload-signature-container my-4">
-                    <input type="file" onChange={handleSignatureUpload} />
-                  </div>
-                )}
-            
+            {signatureType === "upload" && (
+              <div className="upload-signature-container my-4">
+                <input type="file" onChange={handleSignatureUpload} />
+              </div>
+            )}
           </>
         );
       default:
@@ -492,7 +552,11 @@ const AgreementModal = () => {
         className="flex items-center justify-center"
         overlayClassName="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center"
       >
-        <SuccessScreen onClose={() => setIsModalOpen(false)} isSuccess={true} message={`Agreement between ${firstpartyFullname} and ${secondPartyFullname} Created Successfully`} />
+        <SuccessScreen
+          onClose={() => setIsModalOpen(false)}
+          isSuccess={true}
+          message={`Agreement between ${firstpartyFullname} and ${secondPartyFullname} Created Successfully`}
+        />
       </Modal>
     </div>
   );
