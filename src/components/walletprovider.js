@@ -1,6 +1,6 @@
 "use client";
 import React, { createContext, useState, useEffect } from "react";
-import { connect, disconnect } from "starknetkit";
+// import { connect, disconnect } from "starknetkit";
 import { ArgentMobileConnector, StarknetKitConnector } from "starknetkit/argentMobile";
 import { useNotification } from "@/context/NotificationProvider";
 import { padAddress } from "@/utils/serializer";

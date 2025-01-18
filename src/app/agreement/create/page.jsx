@@ -260,7 +260,6 @@ const AgreementModal = () => {
           </>
         );
       case 3:
-        
         return (
           <>
             <div className="text-white flex flex-col">

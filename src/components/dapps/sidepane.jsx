@@ -13,7 +13,7 @@ const Sidepane = ({ isOpen, onClose }) => {
       text: "Home",
       icon: "",
     },
-    
+
     {
       href: "/agreement/create",
       text: "Agreement",
@@ -43,7 +43,7 @@ const Sidepane = ({ isOpen, onClose }) => {
         className={`fixed md:sticky top-0 left-0 h-screen w-full md:w-[300px] flex flex-col
           md:bg-gradient-to-b from-[#04080C] to-[#09131A] md:backdrop-filter
           backdrop-blur-xl md:backdrop-blur-none
-          bg-white/5
+          bg-[black]
           transition-all duration-300 ease-in-out z-40
           ${isOpen ? "translate-x-0" : "-translate-x-full md:translate-x-0"}`}
       >
