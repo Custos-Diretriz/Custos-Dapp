@@ -75,7 +75,6 @@ export const Recording = ({ text, icon1, imgText, category }) => {
   const recordedVideoRef = useRef(null);
   const photoRef = useRef(null);
   const [isClicked, setIsClicked] = useState(false);
-
   const route = useRouter();
 
   useEffect(() => {
@@ -98,6 +97,7 @@ export const Recording = ({ text, icon1, imgText, category }) => {
     const triggerWallet = async () => {
       if (uri) {
         try {
+          setLoading(true)
           if (uri !== "") {
             console.log("call ref is :", callRef.current);
             console.log("account is :", account);

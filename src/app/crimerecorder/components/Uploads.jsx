@@ -1,16 +1,15 @@
 "use client";
+
 import React, { useContext, useEffect, useState } from "react";
 import { UseReadContractData } from "@/utils/fetchcontract";
 import NoRecordScreen from "./NoRecordScreen";
 import { WalletContext } from "@/components/walletprovider";
 import Image from "next/image";
-import { ClipboardIcon } from "@heroicons/react/outline"; // Optional: Icon for Share button
+import { ClipboardIcon } from "@heroicons/react/outline";
 import { useNotification } from "@/context/NotificationProvider";
-import { useAccount } from "@starknet-react/core";
 
 const Uploads = () => {
-  const {connectorData} = useContext(WalletContext);
-
+  const { address, wallet } = useContext(WalletContext); // Using WalletContext
   const [uploadedFiles, setUploadedFiles] = useState([]);
   const [fileData, setFileData] = useState([]);
   const [loading, setLoading] = useState(false);
@@ -20,9 +19,13 @@ const Uploads = () => {
   const { fetchData } = UseReadContractData();
 
   const Retrieve = async () => {
+    if (!address) return; // Ensure address is available
     setLoading(true);
     try {
-      const result = await fetchData("crime", "get_all_user_uploads", [connectorData?.account]);
+      console.log("Fetching uploads for account:", address);
+
+      const result = await fetchData("crime", "get_all_user_uploads", [address]);
+      console.log("Fetched uploads:", result);
 
       const files =
         result && typeof result === "object"
@@ -42,18 +45,22 @@ const Uploads = () => {
   };
 
   useEffect(() => {
-    if (connectorData?.account) Retrieve();
-  }, [connectorData?.account]);
+    console.log("Wallet Address:", address);
+    if (address) Retrieve();
+  }, [address]);
 
   useEffect(() => {
     const userUploads = async () => {
       setLoading(true);
       try {
+        console.log("Uploaded Files:", uploadedFiles);
+
         const blockchainUris = await Promise.all(
           uploadedFiles.map(async (file) => {
             const uploadUri = await fetchData("crime", "get_token_uri", [
               file.id,
             ]);
+            console.log(`Retrieved URI for file ${file.id}:`, uploadUri);
             return uploadUri;
           })
         );
@@ -62,11 +69,14 @@ const Uploads = () => {
           method: "GET",
           headers: { Authorization: `Bearer ${NFT_STORAGE_TOKEN}` },
         });
+        console.log("Pinata Response:", response);
 
         if (!response.ok)
           throw new Error("Error fetching metadata from Pinata");
 
         const metadata = await response.json();
+        console.log("Pinata Metadata:", metadata);
+
         const pinataFiles = metadata.rows;
 
         const matchedFiles = blockchainUris
@@ -85,6 +95,7 @@ const Uploads = () => {
           })
           .filter(Boolean);
 
+        console.log("Matched Files:", matchedFiles);
         setFileData(matchedFiles);
       } catch (error) {
         console.error("Error retrieving URIs or metadata:", error);
@@ -113,21 +124,23 @@ const Uploads = () => {
 
   const formatDate = (timestamp) => {
     const date = new Date(timestamp);
-    return date.toLocaleDateString("en-US", {
-      weekday: "long", // Day of the week
-      year: "numeric", // Year
-      month: "long",   // Month name
-      day: "numeric",  // Day of the month
-    }) + 
-    ", " + 
-    date.toLocaleTimeString("en-US", {
-      hour: "2-digit", 
-      minute: "2-digit", 
-      second: "2-digit", 
-      hour12: true // Display time in 12-hour format
-    });
+    return (
+      date.toLocaleDateString("en-US", {
+        weekday: "long",
+        year: "numeric",
+        month: "long",
+        day: "numeric",
+      }) +
+      ", " +
+      date.toLocaleTimeString("en-US", {
+        hour: "2-digit",
+        minute: "2-digit",
+        second: "2-digit",
+        hour12: true,
+      })
+    );
   };
-  
+
   const handleDownload = async (file) => {
     try {
       const response = await fetch(
@@ -144,7 +157,6 @@ const Uploads = () => {
   const handleShare = async (file) => {
     const fileLink = `https://gateway.pinata.cloud/ipfs/${file.uri}`;
 
-    // Use Web Share API if supported
     if (navigator.share) {
       try {
         await navigator.share({
@@ -156,7 +168,6 @@ const Uploads = () => {
         console.error("Error sharing the file:", error);
       }
     } else {
-      // Fallback: Copy link to clipboard
       try {
         await navigator.clipboard.writeText(fileLink);
         openNotification("success", "", "Link copied to clipboard!");
@@ -192,7 +203,8 @@ const Uploads = () => {
             {fileData.map((file, index) => (
               <div
                 key={index}
-                className="relative text-sm whitespace-nowrap mb-2 sm:mb-0 bg-transparent rounded-lg backdrop-blur-lg p-10 shadow-lg">
+                className="relative text-sm whitespace-nowrap mb-2 sm:mb-0 bg-transparent rounded-lg backdrop-blur-lg p-10 shadow-lg"
+              >
                 {isImageFile(file.filename) ? (
                   <img
                     src={`https://gateway.pinata.cloud/ipfs/${file.uri}`}
@@ -217,30 +229,27 @@ const Uploads = () => {
                 </p>
 
                 <div className="flex flex-col sm:flex-row justify-between items-center w-full mt-5 gap-4">
- 
-  <div className="p-[2px] rounded-[100px] bg-gradient-to-r from-[#19B1D2] to-[#A02294]">
-    <button
-      className="flex items-center justify-center w-[200px] h-[48px] bg-[#030303] text-white text-sm py-3 px-6 rounded-[100px] transition-colors duration-300 ease-in-out"
-      onClick={() => handleShare(file)}
-    >
-      <ClipboardIcon className="w-4 h-4 mr-2" />
-      <span>Share</span>
-    </button>
-  </div>
+                  <div className="p-[2px] rounded-[100px] bg-gradient-to-r from-[#19B1D2] to-[#A02294]">
+                    <button
+                      className="flex items-center justify-center w-[200px] h-[48px] bg-[#030303] text-white text-sm py-3 px-6 rounded-[100px] transition-colors duration-300 ease-in-out"
+                      onClick={() => handleShare(file)}
+                    >
+                      <ClipboardIcon className="w-4 h-4 mr-2" />
+                      <span>Share</span>
+                    </button>
+                  </div>
 
-  
-  <div className="p-[2px] rounded-[100px] bg-gradient-to-r from-[#19B1D2] to-[#A02294]">
-    <button
-      className="flex items-center justify-center w-[200px] h-[48px] bg-[#209af1] text-white text-sm py-3 px-6 rounded-[100px] transition-colors duration-300 ease-in-out"
-      onClick={() => handleDownload(file)}
-    >
-      {isVideoFile(file.filename) ? "Download Video" : "Download Image"}
-    </button>
-  </div>
-</div>
-
-
-
+                  <div className="p-[2px] rounded-[100px] bg-gradient-to-r from-[#19B1D2] to-[#A02294]">
+                    <button
+                      className="flex items-center justify-center w-[200px] h-[48px] bg-[#209af1] text-white text-sm py-3 px-6 rounded-[100px] transition-colors duration-300 ease-in-out"
+                      onClick={() => handleDownload(file)}
+                    >
+                      {isVideoFile(file.filename)
+                        ? "Download Video"
+                        : "Download Image"}
+                    </button>
+                  </div>
+                </div>
               </div>
             ))}
           </div>
@@ -251,4 +260,3 @@ const Uploads = () => {
 };
 
 export default Uploads;
-  
