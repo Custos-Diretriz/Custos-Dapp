@@ -13,7 +13,6 @@ import { WalletContext } from "@/components/walletprovider"; // Import WalletCon
 
 export default function RootLayout({ children }) {
   const [isSidepaneOpen, setSidepaneOpen] = useState(false); // State to toggle sidepane
-  const { address, signMessage } = useContext(WalletContext); // Access address and signMessage from WalletContext
 
   // Function to toggle sidepane visibility
   const toggleSidepane = (e) => {

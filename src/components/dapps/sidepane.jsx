@@ -1,11 +1,12 @@
 import Image from "next/image";
 import Link from "next/link";
 import React from "react";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import ConnectButtoncomponent from "@/components/connect";
 
 const Sidepane = ({ isOpen, onClose }) => {
   const pathname = usePathname();
+  const router = useRouter();
 
   const navLinks = [
     {
@@ -13,7 +14,6 @@ const Sidepane = ({ isOpen, onClose }) => {
       text: "Home",
       icon: "",
     },
-
     {
       href: "/agreement/create",
       text: "Agreement",
@@ -31,11 +31,19 @@ const Sidepane = ({ isOpen, onClose }) => {
     },
   ];
 
+  const handleNavigation = (href) => {
+    router.push(href); // Navigate to the target route
+    onClose(); // Close the sidepane after navigation
+  };
+
   return (
     <>
       {/* Mobile overlay */}
       {isOpen && (
-        <div className="fixed inset-0 z-30 md:hidden" onClick={onClose} />
+        <div
+          className="fixed inset-0 z-30 md:hidden bg-black bg-opacity-50"
+          onClick={onClose}
+        />
       )}
 
       {/* Sidebar */}
@@ -43,18 +51,21 @@ const Sidepane = ({ isOpen, onClose }) => {
         className={`fixed md:sticky top-0 left-0 h-screen w-full md:w-[300px] flex flex-col
           md:bg-gradient-to-b from-[#04080C] to-[#09131A] md:backdrop-filter
           backdrop-blur-xl md:backdrop-blur-none
-          bg-[black]
-          transition-all duration-300 ease-in-out z-40
+     
+          bg-white/5  z-50
+          transition-all duration-300 ease-in-out 
+
           ${isOpen ? "translate-x-0" : "-translate-x-full md:translate-x-0"}`}
       >
-        <div className="absolute inset-0 md:hidden bg-gradient-to-b from-white/10 to-transparent opacity-20" />
+        <div className="absolute inset-0 md:hidden bg-gradient-to-b from-[#04080C] to-[#09131A] opacity-100 " />
+
         <div className="relative flex flex-col h-full p-8">
           {/* Logo */}
           {isOpen ? (
             ""
           ) : (
             <div className="w-full flex justify-center md:justify-start mb-16">
-              <Link href="/" className="w-auto" onClick={onClose}>
+              <Link href="/" className="w-auto">
                 <Image
                   src="/logo.png"
                   alt="logo"
@@ -68,7 +79,7 @@ const Sidepane = ({ isOpen, onClose }) => {
                 src="/solar_minimize-square-minimalistic-linear.png"
                 width={25}
                 height={25}
-              ></Image>
+              />
             </div>
           )}
 
@@ -81,16 +92,14 @@ const Sidepane = ({ isOpen, onClose }) => {
             {navLinks.map((link, index) => {
               const isActive = pathname === link.href;
               return (
-                <Link
+                <button
                   key={index}
-                  href={link.href}
-                  onClick={onClose}
-                  className={`group relative
-                    ${
-                      isActive
-                        ? "text-[#00A3FF]"
-                        : "text-white hover:text-[#00A3FF]"
-                    }`}
+                  onClick={() => handleNavigation(link.href)}
+                  className={`group relative ${
+                    isActive
+                      ? "text-[#00A3FF]"
+                      : "text-white hover:text-[#00A3FF]"
+                  }`}
                 >
                   {/* Mobile layout */}
                   <div className="md:hidden">
@@ -130,7 +139,7 @@ const Sidepane = ({ isOpen, onClose }) => {
                   {isActive && (
                     <div className="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-8 bg-[#00A3FF] rounded-r hidden md:block" />
                   )}
-                </Link>
+                </button>
               );
             })}
 

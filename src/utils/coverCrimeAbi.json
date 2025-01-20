@@ -1,16 +1,16 @@
 [
   {
-    "name": "UpgradeableImpl",
     "type": "impl",
-    "interface_name": "openzeppelin::upgrades::interface::IUpgradeable"
+    "name": "UpgradeableImpl",
+    "interface_name": "openzeppelin_upgrades::interface::IUpgradeable"
   },
   {
-    "name": "openzeppelin::upgrades::interface::IUpgradeable",
     "type": "interface",
+    "name": "openzeppelin_upgrades::interface::IUpgradeable",
     "items": [
       {
-        "name": "upgrade",
         "type": "function",
+        "name": "upgrade",
         "inputs": [
           {
             "name": "new_class_hash",
@@ -23,13 +23,13 @@
     ]
   },
   {
-    "name": "CrimeWitness",
     "type": "impl",
-    "interface_name": "custos_smart_contracts::crime_record::ICrimeWitness"
+    "name": "CrimeWitness",
+    "interface_name": "custos_smart_contracts::interfaces::ICrimeWitness"
   },
   {
-    "name": "core::byte_array::ByteArray",
     "type": "struct",
+    "name": "core::byte_array::ByteArray",
     "members": [
       {
         "name": "data",
@@ -46,8 +46,8 @@
     ]
   },
   {
-    "name": "core::array::Span::<core::felt252>",
     "type": "struct",
+    "name": "core::array::Span::<core::felt252>",
     "members": [
       {
         "name": "snapshot",
@@ -56,8 +56,8 @@
     ]
   },
   {
-    "name": "core::bool",
     "type": "enum",
+    "name": "core::bool",
     "variants": [
       {
         "name": "False",
@@ -70,8 +70,8 @@
     ]
   },
   {
-    "name": "core::integer::u256",
     "type": "struct",
+    "name": "core::integer::u256",
     "members": [
       {
         "name": "low",
@@ -84,12 +84,12 @@
     ]
   },
   {
-    "name": "custos_smart_contracts::crime_record::ICrimeWitness",
     "type": "interface",
+    "name": "custos_smart_contracts::interfaces::ICrimeWitness",
     "items": [
       {
-        "name": "crime_record",
         "type": "function",
+        "name": "crime_record",
         "inputs": [
           {
             "name": "uri",
@@ -108,8 +108,8 @@
         "state_mutability": "external"
       },
       {
-        "name": "get_token_uri",
         "type": "function",
+        "name": "get_token_uri",
         "inputs": [
           {
             "name": "id",
@@ -124,8 +124,8 @@
         "state_mutability": "view"
       },
       {
-        "name": "get_all_user_uploads",
         "type": "function",
+        "name": "get_all_user_uploads",
         "inputs": [
           {
             "name": "user",
@@ -142,17 +142,17 @@
     ]
   },
   {
-    "name": "ERC721MixinImpl",
     "type": "impl",
-    "interface_name": "openzeppelin::token::erc721::interface::ERC721ABI"
+    "name": "ERC721MixinImpl",
+    "interface_name": "openzeppelin_token::erc721::interface::ERC721ABI"
   },
   {
-    "name": "openzeppelin::token::erc721::interface::ERC721ABI",
     "type": "interface",
+    "name": "openzeppelin_token::erc721::interface::ERC721ABI",
     "items": [
       {
-        "name": "balance_of",
         "type": "function",
+        "name": "balance_of",
         "inputs": [
           {
             "name": "account",
@@ -167,8 +167,8 @@
         "state_mutability": "view"
       },
       {
-        "name": "owner_of",
         "type": "function",
+        "name": "owner_of",
         "inputs": [
           {
             "name": "token_id",
@@ -183,8 +183,8 @@
         "state_mutability": "view"
       },
       {
-        "name": "safe_transfer_from",
         "type": "function",
+        "name": "safe_transfer_from",
         "inputs": [
           {
             "name": "from",
@@ -207,8 +207,8 @@
         "state_mutability": "external"
       },
       {
-        "name": "transfer_from",
         "type": "function",
+        "name": "transfer_from",
         "inputs": [
           {
             "name": "from",
@@ -227,8 +227,8 @@
         "state_mutability": "external"
       },
       {
-        "name": "approve",
         "type": "function",
+        "name": "approve",
         "inputs": [
           {
             "name": "to",
@@ -243,8 +243,8 @@
         "state_mutability": "external"
       },
       {
-        "name": "set_approval_for_all",
         "type": "function",
+        "name": "set_approval_for_all",
         "inputs": [
           {
             "name": "operator",
@@ -259,8 +259,8 @@
         "state_mutability": "external"
       },
       {
-        "name": "get_approved",
         "type": "function",
+        "name": "get_approved",
         "inputs": [
           {
             "name": "token_id",
@@ -275,8 +275,8 @@
         "state_mutability": "view"
       },
       {
-        "name": "is_approved_for_all",
         "type": "function",
+        "name": "is_approved_for_all",
         "inputs": [
           {
             "name": "owner",
@@ -295,8 +295,8 @@
         "state_mutability": "view"
       },
       {
-        "name": "supports_interface",
         "type": "function",
+        "name": "supports_interface",
         "inputs": [
           {
             "name": "interface_id",
@@ -311,8 +311,8 @@
         "state_mutability": "view"
       },
       {
+        "type": "function",
         "name": "name",
-        "type": "function",
         "inputs": [],
         "outputs": [
           {
@@ -322,8 +322,8 @@
         "state_mutability": "view"
       },
       {
+        "type": "function",
         "name": "symbol",
-        "type": "function",
         "inputs": [],
         "outputs": [
           {
@@ -333,8 +333,8 @@
         "state_mutability": "view"
       },
       {
-        "name": "token_uri",
         "type": "function",
+        "name": "token_uri",
         "inputs": [
           {
             "name": "token_id",
@@ -349,8 +349,8 @@
         "state_mutability": "view"
       },
       {
-        "name": "balanceOf",
         "type": "function",
+        "name": "balanceOf",
         "inputs": [
           {
             "name": "account",
@@ -365,8 +365,8 @@
         "state_mutability": "view"
       },
       {
-        "name": "ownerOf",
         "type": "function",
+        "name": "ownerOf",
         "inputs": [
           {
             "name": "tokenId",
@@ -381,8 +381,8 @@
         "state_mutability": "view"
       },
       {
-        "name": "safeTransferFrom",
         "type": "function",
+        "name": "safeTransferFrom",
         "inputs": [
           {
             "name": "from",
@@ -405,8 +405,8 @@
         "state_mutability": "external"
       },
       {
-        "name": "transferFrom",
         "type": "function",
+        "name": "transferFrom",
         "inputs": [
           {
             "name": "from",
@@ -425,8 +425,8 @@
         "state_mutability": "external"
       },
       {
-        "name": "setApprovalForAll",
         "type": "function",
+        "name": "setApprovalForAll",
         "inputs": [
           {
             "name": "operator",
@@ -441,8 +441,8 @@
         "state_mutability": "external"
       },
       {
-        "name": "getApproved",
         "type": "function",
+        "name": "getApproved",
         "inputs": [
           {
             "name": "tokenId",
@@ -457,8 +457,8 @@
         "state_mutability": "view"
       },
       {
-        "name": "isApprovedForAll",
         "type": "function",
+        "name": "isApprovedForAll",
         "inputs": [
           {
             "name": "owner",
@@ -477,8 +477,8 @@
         "state_mutability": "view"
       },
       {
-        "name": "tokenURI",
         "type": "function",
+        "name": "tokenURI",
         "inputs": [
           {
             "name": "tokenId",
@@ -495,17 +495,17 @@
     ]
   },
   {
-    "name": "OwnableMixinImpl",
     "type": "impl",
-    "interface_name": "openzeppelin::access::ownable::interface::OwnableABI"
+    "name": "OwnableMixinImpl",
+    "interface_name": "openzeppelin_access::ownable::interface::OwnableABI"
   },
   {
-    "name": "openzeppelin::access::ownable::interface::OwnableABI",
     "type": "interface",
+    "name": "openzeppelin_access::ownable::interface::OwnableABI",
     "items": [
       {
-        "name": "owner",
         "type": "function",
+        "name": "owner",
         "inputs": [],
         "outputs": [
           {
@@ -515,8 +515,8 @@
         "state_mutability": "view"
       },
       {
-        "name": "transfer_ownership",
         "type": "function",
+        "name": "transfer_ownership",
         "inputs": [
           {
             "name": "new_owner",
@@ -527,15 +527,15 @@
         "state_mutability": "external"
       },
       {
-        "name": "renounce_ownership",
         "type": "function",
+        "name": "renounce_ownership",
         "inputs": [],
         "outputs": [],
         "state_mutability": "external"
       },
       {
-        "name": "transferOwnership",
         "type": "function",
+        "name": "transferOwnership",
         "inputs": [
           {
             "name": "newOwner",
@@ -546,8 +546,8 @@
         "state_mutability": "external"
       },
       {
-        "name": "renounceOwnership",
         "type": "function",
+        "name": "renounceOwnership",
         "inputs": [],
         "outputs": [],
         "state_mutability": "external"
@@ -555,8 +555,8 @@
     ]
   },
   {
-    "name": "constructor",
     "type": "constructor",
+    "name": "constructor",
     "inputs": [
       {
         "name": "owner",
@@ -565,225 +565,225 @@
     ]
   },
   {
-    "kind": "struct",
-    "name": "openzeppelin::token::erc721::erc721::ERC721Component::Transfer",
     "type": "event",
+    "name": "openzeppelin_token::erc721::erc721::ERC721Component::Transfer",
+    "kind": "struct",
     "members": [
       {
-        "kind": "key",
         "name": "from",
-        "type": "core::starknet::contract_address::ContractAddress"
+        "type": "core::starknet::contract_address::ContractAddress",
+        "kind": "key"
       },
       {
-        "kind": "key",
         "name": "to",
-        "type": "core::starknet::contract_address::ContractAddress"
+        "type": "core::starknet::contract_address::ContractAddress",
+        "kind": "key"
       },
       {
-        "kind": "key",
         "name": "token_id",
-        "type": "core::integer::u256"
+        "type": "core::integer::u256",
+        "kind": "key"
       }
     ]
   },
   {
-    "kind": "struct",
-    "name": "openzeppelin::token::erc721::erc721::ERC721Component::Approval",
     "type": "event",
+    "name": "openzeppelin_token::erc721::erc721::ERC721Component::Approval",
+    "kind": "struct",
     "members": [
       {
-        "kind": "key",
         "name": "owner",
-        "type": "core::starknet::contract_address::ContractAddress"
+        "type": "core::starknet::contract_address::ContractAddress",
+        "kind": "key"
       },
       {
-        "kind": "key",
         "name": "approved",
-        "type": "core::starknet::contract_address::ContractAddress"
+        "type": "core::starknet::contract_address::ContractAddress",
+        "kind": "key"
       },
       {
-        "kind": "key",
         "name": "token_id",
-        "type": "core::integer::u256"
+        "type": "core::integer::u256",
+        "kind": "key"
       }
     ]
   },
   {
-    "kind": "struct",
-    "name": "openzeppelin::token::erc721::erc721::ERC721Component::ApprovalForAll",
     "type": "event",
+    "name": "openzeppelin_token::erc721::erc721::ERC721Component::ApprovalForAll",
+    "kind": "struct",
     "members": [
       {
-        "kind": "key",
         "name": "owner",
-        "type": "core::starknet::contract_address::ContractAddress"
+        "type": "core::starknet::contract_address::ContractAddress",
+        "kind": "key"
       },
       {
-        "kind": "key",
         "name": "operator",
-        "type": "core::starknet::contract_address::ContractAddress"
+        "type": "core::starknet::contract_address::ContractAddress",
+        "kind": "key"
       },
       {
-        "kind": "data",
         "name": "approved",
-        "type": "core::bool"
+        "type": "core::bool",
+        "kind": "data"
       }
     ]
   },
   {
-    "kind": "enum",
-    "name": "openzeppelin::token::erc721::erc721::ERC721Component::Event",
     "type": "event",
+    "name": "openzeppelin_token::erc721::erc721::ERC721Component::Event",
+    "kind": "enum",
     "variants": [
       {
-        "kind": "nested",
         "name": "Transfer",
-        "type": "openzeppelin::token::erc721::erc721::ERC721Component::Transfer"
+        "type": "openzeppelin_token::erc721::erc721::ERC721Component::Transfer",
+        "kind": "nested"
       },
       {
-        "kind": "nested",
         "name": "Approval",
-        "type": "openzeppelin::token::erc721::erc721::ERC721Component::Approval"
+        "type": "openzeppelin_token::erc721::erc721::ERC721Component::Approval",
+        "kind": "nested"
       },
       {
-        "kind": "nested",
         "name": "ApprovalForAll",
-        "type": "openzeppelin::token::erc721::erc721::ERC721Component::ApprovalForAll"
+        "type": "openzeppelin_token::erc721::erc721::ERC721Component::ApprovalForAll",
+        "kind": "nested"
       }
     ]
   },
   {
-    "kind": "enum",
-    "name": "openzeppelin::introspection::src5::SRC5Component::Event",
     "type": "event",
+    "name": "openzeppelin_introspection::src5::SRC5Component::Event",
+    "kind": "enum",
     "variants": []
   },
   {
-    "kind": "struct",
-    "name": "openzeppelin::access::ownable::ownable::OwnableComponent::OwnershipTransferred",
     "type": "event",
+    "name": "openzeppelin_access::ownable::ownable::OwnableComponent::OwnershipTransferred",
+    "kind": "struct",
     "members": [
       {
-        "kind": "key",
         "name": "previous_owner",
-        "type": "core::starknet::contract_address::ContractAddress"
+        "type": "core::starknet::contract_address::ContractAddress",
+        "kind": "key"
       },
       {
-        "kind": "key",
         "name": "new_owner",
-        "type": "core::starknet::contract_address::ContractAddress"
+        "type": "core::starknet::contract_address::ContractAddress",
+        "kind": "key"
       }
     ]
   },
   {
-    "kind": "struct",
-    "name": "openzeppelin::access::ownable::ownable::OwnableComponent::OwnershipTransferStarted",
     "type": "event",
+    "name": "openzeppelin_access::ownable::ownable::OwnableComponent::OwnershipTransferStarted",
+    "kind": "struct",
     "members": [
       {
-        "kind": "key",
         "name": "previous_owner",
-        "type": "core::starknet::contract_address::ContractAddress"
+        "type": "core::starknet::contract_address::ContractAddress",
+        "kind": "key"
       },
       {
-        "kind": "key",
         "name": "new_owner",
-        "type": "core::starknet::contract_address::ContractAddress"
+        "type": "core::starknet::contract_address::ContractAddress",
+        "kind": "key"
       }
     ]
   },
   {
+    "type": "event",
+    "name": "openzeppelin_access::ownable::ownable::OwnableComponent::Event",
     "kind": "enum",
-    "name": "openzeppelin::access::ownable::ownable::OwnableComponent::Event",
-    "type": "event",
     "variants": [
       {
-        "kind": "nested",
         "name": "OwnershipTransferred",
-        "type": "openzeppelin::access::ownable::ownable::OwnableComponent::OwnershipTransferred"
+        "type": "openzeppelin_access::ownable::ownable::OwnableComponent::OwnershipTransferred",
+        "kind": "nested"
       },
       {
-        "kind": "nested",
         "name": "OwnershipTransferStarted",
-        "type": "openzeppelin::access::ownable::ownable::OwnableComponent::OwnershipTransferStarted"
+        "type": "openzeppelin_access::ownable::ownable::OwnableComponent::OwnershipTransferStarted",
+        "kind": "nested"
       }
     ]
   },
   {
-    "kind": "struct",
-    "name": "openzeppelin::upgrades::upgradeable::UpgradeableComponent::Upgraded",
     "type": "event",
+    "name": "openzeppelin_upgrades::upgradeable::UpgradeableComponent::Upgraded",
+    "kind": "struct",
     "members": [
       {
-        "kind": "data",
         "name": "class_hash",
-        "type": "core::starknet::class_hash::ClassHash"
+        "type": "core::starknet::class_hash::ClassHash",
+        "kind": "data"
       }
     ]
   },
   {
-    "kind": "enum",
-    "name": "openzeppelin::upgrades::upgradeable::UpgradeableComponent::Event",
     "type": "event",
+    "name": "openzeppelin_upgrades::upgradeable::UpgradeableComponent::Event",
+    "kind": "enum",
     "variants": [
       {
-        "kind": "nested",
         "name": "Upgraded",
-        "type": "openzeppelin::upgrades::upgradeable::UpgradeableComponent::Upgraded"
+        "type": "openzeppelin_upgrades::upgradeable::UpgradeableComponent::Upgraded",
+        "kind": "nested"
       }
     ]
   },
   {
-    "kind": "struct",
-    "name": "custos_smart_contracts::crime_record::CrimeRecord::URI",
     "type": "event",
+    "name": "custos_smart_contracts::crime_record::CrimeRecord::URI",
+    "kind": "struct",
     "members": [
       {
-        "kind": "key",
         "name": "id",
-        "type": "core::integer::u256"
+        "type": "core::integer::u256",
+        "kind": "key"
       },
       {
-        "kind": "data",
         "name": "uri",
-        "type": "core::byte_array::ByteArray"
+        "type": "core::byte_array::ByteArray",
+        "kind": "data"
       },
       {
-        "kind": "data",
         "name": "msg",
-        "type": "core::felt252"
+        "type": "core::felt252",
+        "kind": "data"
       }
     ]
   },
   {
-    "kind": "enum",
-    "name": "custos_smart_contracts::crime_record::CrimeRecord::Event",
     "type": "event",
+    "name": "custos_smart_contracts::crime_record::CrimeRecord::Event",
+    "kind": "enum",
     "variants": [
       {
-        "kind": "flat",
         "name": "ERC721Event",
-        "type": "openzeppelin::token::erc721::erc721::ERC721Component::Event"
+        "type": "openzeppelin_token::erc721::erc721::ERC721Component::Event",
+        "kind": "flat"
       },
       {
-        "kind": "flat",
         "name": "SRC5Event",
-        "type": "openzeppelin::introspection::src5::SRC5Component::Event"
+        "type": "openzeppelin_introspection::src5::SRC5Component::Event",
+        "kind": "flat"
       },
       {
-        "kind": "flat",
         "name": "OwnableEvent",
-        "type": "openzeppelin::access::ownable::ownable::OwnableComponent::Event"
+        "type": "openzeppelin_access::ownable::ownable::OwnableComponent::Event",
+        "kind": "flat"
       },
       {
-        "kind": "flat",
         "name": "UpgradeableEvent",
-        "type": "openzeppelin::upgrades::upgradeable::UpgradeableComponent::Event"
+        "type": "openzeppelin_upgrades::upgradeable::UpgradeableComponent::Event",
+        "kind": "flat"
       },
       {
-        "kind": "nested",
         "name": "URI",
-        "type": "custos_smart_contracts::crime_record::CrimeRecord::URI"
+        "type": "custos_smart_contracts::crime_record::CrimeRecord::URI",
+        "kind": "nested"
       }
     ]
   }

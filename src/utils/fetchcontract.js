@@ -5,28 +5,30 @@ import { Contract, RpcProvider } from "starknet";
 import { useContext, useEffect, useState } from "react";
 import { WalletContext } from "@/components/walletprovider";
 import { useNotification } from "@/context/NotificationProvider";
+import { useAccount } from "@starknet-react/core";
 
 export const provider = new RpcProvider({
-  nodeUrl: process.env.NEXT_PUBLIC_SEPOLIA_BASE_URL,
+  nodeUrl: process.env.NEXT_PUBLIC_BASE_URL,
 });
 
 const contractConfigs = {
   crime: {
     abi: crimeAbi,
     address:
-      "0x03cbefe95450dddc88638f7b23f34d83fc48b570e476d87a608c07724aaaa342",
+      "0x020bd5ec01c672e69e3ca74df376620a6be8a2b104ab70a9f0885be00dd38fb9",
   },
   agreement: {
     abi: agreementAbi,
     address:
-      "0x01cc2cb390086c3b98ee3a6d0afe3c6d44fd2f78956bda342f52715735dbfb25",
+      "0x02aab9906df2dec1c371495f1e3d7f367a5cddc48179d7aee959ed4dc3a1662d",
   },
 };
 
+
 // Hook to read data from a contract
 export const UseReadContractData = () => {
-
   const { openNotification } = useNotification();
+
   const fetchData = async (contractName, methodName, params = []) => {
     try {
       const contractConfig = contractConfigs[contractName];
@@ -71,13 +73,13 @@ export const UseReadContractData = () => {
 
 // Hook to write data to a contract
 export const UseWriteToContract = () => {
-  const account = useContext(WalletContext);
+  const {connector} = useContext(WalletContext);
   const { openNotification } = useNotification();
 
   
   const writeToContract = async (contractName, methodName, params = []) => {
     try {
-      if (!account || !account.account) {
+      if (!connector.account /*|| !account.account*/) {
         openNotification("error", "", "Wallet not connected");
         throw new Error("Wallet not connected");
       }
@@ -97,7 +99,7 @@ export const UseWriteToContract = () => {
       const contract = new Contract(
         contractConfig.abi,
         contractConfig.address,
-        account.account
+        connector.account
       );
 
       const result =
@@ -118,16 +120,17 @@ export const UseWriteToContract = () => {
 
 // Hook to sign a message using the wallet extension
 export const UseSignMessage = () => {
-  const account = useContext(WalletContext);
+  const {connector} = useContext(WalletContext);
+  const { openNotification } = useNotification();
 
   const signMessage = async (message) => {
     try {
-      if (!account || !account.account) {
+      if (!connector.account) {
         openNotification("error", "", "Wallet not connected");
         throw new Error("Wallet not connected");
       }
 
-      const signature = await account.account.signMessage(message);
+      const signature = await connector.account.signMessage(message);
       console.log("Signature:", signature);
       return signature;
     } catch (err) {

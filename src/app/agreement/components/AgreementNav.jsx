@@ -70,7 +70,7 @@ const AgreementNav = ({ activeTab, setActiveTab, text, mode}) => {
                 ? "text-white border-b-4 underlined-border-gradient"
                 : "text-transparent bg-clip-text bg-gradient-to-r from-[#BEBDBD] to-[#858585]"
             }`}
-          >
+          > 
             Pending
           </button>
           <button

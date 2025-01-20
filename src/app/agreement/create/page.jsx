@@ -11,6 +11,7 @@ import Modal from "react-modal";
 import SuccessScreen from "../components/Success";
 import SignaturePad from "react-signature-canvas";
 import { base64ToImageFile } from "@/utils/serializer";
+import { useAccount } from "@starknet-react/core";
 
 const AgreementModal = () => {
   const [modalStep, setModalStep] = useState(1);

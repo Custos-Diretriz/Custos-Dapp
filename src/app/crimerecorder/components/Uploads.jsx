@@ -6,9 +6,11 @@ import { WalletContext } from "@/components/walletprovider";
 import Image from "next/image";
 import { ClipboardIcon } from "@heroicons/react/outline"; // Optional: Icon for Share button
 import { useNotification } from "@/context/NotificationProvider";
+import { useAccount } from "@starknet-react/core";
 
 const Uploads = () => {
-  const { address } = useContext(WalletContext);
+  const {connectorData} = useContext(WalletContext);
+
   const [uploadedFiles, setUploadedFiles] = useState([]);
   const [fileData, setFileData] = useState([]);
   const [loading, setLoading] = useState(false);
@@ -20,7 +22,7 @@ const Uploads = () => {
   const Retrieve = async () => {
     setLoading(true);
     try {
-      const result = await fetchData("crime", "get_all_user_uploads", [address]);
+      const result = await fetchData("crime", "get_all_user_uploads", [connectorData?.account]);
 
       const files =
         result && typeof result === "object"
@@ -40,8 +42,8 @@ const Uploads = () => {
   };
 
   useEffect(() => {
-    if (address) Retrieve();
-  }, [address]);
+    if (connectorData?.account) Retrieve();
+  }, [connectorData?.account]);
 
   useEffect(() => {
     const userUploads = async () => {
@@ -167,7 +169,7 @@ const Uploads = () => {
   return (
     <div className="min-h-screen relative">
       {loading && (
-        <div className="fixed inset-0 z-50 bg-gradient-to-r bg-opacity-70 flex items-center justify-center">
+        <div className="fixed inset-0 z-30 bg-gradient-to-r bg-opacity-70 flex items-center justify-center">
           <div className="flex flex-col items-center">
             <Image src="/logo.svg" alt="Loading" width={100} height={100} />
             <p className="text-white mt-4 text-lg">

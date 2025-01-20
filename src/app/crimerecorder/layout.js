@@ -1,20 +1,14 @@
 "use client";
-import { useState, useEffect, useContext } from "react"; 
+import { useState, useEffect } from "react"; 
 import { FiX } from "react-icons/fi"; 
 import "../globals.css";
-import Footer from "@/components/footer";
-import Metadata from "../metadata";
-import BackgroundWrapper from "@/components/backgroundwrapper";
 
 import Sidepane from "@/components/dapps/sidepane";
 import Header from "@/components/dapps/header";
 import Image from 'next/image';
-import { WalletContext } from "@/components/walletprovider"; // Import WalletContext
-import AgreementNav from "../agreement/components/AgreementNav";
 
 export default function RootLayout({ children }) {
   const [isSidepaneOpen, setSidepaneOpen] = useState(false); // State to toggle sidepane
-  const { address, signMessage } = useContext(WalletContext); // Access address and signMessage from WalletContext
 
   // Function to toggle sidepane visibility
   const toggleSidepane = (e) => {
