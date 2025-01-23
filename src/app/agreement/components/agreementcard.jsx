@@ -11,7 +11,8 @@ import { byteArrayToString, hexTimestampToFormattedDate, numberToHex, padAddress
 import { WalletContext } from "@/components/walletprovider";
 import { useNotification } from "@/context/NotificationProvider";
 import { provider, UseWriteToContract } from "@/utils/fetchcontract";
-
+import jsPDF from 'jspdf';
+import html2canvas from 'html2canvas';
 
 const detectContentFormat = (content) => {
   if (content.startsWith("<") || content.includes("<html ")) {
@@ -36,6 +37,42 @@ const renderContent = (content) => {
   }
 };
 
+const downloadAgreementAsPDF = async (agreement) => {
+  // Create a temporary div to hold the content
+  const content = document.createElement('div');
+  content.className = 'p-4';
+  content.innerHTML = `
+    <div class="relative">
+      <!-- Watermark -->
+      <div class="absolute inset-0 opacity-20 -z-10">
+        <img src="../../../../public/CustosLogo.png" class="w-full h-full object-contain" alt="Custos Logo Watermark" />
+      </div>
+      <!-- Agreement Content -->
+      <h1 class="text-2xl font-bold">${agreement.title}</h1>
+      <p class="text-sm">Second Party Address: ${agreement.second_party_address}</p>
+      <p class="text-sm">Created by: ${agreement.creatorName}</p>
+      <p class="text-sm">${byteArrayToString(agreement.content)}</p>
+    </div>
+  `;
+
+  // Append the content to the body (temporarily)
+  document.body.appendChild(content);
+
+  // Convert the content to a canvas
+  const canvas = await html2canvas(content);
+  const imgData = canvas.toDataURL('image/png');
+
+  // Generate PDF
+  const pdf = new jsPDF('p', 'mm', 'a4'); // A4 size
+  const imgWidth = 210; // A4 width in mm
+  const imgHeight = (canvas.height * imgWidth) / canvas.width; // Maintain aspect ratio
+  pdf.addImage(imgData, 'PNG', 0, 0, imgWidth, imgHeight);
+  pdf.save(`${agreement.title}.pdf`);
+
+  // Remove the temporary content
+  document.body.removeChild(content);
+};
+
 export const AgreementCard = ({
   agreement,
   printAgreement,
@@ -51,7 +88,10 @@ export const AgreementCard = ({
 
   const { writeToContract, isLoading, isError } = UseWriteToContract();
 
-
+  const handleDownloadPDF = (e) => {
+    e.stopPropagation(); // Prevent card click event from firing
+    downloadAgreementAsPDF(agreement);
+  };
 
 
   const handleCardClick = () => {
@@ -183,10 +223,17 @@ export const AgreementCard = ({
               <img
                 src="./PrintAgreement.png"
                 width={"80%"}
-                alt="C"
+                alt="Print"
               />
             </div>
           </button>
+
+          <button
+          onClick={handleDownloadPDF}
+          className="w-fit px-4 py-2 text-white rounded-[2em] border-slate-800 shadow-lg transform hover:scale-105 transition-transform duration-300 border-gradient2 bg-opacity-50 backdrop-filter backdrop-blur-lg flex items-center justify-center relative text-[0.8em]"
+        >
+          Download PDF
+        </button>
 
           {padAddress(numberToHex(agreement.creator)) !== address ? (
             <button
