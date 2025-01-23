@@ -91,15 +91,46 @@ function AgreementList() {
     }
   }, [address]);
 
+  // const printAgreement = (agreement) => {
+  //   const printContent = `
+  //     <h1>${agreement.title}</h1>
+  //     <p>Second Party Address: ${agreement.secondPartyAddress}</p>
+  //     <p>Created by  : ${agreement.creatorName}</p>
+  //     <p>${agreement.content}</p>
+  //   `;
+  //   const printWindow = window.open("", "", "width=800,height=600");
+  //   printWindow.document.write(printContent);
+  //   printWindow.document.close();
+  //   printWindow.print();
+  // };
+
   const printAgreement = (agreement) => {
     const printContent = `
-      <h1>${agreement.title}</h1>
-      <p>Second Party Address: ${agreement.secondPartyAddress}</p>
-      <p>Created by  : ${agreement.creatorName}</p>
-      <p>${agreement.content}</p>
+      <div class="relative">
+        <!-- Watermark -->
+        <div class="absolute inset-0 opacity-20 -z-10">
+          <img src="/path/to/custos-logo.png" class="w-full h-full object-contain" alt="Custos Logo Watermark" />
+        </div>
+        <!-- Agreement Content -->
+        <h1 class="text-2xl font-bold">${agreement.title}</h1>
+        <p class="text-sm">Second Party Address: ${agreement.second_party_address}</p>
+        <p class="text-sm">Created by: ${agreement.creatorName}</p>
+        <p class="text-sm">${byteArrayToString(agreement.content)}</p>
+      </div>
     `;
+  
     const printWindow = window.open("", "", "width=800,height=600");
-    printWindow.document.write(printContent);
+    printWindow.document.write(`
+      <html>
+        <head>
+          <title>${agreement.title}</title>
+          <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+        </head>
+        <body class="p-4">
+          ${printContent}
+        </body>
+      </html>
+    `);
     printWindow.document.close();
     printWindow.print();
   };
