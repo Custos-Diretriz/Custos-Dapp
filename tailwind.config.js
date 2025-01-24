@@ -10,6 +10,7 @@ const {
 module.exports = {
   darkMode: "class", // Enable dark mode using the class strategy
   content: [
+    "./src/**/*.{js,jsx,ts,tsx,mdx}",
     "./src/pages/**/*.{js,ts,jsx,tsx,mdx}",
     "./src/components/**/*.{js,ts,jsx,tsx,mdx}",
     "./src/app/**/*.{js,ts,jsx,tsx,mdx}",
