@@ -10,24 +10,24 @@ const Sidepane = ({ isOpen, onClose }) => {
 
   const navLinks = [
     {
-      href: "/",
-      text: "Home",
-      icon: "",
-    },
-    {
       href: "/agreement/create",
-      text: "Agreement",
-      icon: "/Plus.svg",
-    },
-    {
-      href: "/",
-      text: "Company",
-      icon: "",
+      text: "Agreements",
+      icon: "/agreements.png",
     },
     {
       href: "/crimerecorder/record",
       text: "Videos",
-      icon: "/cameraicon.svg",
+      icon: "/videos.png",
+    },
+    {
+      href: "/images",
+      text: "Images",
+      icon: "/imagesicon.png",
+    },
+    {
+      href: "/settings",
+      text: "Settings",
+      icon: "/settings.png",
     },
   ];
 
@@ -73,11 +73,13 @@ const Sidepane = ({ isOpen, onClose }) => {
                   className="transition-opacity hover:opacity-80 pr-4"
                 />
               </Link>
+              {/* 
               <Image
                 src="/solar_minimize-square-minimalistic-linear.png"
                 width={25}
                 height={25}
               />
+              */}
             </div>
           )}
 
@@ -121,16 +123,18 @@ const Sidepane = ({ isOpen, onClose }) => {
 
                   {/* Desktop layout */}
                   <div className="hidden md:flex items-center justify-between w-full p-2">
-                    <span className="font-medium text-lg">{link.text}</span>
-                    {link.icon && (
+                  {link.icon && (
                       <Image
                         src={link.icon}
                         alt=""
-                        width={20}
-                        height={20}
+                        width={55}
+                        height={55}
                         className="transition-transform group-hover:scale-110"
                       />
                     )}
+                    
+                    <span className="font-medium text-lg text-left flex-1">{link.text}</span>
+                    
                   </div>
 
                   {/* Active- Desktop indicator */}
@@ -138,8 +142,13 @@ const Sidepane = ({ isOpen, onClose }) => {
                     <div className="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-8 bg-[#00A3FF] rounded-r hidden md:block" />
                   )}
                 </button>
+
+                
               );
             })}
+            <div className="hidden md:block flex justify-center items-center mt-16">
+            <ConnectButtoncomponent />
+            </div>
 
             {/* Connect Wallet Button - Mobile */}
             <div className="md:hidden flex justify-center">
