@@ -1,3 +1,11 @@
+const defaultTheme = require("tailwindcss/defaultTheme");
+const colors = require("tailwindcss/colors");
+const {
+  default: flattenColorPalette,
+} = require("tailwindcss/lib/util/flattenColorPalette");
+
+
+
 /** @type {import('tailwindcss').Config} */
 module.exports = {
   darkMode: "class", // Enable dark mode using the class strategy
@@ -22,5 +30,16 @@ module.exports = {
   plugins: [
     require("tailwindcss-border-gradient-radius"),
     require("daisyui"), // Ensure the plugin is placed correctly
+    addVariablesForColors
   ],
 };
+function addVariablesForColors({ addBase, theme }: any) {
+  let allColors = flattenColorPalette(theme("colors"));
+  let newVars = Object.fromEntries(
+    Object.entries(allColors).map(([key, val]) => [`--${key}`, val])
+  );
+ 
+  addBase({
+    ":root": newVars,
+  });
+}
