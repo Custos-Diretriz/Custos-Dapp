@@ -14,6 +14,12 @@
   font-optical-sizing: auto;
   font-style: normal;
 }
+*{
+  outline:none;
+  border:none;
+  border-width: none;
+  -webkit-appearance:none;
+}
 
 .kanit-thin {
   font-family: "Kanit", sans-serif;
@@ -154,7 +160,6 @@
   background: linear-gradient(90deg, #0094ff 0%, #a02294 100%);
   -webkit-mask: linear-gradient(#0C1215 0 0) content-box, linear-gradient(#0C1215 0 0);
   mask: linear-gradient(#0C1215 0 0) content-box, linear-gradient(#0C1215 0 0);
-  -webkit-mask-composite: destination-out; /* For Safari */
   mask-composite: destination-out; /* For other browsers */
 }
 .border-gradient2 {
@@ -382,13 +387,24 @@ button .text-transparent {
   transform: translateY(20vh);
   visibility: 1;
   transition: opacity 2s ease-out, transform 1s ease-out,
-    visibility 1200ms ease-out;
+  visibility 1200ms ease-out;
   will-change: opacity, transform, visibility;
 }
+
+@media not all and (min-resolution: 0.001dpcm) {
+  @supports (-webkit-appearance: none) {
+    * {
+      border: none !important;
+      outline: none !important;
+    }
+  }
+}
+
 .fade-in-section.is-visible {
   opacity: 1;
   transform: none;
   visibility: visible;
+
 }
 /* HTML: <div class="box"><sh></sh> </div> */
 .box {
@@ -423,13 +439,29 @@ button .text-transparent {
   position: absolute;
   padding: 2px;
   inset: calc(0px - 0px - 0px);
-  border: calc(0px + 1px + 0px) solid #1f85ad;
+  border-style: calc(0px + 1px + 0px) solid #1f85ad;
   border-radius: 100px;
   -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
   -webkit-mask-composite: xor;
   mask-composite: exclude;
   transform: translateZ(-1px);
   pointer-events: none;
+}
+@media not all and (min-resolution: 0.001dpcm) {
+  @supports (-webkit-appearance: none) {
+    .box-btn .sh-btn {
+      border: transparent;
+     border-style: calc(0px + 1px + 0px) solid #1f85ad;
+      border-radius: 0px;
+      border-top-width: 0px;
+      border-bottom-width: 0px;
+      border-top-left-radius: 0px;
+      border-top-right-radius: 0px;
+      border-bottom-right-radius: 0px;
+      border-bottom-right-radius: 0px;
+      
+    } 
+  }
 }
 .box-btn .sh-btn::before {
   content: "";
@@ -477,4 +509,54 @@ button .text-transparent {
 .scrollbar-hide {
   -ms-overflow-style: none; /* for Internet Explorer, Edge */
   scrollbar-width: none; /* for Firefox */
+}
+
+/* @supports (-webkit-appearance: none) {
+    border:none,
+  * {
+    border-radius: 12px !important; 
+  }
+} */
+
+.add-safari-border-color{
+  @supports (-webkit-appearance: none) {
+    border-width:0px;
+    border-color: transparent;
+    /* border-color: conic-gradient(from 90deg at 40% -25%, #a0229369, #0095ff60); */
+  * {
+    border-radius: none !important; 
+  }
+}
+}
+.remove-safari-border{
+  border-width:0;
+  border-color: transparent;
+}
+.remove-safari-border::-webkit-scrollbar{
+    border-width:0;
+    border-color: transparent;
+}
+
+@media not all and (min-resolution: 0.001dpcm){
+  @supports(-webkit-appearance:none){
+    .remove-border{
+      border:none;
+      outline:none;
+    }
+  }
+}
+
+
+@media not all and (min-resolution: 0.001dpcm) {
+  @supports (-webkit-appearance: none) {
+    .box-btn .sh-btn {
+  content: "";
+  border-radius: none; /* Match the border radius of the card */
+  padding: 0px; /* Adjust the width of the border */
+  background: linear-gradient(90deg, #0094ff 0%, #a02294 100%);
+  -webkit-mask: linear-gradient(#0C1215 0 0) content-box, linear-gradient(#0C1215 0 0);
+  mask: linear-gradient(#0C1215 0 0) content-box, linear-gradient(#0C1215 0 0);
+  mask-composite: destination-out; /* For other browsers */
+    } 
+  }
 }

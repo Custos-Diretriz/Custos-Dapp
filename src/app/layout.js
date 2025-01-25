@@ -39,14 +39,16 @@ export default function RootLayout({ children }) {
         {Metadata.link}
         <link rel="icon" href='/favicon.png' />
       </head>
-      <body className="flex flex-col min-h-screen justify-between">
+      <body className="flex flex-col border-none min-h-screen justify-between">
         <BackgroundWrapper>
           <NotificationProvider>
             <WalletProvider>
               <ModalProvider>
                 <div className="w-full flex flex-col justify-between">
-                  <div className="min-h-screen w-full ">
-                    <GlobalStateProvider>{children}</GlobalStateProvider>
+                  <div className="min-h-screen w-full remove-safari-border">
+                    <GlobalStateProvider>
+                      {children}
+                    </GlobalStateProvider>
                   </div>
                   <div className="h-fit">
                     <Footer />

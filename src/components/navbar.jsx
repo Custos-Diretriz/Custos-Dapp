@@ -14,7 +14,7 @@ import {
 import { AiOutlineMenu, AiOutlineClose } from "react-icons/ai";
 import ConnectButtoncomponent from "./connect";
 
-const Navbar = () => {
+const   Navbar = () => {
   const [showLaunchDapps, setShowLaunchDapps] = useState(false);
   const [showCompany, setShowCompany] = useState(false);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
