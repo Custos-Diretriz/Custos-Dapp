@@ -23,24 +23,27 @@ import {
   fetchAccountCompatibility,
   fetchAccountsRewards,
   fetchGasTokenPrices,
-  SEPOLIA_BASE_URL,
+  // SEPOLIA_BASE_URL,
 } from "@avnu/gasless-sdk";
-import { byteArray, CallData } from "starknet";
+import { Account, byteArray, CallData, RpcProvider, Signer } from "starknet";
 import SuccessScreen from "./Success";
 import ErrorScreen from "./error";
 import Filename from "./nameModal";
 import Image from "next/image";
+import { publicProvider, useAccount } from "@starknet-react/core";
+import { accessListify } from "ethers";
 
 const NFT_STORAGE_TOKEN = process.env.NEXT_PUBLIC_IPFS_KEY;
+
 export const Recording = ({ text, icon1, imgText, category }) => {
   const [uri, setUri] = useState("");
   const { openModal, closeModal } = useModal();
-  const options = { baseUrl: SEPOLIA_BASE_URL };
+  const options = { baseUrl: "https://starknet.api.avnu.fi" };
   const calls = [
     {
       entrypoint: "crime_record",
       contractAddress:
-        "0x03cbefe95450dddc88638f7b23f34d83fc48b570e476d87a608c07724aaaa342",
+        "0x020bd5ec01c672e69e3ca74df376620a6be8a2b104ab70a9f0885be00dd38fb9",
       calldata: CallData.compile([
         byteArray?.byteArrayFromString(String(uri)),
         0,
@@ -49,14 +52,14 @@ export const Recording = ({ text, icon1, imgText, category }) => {
   ];
 
   const { openNotification } = useNotification();
-  const { account } = useContext(WalletContext);
+  const { connection: account, connectorData } = useContext(WalletContext);
   const { showModal, setShowModal } = useContext(GlobalStateContext);
   const [mediaRecorder, setMediaRecorder] = useState(null);
   const [mediaStream, setMediaStream] = useState(null);
   const videoRef = useRef(null);
   const canvasRef = useRef(null);
   const [recordedChunks, setRecordedChunks] = useState([]);
-  const [currentFacingMode, setCurrentFacingMode] = useState("environment");
+  const [facingMode, setFacingMode] = useState("environment");
   const [isRecording, setIsRecording] = useState(false);
   const [loading, setLoading] = useState(false);
   const [paymasterRewards, setPaymasterRewards] = useState([]);
@@ -76,93 +79,120 @@ export const Recording = ({ text, icon1, imgText, category }) => {
   const route = useRouter();
 
   useEffect(() => {
-    if (uri !== "") {
+    if (uri) {
       const calls = [
         {
           entrypoint: "crime_record",
           contractAddress:
             "0x020bd5ec01c672e69e3ca74df376620a6be8a2b104ab70a9f0885be00dd38fb9",
-          calldata: CallData.compile([
-            byteArray?.byteArrayFromString(String(uri)),
-            0,
-          ]),
+          calldata: CallData.compile([byteArray?.byteArrayFromString(String(uri)), 0]),
         },
       ];
-      callRef.current = JSON.stringify(calls, null, 2);
-    }
-  
-    const triggerWallet = async () => {
-      if (uri) {
+      callRef.current = calls;
+
+      const triggerTransaction = async () => {
+        setLoading(true);
         try {
-          setLoading(true);
-  
-          // API request
           const response = await fetch("/api/avnuhandler", {
             method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({
-              account,
-              calls: JSON.parse(callRef.current),
-              options,
-            }),
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({ account, calls }),
           });
-  
-          const data = await response.json();
-  
-          if (response.ok) {
-            console.log("Transaction successful:", data);
-            openNotification("success", "Transaction successful", "");
-            setLoading(false);
-            openModal("success");
-          } else {
-            console.error("Transaction failed:", data.error);
-            openNotification("error", "Transaction failed", `${data.error}`);
-            setLoading(false);
-            openModal("error");
+
+          const result = await response.json();
+
+          if (!response.ok) {
+            throw new Error(result.error || "Transaction failed");
           }
+
+          console.log("Transaction successful:", result.transactionResponse);
+          openNotification("success", "Transaction successful", "");
+          openModal("success");
         } catch (error) {
           console.error("Transaction failed:", error);
-          openNotification("error", "Transaction failed", `${error}`);
-          setLoading(false);
+          openNotification("error", "Transaction failed", error.message);
           openModal("error");
+        } finally {
+          setLoading(false);
         }
-      }
-    };
-  
-    if (uri !== "") triggerWallet();
-  }, [uri]);
-  
+      };
 
-
-  async function sendUriToBackend(uri) {
-    const data = "place holder";
-    setLoading(true);
-    try {
-      const response = await fetch("https://custosbackend.onrender.com/agreement/crime_recorder/push/", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ uri , data}),
-      });
-  
-      if (!response.ok) {
-        throw new Error(`Failed to send data to backend: ${response.statusText}`);
-      }
-  
-      const result = await response.json();
-      setLoading(false)
-      console.log("Backend response:", result);
-    } catch (error)
-     {
-      setLoading(false)
-      console.error("Error sending data to backend:", error);
+      triggerTransaction();
     }
-  }
-  
+  }, [uri]);
+
+  // const triggerTransaction = async () => {
+  //   try {
+  //     if (uri) {
+  //       await sendUriToBackend(uri); // Send data to the backend
+  //       openNotification(
+  //         "info",
+  //         "Wallet not connected",
+  //         "Data sent to backend for processing"
+  //       );
+  //     }
+  //   } catch (error) {
+  //     openNotification("error", "Transaction failed", `${error}`);
+  //   }
+  // };
+
+  // if (uri) {
+  //   if (account && account.address) {
+  //     triggerWallet();
+  //   } else {
+  //     // triggerTransaction();
+
+  //       openNotification("error", "Transaction failed", `${error}`);
+  //       setLoading(false);
+  //       openModal("error");
+
+  //   }
+  // }
+
+  // Function to send data to the backend
+  // async function sendUriToBackend(uri) {
+  //   const data = "place holder";
+  //   setLoading(true);
+  //   try {
+  //     const response = await fetch("https://custosbackend.onrender.com/agreement/crime_recorder/push/", {
+  //       method: "POST",
+  //       headers: {
+  //         "Content-Type": "application/json",
+  //       },
+  //       body: JSON.stringify({ uri , data}),
+  //     });
+
+  //     if (!response.ok) {
+  //       throw new Error(`Failed to send data to backend: ${response.statusText}`);
+  //     }
+
+  //     const result = await response.json();
+  //     setLoading(false)
+  //     console.log("Backend response:", result);
+  //   } catch (error)
+  //    {
+  //     setLoading(false)
+  //     console.error("Error sending data to backend:", error);
+  //   }
+  // }
 
   useEffect(() => {
-    fetchGasTokenPrices({ baseUrl: SEPOLIA_BASE_URL }).then(setGasTokenPrices);
+    if (!account) return;
+    fetchAccountCompatibility(account.address, options).then(
+      setGaslessCompatibility
+    );
+    fetchAccountsRewards(account.address, {
+      ...options,
+      protocol: "gasless-sdk",
+    }).then(setPaymasterRewards);
+  }, [account]);
+
+  useEffect(() => {
+    console.log(options);
+
+    fetchGasTokenPrices(options).then(setGasTokenPrices);
   }, []);
 
   useEffect(() => {
@@ -209,14 +239,19 @@ export const Recording = ({ text, icon1, imgText, category }) => {
       const permissions = await navigator.permissions.query({ name: "camera" });
       console.log("Camera permission status:", permissions.state);
       if (permissions.state === "denied") {
-        alert("Camera permissions are denied. Please allow access in your browser settings.");
+        alert(
+          "Camera permissions are denied. Please allow access in your browser settings."
+        );
       }
     } catch (error) {
       openModal("error");
-      console.warn("Permissions API not supported in this browser:", error.message);
+      console.warn(
+        "Permissions API not supported in this browser:",
+        error.message
+      );
     }
   };
-  
+
   const startCamera = async () => {
     checkPermissions();
     try {
@@ -247,7 +282,6 @@ export const Recording = ({ text, icon1, imgText, category }) => {
       console.log("Camera stopped successfully.");
     }
   };
-  
 
   const startRecording = async () => {
     await startCamera();
@@ -298,28 +332,73 @@ export const Recording = ({ text, icon1, imgText, category }) => {
     setUploadModalOpen(true); // Open modal for filename input after picture is taken
   };
 
-  const switchCamera = async () => {
-    setIsClicked((prev) => {
-      return !prev;
-    });
-    setCurrentFacingMode((prev) => (prev === "user" ? "environment" : "user"));
-    if (isRecording) {
-      mediaRecorder.pause();
+  const checkCameraSupport = () => {
+    if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+      alert("Camera access is not supported in your browser. Please update to a modern browser.");
+      return false;
     }
-    stopCamera();
-    await startCamera();
-    if (isRecording) {
-      mediaRecorder.resume();
-    }
+    return true;
   };
+   // Switch camera facing mode
+  const switchCamera = async () => {
+  if (!checkCameraSupport()) return;
+
+  try {
+    const newMode = facingMode === "user" ? "environment" : "user";
+    console.log("Switching to:", newMode);
+
+    // Stop the current video tracks if available but don't stop the recorder
+    if (mediaStream) {
+      mediaStream.getVideoTracks().forEach((track) => track.stop());
+    }
+
+    // Get a new stream with the desired facing mode
+    const newStream = await navigator.mediaDevices.getUserMedia({
+      video: { facingMode: newMode },
+    });
+
+    // Set the new stream to the video element and update the facing mode
+    setMediaStream(newStream);
+    setFacingMode(newMode);
+    if (videoRef.current) {
+      videoRef.current.srcObject = newStream;
+    }
+
+    // Reattach the new stream to the recorder without stopping it
+    if (mediaRecorder && mediaRecorder.state === "recording") {
+      mediaRecorder.stream = newStream;
+    }
+
+    console.log("Switched to:", newMode);
+  } catch (error) {
+    console.error("Error switching camera:", error.message);
+    alert(`Error switching camera: ${error.message}`);
+  }
+};
+
+
+
 
   async function uploadToIPFS(fileBlob, fileName) {
     const formData = new FormData();
     formData.append("file", fileBlob, fileName);
     setLoading(true);
     try {
+      console.log("account is ", account, typeof account);
+
+      // Check if the wallet is connected
+      if (!account) {
+        console.error(
+          "Wallet not connected. Cannot associate file with account."
+        );
+        setLoading(false);
+        setErrorMessage("Transaction failed: Wallet not connected");
+        openModal("error");
+        // setErrorModalOpen(true);
+        return;
+      }
       console.log("Uploading file:", fileName); // Log the file name
-  
+
       const response = await fetch(
         "https://api.pinata.cloud/pinning/pinFileToIPFS",
         {
@@ -330,34 +409,35 @@ export const Recording = ({ text, icon1, imgText, category }) => {
           body: formData,
         }
       );
-  
+
       // Handle response
       if (!response.ok) {
         throw new Error(
           `Failed to upload file to IPFS: ${response.status} ${response.statusText}`
         );
       }
-  
+
       const data = await response.json();
       const ipfsHash = data.IpfsHash; // Access the IPFS hash from the response
-  
+
       console.log("IPFS Hash:", ipfsHash);
-  
+      // Store the IPFS hash locally for the current user
+
       // Store the IPFS hash locally
       localStorage.setItem("uri", ipfsHash);
       setUri(ipfsHash);
-  
+
       console.log("File uploaded successfully and data saved!");
     } catch (error) {
       console.error("Error uploading file:", error);
       setLoading(false);
       setErrorMessage("Error uploading file");
       openModal("error");
+      // setErrorModalOpen(true);
     } finally {
       setLoading(false); // Ensure loading state is reset
     }
   }
-  
 
   const handleStopMedia = async () => {
     if (category === "video") {
@@ -418,14 +498,16 @@ export const Recording = ({ text, icon1, imgText, category }) => {
               backgroundColor: "#1e2f37",
               backgroundImage: `url(${bg.src})`,
               backgroundSize: "contain",
-            }}>
+            }}
+          >
             <div id="vid-recorder" className="w-full">
               <video
                 ref={videoRef}
                 autoPlay
                 muted
                 id="web-cam-container"
-                className="rounded-xl mb-6 w-full">
+                className="rounded-xl mb-6 w-full"
+              >
                 Your browser doesn&apos;t support the video tag
               </video>
               <canvas ref={canvasRef} style={{ display: "none" }}></canvas>
@@ -437,7 +519,8 @@ export const Recording = ({ text, icon1, imgText, category }) => {
                     ? "switch-camera-button clicked"
                     : "switch-camera-button"
                 }
-                onClick={switchCamera}>
+                onClick={switchCamera}
+              >
                 <Icons
                   icon={icon3}
                   text={`Switch Camera`}
