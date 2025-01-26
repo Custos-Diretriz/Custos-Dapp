@@ -12,6 +12,9 @@ import SuccessScreen from "../components/Success";
 import SignaturePad from "react-signature-canvas";
 import { base64ToImageFile } from "@/utils/serializer";
 import { useAccount } from "@starknet-react/core";
+import "react-quill/dist/quill.snow.css";
+import ReactQuill from "react-quill";
+
 
 const AgreementModal = () => {
   const [modalStep, setModalStep] = useState(1);
@@ -246,16 +249,38 @@ const AgreementModal = () => {
         return (
           <>
             <h1 className="text-white text-[1.2em]">Agreement Content</h1>
-            <div className="text-white flex flex-col">
-              <textarea
-                id="content"
-                name="content"
-                placeholder="Write or Paste the Content of Your Agreement Here"
+            <div>
+            <ReactQuill
                 value={content}
-                onChange={(e) => setContent(e.target.value)}
-                className="mt-1 focus:outline-none w-full border-[#BEBDBD] focus-visible:top-10 focus:border-[#19B1D2] active:border-[#0094FF] px-2 py-3 rounded-md bg-transparent border shadow-sm text-white sm:text-sm"
-                rows="10"
-                cols="50"
+                onChange={(value) => setContent(value)}
+                placeholder="Write or Paste the Content of Your Agreement Here"
+                modules={{
+                  toolbar: [
+                    ["bold", "italic", "underline", "strike"],
+                    [{ list: "ordered" }, { list: "bullet" }],
+                    ["link", "blockquote", "code-block"],
+                    [{ align: [] }],
+                    ["clean"],
+                  ],
+                }}
+                formats={[
+                  "bold",
+                  "italic",
+                  "underline",
+                  "strike",
+                  "list",
+                  "bullet",
+                  "link",
+                  "blockquote",
+                  "code-block",
+                  "align",
+                ]}
+                style={{
+                  height: "190px",
+                  width: "440px",
+                  marginBottom: "60px",
+                  borderRadius: "50px", // Adjust the value for desired roundness
+                }}
               />
             </div>
           </>
