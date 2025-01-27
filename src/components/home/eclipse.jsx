@@ -6,10 +6,12 @@ const Shape = () => {
     <div className="h-[14em] mb-16 mx-auto ">
       {/* <div className="shape"></div> */}
       <div className="eclipse-container ">
-        <img
-          src="./ecllipse.png"
+        <Image
+          src="/ecllipse.png"
           alt="Eclipse Image"
           className="eclipse w-[40%] max-md-[600px]:w-[65%]"
+          width={500}
+          height={300}
         />
       </div>
     </div>

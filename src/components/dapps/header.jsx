@@ -3,6 +3,7 @@ import { FaBars, FaTimes } from "react-icons/fa";
 import ConnectButtoncomponent from "@/components/connect";
 import { UseReadContractData } from "@/utils/fetchcontract";
 import NotificationsDropdown from "@/app/agreement/components/notificationsDropdown";
+import Image from 'next/image';
 
 export const Header = ({ onToggle }) => {
   const [isOpen, setIsOpen] = useState(false);
@@ -53,7 +54,7 @@ export const Header = ({ onToggle }) => {
       {/* Logo on the left */}
       <div className="flex items-center md:hidden">
         <a href="/">
-          <img src="/logo.png" alt="Logo" width={250} height={250} />
+          <Image src="/logo.png" alt="Logo" width={250} height={250} />
         </a>
       </div>
 
@@ -69,7 +70,7 @@ export const Header = ({ onToggle }) => {
             className="w-full pl-10 pr-4 py-2 bg-[#1E1E1E] text-white border border-gray-600 rounded-full focus:outline-none focus:border-[#00A3FF]"
           />
           <div className="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
-            <img src="/search-normal.svg" alt="Search" className="w-5 h-5" />
+            <Image src="/search-normal.svg" alt="Search" width={24} height={24} />
           </div>
         </div>
 
@@ -79,7 +80,7 @@ export const Header = ({ onToggle }) => {
             onClick={toggleDarkMode}
             className="text-white hidden md:block"
           >
-            <img src="/darkmodeicon.svg" alt="Dark Mode" className="w-5 h-5" />
+            <Image src="/darkmodeicon.svg" alt="Dark Mode" width={24} height={24} />
           </button>
           {/* Notification  Bell*/}
           <button
@@ -88,8 +89,9 @@ export const Header = ({ onToggle }) => {
             }`}
             onClick={() => showNotificationDropDowm(!notificationDropDowm)}
           >
-            <img src="/bell.svg" alt="Notifications" className="w-5 h-5" />
-            <div className="rounded-full flex items-center justify-center w-[2em] h-[1em] text-[10px] bg-red-500 absolute">
+            <Image src="/bell.svg" alt="Bell" width={24} height={24} />
+            <div className="rounded-full flex items-center justify-center w-[2em] h-[1em] text-[10px] bg-red-500 absolute"
+            width={24} height={24}>
               5
             </div>
           </button>

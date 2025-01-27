@@ -60,7 +60,7 @@ export const WalletProvider = ({ children }) => {
       }
     };
     starknetConnect();
-  }, []);
+  }, [openNotification]);
 
   const connectWallet = async () => {
     const { wallet } = await connect({

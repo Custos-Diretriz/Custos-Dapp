@@ -16,7 +16,7 @@ function ConnectButtoncomponent({ open }) {
   useEffect(() => {
     console.log("connected account; ", address);
     setConnected(wallet);
-  }, [wallet, connected]);
+  }, [wallet, connected, address]);
 
   const handleConnect = async () => {
     console.log("Attempting to connect wallet...");

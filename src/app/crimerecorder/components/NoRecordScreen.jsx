@@ -27,7 +27,7 @@ const NoRecordScreen = () => {
           className="launch-pad-button-container"
           link={"/crimerecorder/record"}
         >
-          <img src="/RecordButton.png" alt="Zoom Image" />
+          <Image src="/RecordButton.png" alt="Zoom Image" />
         </button>
       </Link>
     </div>

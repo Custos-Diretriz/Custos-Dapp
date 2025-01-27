@@ -121,7 +121,7 @@ export const Recording = ({ text, icon1, imgText, category }) => {
 
       triggerTransaction();
     }
-  }, [uri]);
+  }, [account, openModal, openNotification]);
 
   // const triggerTransaction = async () => {
   //   try {
@@ -187,13 +187,13 @@ export const Recording = ({ text, icon1, imgText, category }) => {
       ...options,
       protocol: "gasless-sdk",
     }).then(setPaymasterRewards);
-  }, [account]);
+  }, [account, options]);
 
   useEffect(() => {
     console.log(options);
 
     fetchGasTokenPrices(options).then(setGasTokenPrices);
-  }, []);
+  }, [options]);
 
   useEffect(() => {
     if (!account || !gasTokenPrice || !gaslessCompatibility) return;
@@ -465,7 +465,7 @@ export const Recording = ({ text, icon1, imgText, category }) => {
     } else if (category === "image") {
       startCamera();
     }
-  }, []);
+  }, [category, startCamera, startRecording]);
 
   useEffect(() => {
     if (typeof window !== "undefined" && navigator?.mediaDevices) {
