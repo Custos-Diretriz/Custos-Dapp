@@ -37,14 +37,15 @@ const Hero = () => {
     >
       <div className="flex flex-col sm:flex-row items-stretch justify-start h-full w-full">
         {/* Image Section */}
-        <div className="w-full sm:w-[55%] h-auto sm:h-full">
+        <div className="w-full sm:w-[50%] h-auto sm:h-full">
           <Image
             src={src}
             alt={title}
-            width={420} // Image width will be 55% of the card width on larger screens
+            width={388} // Image width will be 55% of the card width on larger screens
             height={380}
             objectFit="cover"
-            className="rounded-t-[20px] sm:rounded-l-[20px] sm:rounded-tr-none sm:rounded-b-none w-full h-full"
+            className="will-change-auto rounded-t-[20px] sm:rounded-l-[20px] sm:rounded-tr-none sm:rounded-b-none w-full h-full"
+
           />
         </div>
   
@@ -150,7 +151,7 @@ const Hero = () => {
                     description={card.description}
                     // Optional props for Card component to control width
                 cardWidth="md:w-[65%]" // Adjust width for medium screens and up
-                cardMaxWidth="420px" // Set a maximum width for responsiveness
+                cardMaxWidth="350px" // Set a maximum width for responsiveness
                   />
                 ))}
               </div>

@@ -9,7 +9,7 @@ const BackgroundWrapper = ({ children }) => {
       <div
         style={{
           backgroundImage: "url('/Rectangle.png')",
-          backgroundSize: "cover",
+          backgroundSize: "cover", // Ensures it covers the entire screen
           backgroundRepeat: "repeat",
           backgroundAttachment: "fixed",
           position: "fixed",
