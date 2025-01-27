@@ -1,165 +1,90 @@
-import Image from "next/image";
+"use client";
+import { cn } from "@/lib/utils";
 import Link from "next/link";
-import React from "react";
-import { usePathname, useRouter } from "next/navigation";
-import ConnectButtoncomponent from "@/components/connect";
+import Image from "next/image";
+import React, { useState } from "react";
+import { Sidebar, SidebarBody, SidebarLink } from "./sidebar";
 
-const Sidepane = ({ isOpen, onClose }) => {
-  const pathname = usePathname();
-  const router = useRouter();
+const Sidepane = () => {
+  const [open, setOpen] = useState(false);
 
   const navLinks = [
     {
       href: "/agreement/create",
-      text: "Agreements",
-      icon: "/agreements.png",
+      label: "Agreements",
+      icon: (
+        <div className="relative w-full h-full">
+          <Image 
+            src="/agreements.png" 
+            alt="" 
+            fill
+            className="object-contain"
+          />
+        </div>
+      ),
+      labelClassName: "text-base",
     },
     {
       href: "/crimerecorder/record",
-      text: "Videos",
-      icon: "/videos.png",
+      label: "Videos",
+      icon: (
+        <div className="relative w-full h-full">
+          <Image 
+            src="/videos.png" 
+            alt="" 
+            fill
+            className="object-contain"
+          />
+        </div>
+      ),
+      labelClassName: "text-base",
     },
     {
       href: "/images",
-      text: "Images",
-      icon: "/imagesicon.png",
+      label: "Images",
+      icon: (
+        <div className="relative w-full h-full">
+          <Image 
+            src="/imagesicon.png" 
+            alt="" 
+            fill
+            className="object-contain"
+          />
+        </div>
+      ),
+      labelClassName: "text-base",
     },
     {
       href: "/settings",
-      text: "Settings",
-      icon: "/settings.png",
+      label: "Settings",
+      icon: (
+        <div className="relative w-full h-full">
+          <Image 
+            src="/settings.png" 
+            alt="" 
+            fill
+            className="object-contain"
+          />
+        </div>
+      ),
+      labelClassName: "text-base",
     },
   ];
 
-  const handleNavigation = (href) => {
-    router.push(href); // Navigate to the target route
-    onClose(); // Close the sidepane after navigation
-  };
-
   return (
-    <>
-      {/* Mobile overlay */}
-      {isOpen && (
-        <div
-          className="fixed inset-0 z-30 md:hidden bg-black bg-opacity-50"
-          onClick={onClose}
-        />
-      )}
-
-      {/* Sidebar */}
-      <div
-        className={`fixed md:sticky top-0 left-0 h-screen w-full md:w-[300px] flex flex-col
-          md:bg-gradient-to-b from-[#04080C] to-[#09131A] md:backdrop-filter
-          backdrop-blur-xl md:backdrop-blur-none
-          bg-white/5  z-50
-          transition-all duration-300 ease-in-out 
-          ${isOpen ? "translate-x-0" : "-translate-x-full md:translate-x-0"}`}
-      >
-        <div className="absolute inset-0 md:hidden bg-gradient-to-b from-[#04080C] to-[#09131A] opacity-100 " />
-
-        <div className="relative flex flex-col h-full p-8">
-          {/* Logo */}
-          {isOpen ? (
-            ""
-          ) : (
-            <div className="w-full flex justify-center md:justify-start mb-16">
-              <Link href="/" className="w-auto">
-                <Image
-                  src="/logo.png"
-                  alt="logo"
-                  width={232.7}
-                  height={22}
-                  priority
-                  className="transition-opacity hover:opacity-80 pr-4"
-                />
-              </Link>
-              {/* 
-              <Image
-                src="/solar_minimize-square-minimalistic-linear.png"
-                width={25}
-                height={25}
-              />
-              */}
-            </div>
-          )}
-
-          {/* Navlinks */}
-          <div
-            className={`flex flex-col gap-6 justify-center ${
-              isOpen ? "mt-6" : ""
-            }`}
-          >
-            {navLinks.map((link, index) => {
-              const isActive = pathname === link.href;
-              return (
-                <button
-                  key={index}
-                  onClick={() => handleNavigation(link.href)}
-                  className={`group relative ${
-                    isActive
-                      ? "text-[#00A3FF]"
-                      : "text-white hover:text-[#00A3FF]"
-                  }`}
-                >
-                  {/* Mobile layout */}
-                  <div className="md:hidden">
-                    <div
-                      className={`flex items-center justify-center p-4 rounded-xl`}
-                    >
-                      <span className="font-medium text-lg">{link.text}</span>
-                      {link.icon && (
-                        <div className="p-2 rounded-lg">
-                          <Image
-                            src={link.icon}
-                            alt=""
-                            width={24}
-                            height={24}
-                            className="transition-transform group-hover:scale-110"
-                          />
-                        </div>
-                      )}
-                    </div>
-                  </div>
-
-                  {/* Desktop layout */}
-                  <div className="hidden md:flex items-center justify-between w-full p-2">
-                  {link.icon && (
-                      <Image
-                        src={link.icon}
-                        alt=""
-                        width={55}
-                        height={55}
-                        className="transition-transform group-hover:scale-110"
-                      />
-                    )}
-                    
-                    <span className="font-medium text-lg text-left flex-1">{link.text}</span>
-                    
-                  </div>
-
-                  {/* Active- Desktop indicator */}
-                  {isActive && (
-                    <div className="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-8 bg-[#00A3FF] rounded-r hidden md:block" />
-                  )}
-                </button>
-
-                
-              );
-            })}
-            <div className="hidden md:block flex justify-center items-center mt-16">
-            <ConnectButtoncomponent />
-            </div>
-
-            {/* Connect Wallet Button - Mobile */}
-            <div className="md:hidden flex justify-center">
-              <div className="p-4 rounded-x">
-                <ConnectButtoncomponent />
-              </div>
+    <Sidebar open={open} setOpen={setOpen}>
+      <SidebarBody>
+        <div className="flex flex-col gap-4">
+          <div className="flex-1 px-3">
+            <div className="space-y-4">
+              {navLinks.map((link) => (
+                <SidebarLink key={link.href} link={link} open={open} />
+              ))}
             </div>
           </div>
         </div>
-      </div>
-    </>
+      </SidebarBody>
+    </Sidebar>
   );
 };
 
