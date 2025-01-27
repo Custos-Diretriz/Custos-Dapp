@@ -11,18 +11,68 @@ const Hero = () => {
   const toggleLaunchDapps = () => {
     setShowLaunchDapps(!showLaunchDapps);
   };
+
   const closeModal = () => {
     setShowLaunchDapps(false);
   };
+
+  // Define cardsData array inside the Hero component
+  const cardsData = [
+    {
+      src: "/image_fx_3.png",
+      title: "Agreement documentation",
+      description: "Custos’ smart agreement management will secure your signed documents transparently.",
+    },
+  ];
+
+  const Card = ({ src, title, description }) => (
+    <div
+      className="transform transition-transform duration-300 hover:scale-110 hover:z-10 backdrop-filter backdrop-blur-[10px] bg-[#030D1B] shadow-lg rounded-lg w-full md:w-[780px] h-auto md:h-[380px] sm:w-full"
+      style={{
+        borderRadius: "20px",
+        border: "0.5px solid rgba(255, 255, 255, 0.1)",
+        margin: '0 auto',
+        // This controls the width of the card. You can adjust it for different breakpoints below.
+      }}
+    >
+      <div className="flex flex-col sm:flex-row items-stretch justify-start h-full w-full">
+        {/* Image Section */}
+        <div className="w-full sm:w-[55%] h-auto sm:h-full">
+          <Image
+            src={src}
+            alt={title}
+            width={420} // Image width will be 55% of the card width on larger screens
+            height={380}
+            objectFit="cover"
+            className="rounded-t-[20px] sm:rounded-l-[20px] sm:rounded-tr-none sm:rounded-b-none w-full h-full"
+          />
+        </div>
+  
+        {/* Text Section */}
+        <div className="flex flex-col justify-center items-center sm:items-start p-6 w-full sm:w-[45%] h-auto sm:h-full">
+          <div className="w-12 h-12 flex items-center justify-center bg-[#A02294] rounded-full mb-4 mx-auto sm:mx-0">
+            <img src="/star.png" alt="" className="w-6 h-6" />
+          </div>
+          <div className="font-bold text-lg sm:text-xl mb-2 bg-gradient-to-r from-[#0094FF] to-[#A02294] bg-clip-text text-transparent text-center sm:text-left">
+            {title}
+          </div>
+          <p className="text-gray-300 text-sm sm:text-base w-full sm:w-[90%] text-center sm:text-left">
+            {description}
+          </p>
+        </div>
+      </div>
+    </div>
+  );
+  
 
   return (
     <main
       className="flex items-center justify-center min-h-screen"
       style={{
-        backgroundImage: 'url("./patterns.png")', // Replace with your image path
+        backgroundImage: 'url("./patterns.png")',
         backgroundSize: "cover",
         backgroundPosition: "center",
-        backgroundAttachment: "fixed", // Optional: Keeps the background fixed while scrolling
+        backgroundAttachment: "fixed",
       }}
     >
       <div className="text-white py-20 mx-auto flex flex-col justify-center items-center w-full px-4">
@@ -49,142 +99,60 @@ const Hero = () => {
         </p>
 
         <div className="flex flex-col items-center gap-[1rem] mt-[2rem]">
-          {/* Wrapper for the entire section */}
           <TracingBeam>
-            {/* Section containing the first two cards */}
-            <div
-              className="flex flex-row w-full gap-6 justify-center"
-              style={{
-                borderRadius: "20px 0px 0px 0px",
-                border: "0.5px solid transparent",
-              }}
-            >
-              {/* First Card */}
-              <div
-                className="transform transition-transform duration-300 hover:scale-110 hover:z-10 backdrop-filter backdrop-blur-[10px] bg-[#030D1B] shadow-lg rounded-lg"
-                style={{
-                  width: "388px",
-                  height: "380px",
-                  borderRadius: "20px", // Added border radius
-                  border: "0.5px solid rgba(255, 255, 255, 0.1)", // Subtle border
-                }}
-              >
-                <div className="flex flex-col items-center h-full">
-                  {/* Image Section */}
-                  <div className="h-[70%] w-full">
-                    <Image
-                      src="/image_fx_ (1).png"
-                      alt="Card Image"
-                      layout="responsive"
-                      width={388}
-                      height={200} // 70% of 366px
-                      className="will-change-auto object-cover"
-                      style={{
-                        borderRadius: "20px", // Added border radius
-                      }}
-                    />
-                  </div>
-                  {/* Text Section */}
-                  <div className="flex flex-col items-center justify-center h-[30%] text-center">
-                    <div className="font-bold text-[1.2em] mb-2 bg-gradient-to-r from-[#0094FF] to-[#A02294] bg-clip-text text-transparent">
-                      Crime scene recorder
+            <div className="flex flex-wrap md:flex-row w-full gap-6 justify-center">
+              {/* First and Second Cards */}
+              {["/image_fx_ (1).png", "/image_fx_2.png"].map((src, index) => (
+                <div
+                  key={index}
+                  className="transform transition-transform duration-300 hover:scale-110 hover:z-10 backdrop-filter backdrop-blur-[10px] bg-[#030D1B] shadow-lg rounded-lg"
+                  style={{
+                    width: "388px",
+                    height: "380px",
+                    borderRadius: "20px",
+                    border: "0.5px solid rgba(255, 255, 255, 0.1)",
+                  }}
+                >
+                  <div className="flex flex-col items-center h-full">
+                    <div className="h-[70%] w-full">
+                      <Image
+                        src={src}
+                        alt="Card Image"
+                        layout="responsive"
+                        width={388}
+                        height={200}
+                        className="will-change-auto object-cover rounded-lg"
+                      />
                     </div>
-                    <p className="text-gray-700 text-[0.8em] w-[80%] bg-gradient-to-r from-[#EAF9FF] to-[#8E9A9A] bg-clip-text text-transparent">
-                      We are providing a decentralized crime recorder. Videos on
-                      Custos are transparent.
-                    </p>
-                  </div>
-                </div>
-              </div>
-
-              {/* Second Card */}
-              <div
-                className="transform transition-transform duration-300 hover:scale-110 hover:z-10 backdrop-filter backdrop-blur-[10px] bg-[#030D1B] shadow-lg rounded-lg"
-                style={{
-                  width: "388px",
-                  height: "380px",
-                  borderRadius: "20px", // Added border radius
-                  border: "0.5px solid rgba(255, 255, 255, 0.1)", // Subtle border
-                }}
-              >
-                <div className="flex flex-col items-center h-full">
-                  {/* Image Section */}
-                  <div className="h-[70%] w-full">
-                    <Image
-                      src="/image_fx_2.png"
-                      alt="Card Image"
-                      layout="responsive"
-                      width={388}
-                      height={200} // 70% of 366px
-                      className="will-change-auto object-cover"
-                      style={{
-                        borderRadius: "20px", // Added border radius
-                      }}
-                    />
-                  </div>
-                  {/* Text Section */}
-                  <div className="flex flex-col items-center justify-center h-[30%] text-center">
-                    <div className="font-bold text-[1.2em] mb-2 bg-gradient-to-r from-[#0094FF] to-[#A02294] bg-clip-text text-transparent">
-                      A very secure blockchain safe
+                    <div className="flex flex-col items-center justify-center h-[30%] text-center">
+                      <div className="font-bold text-[1.2em] mb-2 bg-gradient-to-r from-[#0094FF] to-[#A02294] bg-clip-text text-transparent">
+                        {index === 0
+                          ? "Crime scene recorder"
+                          : "A very secure blockchain safe"}
+                      </div>
+                      <p className="text-gray-700 text-[0.8em] w-[80%] bg-gradient-to-r from-[#EAF9FF] to-[#8E9A9A] bg-clip-text text-transparent">
+                        {index === 0
+                          ? "We are providing a decentralized crime recorder. Videos on Custos are transparent."
+                          : "Leveraging Starknet’s advanced technology for unparalleled security, we built a safe for agreements and videos."}
+                      </p>
                     </div>
-                    <p className="text-gray-700 text-[0.8em] w-[80%] bg-gradient-to-r from-[#EAF9FF] to-[#8E9A9A] bg-clip-text text-transparent">
-                      Leveraging on Starknet’s advanced technology for
-                      unparalleled security and efficiency, we have built a safe
-                      for your agreement and videos.
-                    </p>
                   </div>
                 </div>
-              </div>
-            </div>
+              ))}
 
-            {/* Wrapper for the third card */}
-            <div
-              className="w-[800px] mt-[1rem] rounded-[20px] bg-[#030D1B] flex justify-center items-center"
-              style={{ border: "0.5px solid transparent" }}
-            >
-              <div
-                className="transform transition-transform duration-300 hover:scale-110 backdrop-filter backdrop-blur-[10px] bg-[#030D1B] shadow-lg rounded-[20px] flex flex-col lg:flex-row items-center justify-between w-full h-full"
-                style={{
-                  borderRadius: "20px",
-                  border: "0.5px solid transparent",
-                }}
-              >
-                {/* Left Section: Text and Image */}
-                <div className="flex flex-col h-full justify-center items-start w-full lg:w-[60%] text-center lg:text-left bg-[#030D1B] px-6">
-                  {" "}
-                  {/* Added px-6 for equal distance */}
-                  {/* Image Section */}
-                  <div className="mb-3">
-                    {" "}
-                    {/* Optional margin for spacing between the image and title */}
-                    <img
-                      src="/star.png"
-                      alt="Icon"
-                      className="w-10 h-10 mx-auto lg:mx-0 mb-3"
-                    />
-                  </div>
-                  {/* Title Section */}
-                  <div className="font-bold text-[1.4em] mb-2 bg-gradient-to-r from-[#0094FF] to-[#A02294] bg-clip-text text-transparent">
-                    Agreement documentation
-                  </div>
-                  {/* Text Section */}
-                  <p className="text-gray-300 text-[0.8em] w-full sm:w-[80%] lg:w-[90%] m-auto text-center lg:text-left">
-                    Custos’ smart agreement management will secure your signed
-                    documents transparently.
-                  </p>
-                </div>
-
-                {/* Right Section: Image */}
-                <div className="h-full w-[45%]">
-                  <Image
-                    src="/image_fx_ 3.png"
-                    alt="Card Image"
-                    width={450}
-                    height={366}
-                    objectFit="cover"
-                    className="rounded-[20px]"
+              {/* Third Card */}
+              <div className="flex justify-center w-full mt-6">
+                {cardsData.map((card, index) => (
+                  <Card
+                    key={index}
+                    src={card.src}
+                    title={card.title}
+                    description={card.description}
+                    // Optional props for Card component to control width
+                cardWidth="md:w-[65%]" // Adjust width for medium screens and up
+                cardMaxWidth="420px" // Set a maximum width for responsiveness
                   />
-                </div>
+                ))}
               </div>
             </div>
           </TracingBeam>
