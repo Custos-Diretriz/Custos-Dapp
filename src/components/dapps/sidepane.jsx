@@ -13,14 +13,20 @@ const Sidepane = () => {
       href: "/agreement/create",
       label: "Agreements",
       icon: (
-        <div className="relative w-full h-full">
-          <Image 
-            src="/agreements.png" 
-            alt="" 
-            fill
-            className="object-contain"
-          />
-        </div>
+        <Image 
+          src="/agree.svg" 
+          alt="" 
+          fill
+          className="object-contain"
+        />
+      ),
+      activeIcon: (
+        <Image 
+          src="/agreemSelected.svg" 
+          alt="" 
+          fill
+          className="object-contain"
+        />
       ),
       labelClassName: "text-base",
     },
@@ -30,7 +36,17 @@ const Sidepane = () => {
       icon: (
         <div className="relative w-full h-full">
           <Image 
-            src="/videos.png" 
+            src="/video.svg" 
+            alt="" 
+            fill
+            className="object-contain"
+          />
+        </div>
+      ),
+      activeIcon: (
+        <div className="relative w-full h-full">
+          <Image 
+            src="/videoSelected.svg" 
             alt="" 
             fill
             className="object-contain"
@@ -45,7 +61,17 @@ const Sidepane = () => {
       icon: (
         <div className="relative w-full h-full">
           <Image 
-            src="/imagesicon.png" 
+            src="/image.svg" 
+            alt="" 
+            fill
+            className="object-contain"
+          />
+        </div>
+      ),
+      activeIcon: (
+        <div className="relative w-full h-full">
+          <Image 
+            src="/imageSelected.svg" 
             alt="" 
             fill
             className="object-contain"
@@ -60,7 +86,17 @@ const Sidepane = () => {
       icon: (
         <div className="relative w-full h-full">
           <Image 
-            src="/settings.png" 
+            src="/setting.svg" 
+            alt="" 
+            fill
+            className="object-contain"
+          />
+        </div>
+      ),
+      activeIcon: (
+        <div className="relative w-full h-full">
+          <Image 
+            src="/settingSelected.svg" 
             alt="" 
             fill
             className="object-contain"
@@ -74,9 +110,12 @@ const Sidepane = () => {
   return (
     <Sidebar open={open} setOpen={setOpen}>
       <SidebarBody>
-        <div className="flex flex-col gap-4">
-          <div className="flex-1 px-3">
-            <div className="space-y-4">
+        <div className="flex flex-col gap-10">
+          <div className="flex-1 px-3 pt-8">
+            <div className={cn(
+              "space-y-10 flex flex-col",
+              !open && "items-center"
+            )}>
               {navLinks.map((link) => (
                 <SidebarLink key={link.href} link={link} open={open} />
               ))}
