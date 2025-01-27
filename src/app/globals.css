@@ -281,6 +281,7 @@ button .text-transparent {
   }
 }
 
+
 .animate-star {
   animation: star-move 5s linear infinite;
 }
@@ -478,3 +479,4 @@ button .text-transparent {
   -ms-overflow-style: none; /* for Internet Explorer, Edge */
   scrollbar-width: none; /* for Firefox */
 }
+
