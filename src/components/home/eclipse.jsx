@@ -3,7 +3,7 @@ import Image from 'next/image';
 
 const Shape = () => {
   return (
-    <div className="h-[14em] mb-16 mx-auto ">
+    <div className=" ">
       {/* <div className="shape"></div> */}
       <div className="eclipse-container ">
         <img
