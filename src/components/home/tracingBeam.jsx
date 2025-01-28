@@ -1,4 +1,5 @@
 "use client";
+
 import React, { useEffect, useRef, useState } from "react";
 import { motion, useTransform, useScroll, useSpring } from "framer-motion";
 import { cn } from "@/utils/cn";
@@ -17,7 +18,7 @@ export const TracingBeam = ({ children, className }) => {
     if (contentRef.current) {
       setSvgHeight(contentRef.current.offsetHeight);
     }
-  }, []);
+  }, [contentRef]);
 
   // Control the y1 and y2 properties of the gradient based on scroll progress
   const y1 = useSpring(useTransform(scrollYProgress, [0, 0.2], [50, svgHeight]), {
@@ -29,7 +30,7 @@ export const TracingBeam = ({ children, className }) => {
     { stiffness: 500, damping: 90 }
   );
 
-  // Trigger path movement based on scroll
+  // Control path opacity
   const pathOpacity = useTransform(scrollYProgress, [0, 0.2, 0.8, 1], [0, 1, 1, 0]);
 
   return (
@@ -37,29 +38,8 @@ export const TracingBeam = ({ children, className }) => {
       ref={ref}
       className={cn("relative w-full max-w-4xl mx-auto h-full", className)}
     >
+      {/* Trace Beam */}
       <div className="absolute -left-4 md:-left-20 top-3">
-        <motion.div
-          className="ml-[27px] h-4 w-4 rounded-full border border-neutral-200 shadow-sm flex items-center justify-center"
-          animate={{
-            boxShadow: scrollYProgress.get() > 0
-              ? "none"
-              : "rgba(0, 0, 0, 0.24) 0px 3px 8px",
-          }}
-          transition={{ duration: 0.2, delay: 0.5 }}
-        >
-          <motion.div
-            className="h-2 w-2 rounded-full border border-neutral-300 bg-white"
-            animate={{
-              backgroundColor: scrollYProgress.get() > 0
-                ? "white"
-                : "var(--emerald-500)",
-              borderColor: scrollYProgress.get() > 0
-                ? "white"
-                : "var(--emerald-600)",
-            }}
-            transition={{ duration: 0.2, delay: 0.5 }}
-          />
-        </motion.div>
         <svg
           viewBox={`0 0 20 ${svgHeight}`}
           width="20"
@@ -67,12 +47,14 @@ export const TracingBeam = ({ children, className }) => {
           className="ml-4 block"
           aria-hidden="true"
         >
+          {/* Static Beam Path */}
           <motion.path
             d={`M 1 0V -36 l 18 24 V ${svgHeight * 0.8} l -18 24V ${svgHeight}`}
             fill="none"
             stroke="#9091A0"
             strokeOpacity="0.16"
           />
+          {/* Animated Gradient Beam */}
           <motion.path
             d={`M 1 0V -36 l 18 24 V ${svgHeight * 0.8} l -18 24V ${svgHeight}`}
             fill="none"
@@ -81,6 +63,7 @@ export const TracingBeam = ({ children, className }) => {
             strokeOpacity={pathOpacity}
             className="motion-reduce:hidden"
           />
+          {/* Gradient Definition */}
           <defs>
             <motion.linearGradient
               id="gradient"
@@ -98,6 +81,8 @@ export const TracingBeam = ({ children, className }) => {
           </defs>
         </svg>
       </div>
+
+      
       <div ref={contentRef}>{children}</div>
     </motion.div>
   );

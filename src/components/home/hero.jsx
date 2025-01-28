@@ -37,7 +37,7 @@ const Hero = () => {
     >
       <div className="flex flex-col sm:flex-row items-stretch justify-start h-full w-full">
         {/* Image Section */}
-        <div className="w-full sm:w-[50%] h-auto sm:h-full">
+        <div className="w-full sm:w-[45%] h-auto sm:h-full">
           <Image
             src={src}
             alt={title}

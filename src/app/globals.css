@@ -480,3 +480,37 @@ button .text-transparent {
   scrollbar-width: none; /* for Firefox */
 }
 
+.header-animation {
+  transform: translateY(-50px);
+  opacity: 0;
+  transition: all 0.8s ease-in-out;
+}
+.section.in-view .header-animation {
+  transform: translateY(0);
+  opacity: 1;
+}
+
+.content {
+  transform: translateY(50px);
+  opacity: 0;
+  transition: all 0.8s ease-in-out;
+}
+.section.in-view .content {
+  transform: translateY(0);
+  opacity: 1;
+}
+
+
+.section:not(.in-view) .content {
+  opacity: 0;
+  transform: translateY(50px);
+  transition: all 0.5s ease-in-out;
+}
+.section .in-view-header {
+  animation: slideInFromTop 1s ease-in-out;
+}
+
+.section .in-view img {
+  animation: fadeInFromBottom 1s ease-in-out;
+}
+
