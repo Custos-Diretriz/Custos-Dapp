@@ -1,10 +1,11 @@
 /** @type {import('tailwindcss').Config} */
 module.exports = {
-  darkMode: "class", // Enable dark mode using the class strategy
+  darkMode: ["class"],
   content: [
-    "./src/pages/**/*.{js,ts,jsx,tsx,mdx}",
-    "./src/components/**/*.{js,ts,jsx,tsx,mdx}",
-    "./src/app/**/*.{js,ts,jsx,tsx,mdx}",
+    './pages/**/*.{ts,tsx,js,jsx}',
+    './components/**/*.{ts,tsx,js,jsx}',
+    './app/**/*.{ts,tsx,js,jsx}',
+    './src/**/*.{ts,tsx,js,jsx}',
   ],
   theme: {
     extend: {
@@ -17,6 +18,15 @@ module.exports = {
         "max-md": { max: "768px" },
         "max-sm": { max: "640px" },
       },
+      fontFamily: {
+        sans: ['var(--font-outfit)'],
+      },
+      fontSize: {
+        'h6': ['14px', {
+          lineHeight: '20px',
+          fontWeight: '400',
+        }],
+      }
     },
   },
   plugins: [

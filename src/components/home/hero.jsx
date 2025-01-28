@@ -24,10 +24,12 @@ const Hero = () => {
         <div onClick={toggleLaunchDapps} className=" flex w-fit h-fit">
           <button className="relative br w-full text-white shadow-lg py-3 px-6 transform hover:scale-105 transition-transform duration-300 border-gradient bg-opacity-50  backdrop-filter backdrop-blur-lg flex items-center justify-center ">
             <span className="flex items-center">Launch Custos Dapp</span>
-            <img
+            <Image
               src="/star.png"
               className="absolute w-6 h-8 z-20 animate-star"
               alt="Star Icon"
+              width={100} 
+              height={100}
             />
           </button>
         </div>
@@ -77,7 +79,7 @@ const Hero = () => {
                   A very secure blockchain safe
                 </div>
                 <p className="text-gray-700 text-[0.8em] w-[80%] m-auto text-center items-center justify-center bg-gradient-to-r from-[#EAF9FF] to-[#8E9A9A] bg-clip-text text-transparent">
-                  Leveraging on Starknet’s advanced technology for unparalleled
+                  Leveraging on Starknet's advanced technology for unparalleled
                   security and efficiency, we have built a safe for your
                   agreement and videos.
                 </p>
@@ -104,7 +106,7 @@ const Hero = () => {
                   Agreement documentation
                 </div>
                 <p className="text-gray-700 text-[0.8em] w-[80%] m-auto text-center items-center justify-center bg-gradient-to-r from-[#EAF9FF] to-[#8E9A9A] bg-clip-text text-transparent">
-                  Custos’ smart agreement management will secure your signed
+                  Custos' smart agreement management will secure your signed
                   documents transparently
                 </p>
               </div>

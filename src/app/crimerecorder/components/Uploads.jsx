@@ -105,7 +105,7 @@ const Uploads = () => {
     };
 
     if (uploadedFiles.length) userUploads();
-  }, [uploadedFiles]);
+  }, [uploadedFiles, NFT_STORAGE_TOKEN, fetchData]);
 
   const isImageFile = (fileName) => /\.(jpg|jpeg|png|gif|bmp)$/i.test(fileName);
   const isVideoFile = (fileName) => /\.(mp4|webm|ogg|mov)$/i.test(fileName);
@@ -206,9 +206,11 @@ const Uploads = () => {
                 className="relative text-sm whitespace-nowrap mb-2 sm:mb-0 bg-transparent rounded-lg backdrop-blur-lg p-10 shadow-lg"
               >
                 {isImageFile(file.filename) ? (
-                  <img
+                  <Image
                     src={`https://gateway.pinata.cloud/ipfs/${file.uri}`}
                     alt={file.filename}
+                    width={500}
+                    height={300}
                     className="w-full h-auto rounded"
                   />
                 ) : isVideoFile(file.filename) ? (

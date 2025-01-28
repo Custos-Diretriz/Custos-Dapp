@@ -180,7 +180,7 @@ export const AgreementCard = ({
             }}
           >
             <div className="button-transition">
-              <img
+              <Image
                 src="./PrintAgreement.png"
                 width={"80%"}
                 alt="C"
@@ -311,7 +311,7 @@ export const PendingAgreementCard = ({
             }}
           >
             <div className="button-transition">
-              <img
+              <Image
                 src="./PrintAgreement.png"
                 width={"80%"}
                 alt="Connect Wallet"

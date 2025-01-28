@@ -68,15 +68,17 @@ const InstallPWA = () => {
         console.log("Before install prompt available");
     }
 
+    const dependency = isBrowser; // Extrae la expresión a una variable
+
     useEffect(() => {
-        if (isBrowser()) {
+        if (dependency()) {
             window.addEventListener("beforeinstallprompt", handleBeforePromptInstall);
         }
 
         return () => {
-            if (isBrowser()) window.removeEventListener("beforeinstallprompt", handleBeforePromptInstall)
+            if (dependency()) window.removeEventListener("beforeinstallprompt", handleBeforePromptInstall)
         }
-    }, [isBrowser()]);
+    }, [dependency]); // Usa la variable en el array de dependencias
 
     useEffect(() => {
         setShowInstallContainer(installable);

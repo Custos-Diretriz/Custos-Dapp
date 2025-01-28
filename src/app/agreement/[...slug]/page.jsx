@@ -35,15 +35,18 @@ const AgreementSlug = ({ params }, agreementparam) => {
   useEffect(() => {
     if (key === "access_token") {
       setAccessToken(value || params?.agreementAccessToken);
-
       fetchAgreementByAccessToken(value);
     } else if (key == "onchain") {
-      console.log("here at last");
       getOnchainAgreement(value);
     } else {
       fetchAgreementById(value);
     }
-  }, [key, value]);
+  }, [key, value, fetchAgreementByAccessToken, fetchAgreementById, getOnchainAgreement, params?.agreementAccessToken]);
+
+  useEffect(() => {
+    fetchData();
+    openNotification();
+  }, [fetchData, openNotification]);
 
   const fetchAgreementById = async (agreementId) => {
     // console.log(agreementId);

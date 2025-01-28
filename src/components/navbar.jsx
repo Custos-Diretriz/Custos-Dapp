@@ -181,7 +181,7 @@ const Navbar = () => {
                               className="text-white z-[100] hover:bg-[#015A9B] rounded-lg w-full items-center p-2 bg-base-200"
                             >
                               <p className="flex sm:text-xl gap-4 sm:gap-6 h-full font-semibold text-white ">
-                                <img
+                                <Image
                                   src="/about.svg"
                                   alt="about"
                                   className="rounded-lg h-fit p-1 w-[2em]"
@@ -199,7 +199,7 @@ const Navbar = () => {
                               className="text-white z-[100] hover:bg-[#015A9B] rounded-lg w-full items-center p-2 bg-base-200"
                             >
                               <p className="flex sm:text-xl gap-4 sm:gap-6 h-full font-semibold text-white ">
-                                <img
+                                <Image
                                   src="/careers.svg"
                                   alt="careers"
                                   className="rounded-lg h-fit w-[2em]"
@@ -217,7 +217,7 @@ const Navbar = () => {
                               className="text-white z-[100] hover:bg-[#015A9B] rounded-lg w-full items-center p-2 bg-base-200"
                             >
                               <p className="flex sm:text-xl gap-4 sm:gap-6 h-full font-semibold text-white ">
-                                <img
+                                <Image
                                   src="/call.svg"
                                   alt="call"
                                   className="rounded-lg h-fit w-[2em]"
@@ -353,7 +353,7 @@ const Navbar = () => {
                 className="text-white z-[100] hover:bg-[#015A9B] rounded-lg w-full items-center p-2"
               >
                 <p className="flex sm:text-xl gap-4 sm:gap-6 h-full font-semibold text-white ">
-                  <img
+                  <Image
                     src="/about.svg"
                     alt="about"
                     className="rounded-lg h-fit p-1 w-[2em]"
@@ -372,7 +372,7 @@ const Navbar = () => {
                 className="text-white z-[100] hover:bg-[#015A9B] rounded-lg w-full items-center p-2"
               >
                 <p className="flex sm:text-xl gap-4 sm:gap-6 h-full font-semibold text-white ">
-                  <img
+                  <Image
                     src="/careers.svg"
                     alt="careers"
                     className="rounded-lg h-fit w-[2em]"
@@ -391,7 +391,7 @@ const Navbar = () => {
                 className="text-white z-[100] hover:bg-[#015A9B] rounded-lg w-full items-center p-2"
               >
                 <p className="flex sm:text-xl gap-4 sm:gap-6 h-full font-semibold text-white ">
-                  <img
+                  <Image
                     src="/call.svg"
                     alt="call"
                     className="rounded-lg h-fit w-[2em]"
