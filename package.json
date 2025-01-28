@@ -38,6 +38,7 @@
     "react-markdown": "^9.0.1",
     "react-modal": "^3.16.1",
     "react-query": "^3.39.3",
+    "react-quill": "^2.0.0",
     "react-responsive": "^10.0.0",
     "react-signature-canvas": "^1.0.6",
     "react-signature-pad-wrapper": "^4.0.4",
@@ -48,6 +49,7 @@
     "starknetkit": "1.1.9",
     "tailwind-merge": "^2.5.2",
     "tailwindcss-border-gradient-radius": "^3.0.1",
+    "turndown": "^7.2.0",
     "urql": "^4.0.7",
     "uuid": "^10.0.0",
     "yarn": "^1.22.22"
