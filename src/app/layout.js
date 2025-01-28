@@ -16,7 +16,7 @@ export default function RootLayout({ children }) {
   //  const pathname = usePathname();
 
   // if (pathname.includes("/crimerecorder")) {
-  //   return (
+  //   return ( 
   //     <html lang="en">
   //       <head>
   //         <title>404 Not Found</title>

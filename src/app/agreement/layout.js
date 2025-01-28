@@ -2,15 +2,10 @@
 import { useState, useEffect, useContext } from "react"; 
 import { FiX } from "react-icons/fi"; 
 import "../globals.css";
-import Footer from "@/components/footer";
-import Metadata from "../metadata";
-import BackgroundWrapper from "@/components/backgroundwrapper";
 
 import Sidepane from "@/components/dapps/sidepane";
 import Header from "@/components/dapps/header";
 import Image from 'next/image';
-import { WalletContext } from "@/components/walletprovider"; // Import WalletContext
-
 export default function RootLayout({ children }) {
   const [isSidepaneOpen, setSidepaneOpen] = useState(false); // State to toggle sidepane
 
@@ -50,7 +45,8 @@ export default function RootLayout({ children }) {
             )}
           </button>
         </div>
-
+        <div className="flex items-center justify-center w-full">
+        </div>
         {/* Children Content */}
         <div className="flex flex-col p-3 w-full mb-10">{children}</div>
       </div>

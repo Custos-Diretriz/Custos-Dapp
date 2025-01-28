@@ -12,9 +12,26 @@ import SuccessScreen from "../components/Success";
 import SignaturePad from "react-signature-canvas";
 import { base64ToImageFile } from "@/utils/serializer";
 import { useAccount } from "@starknet-react/core";
+import Image from "next/image";
+
+// Stepper Config
+const stepperConfig = [
+  {
+    name: "Agreement Type",
+  },
+  {
+    name: "Agreement Content",
+  },
+  {
+    name: "Verify Identity",
+  },
+  {
+    name: "2nd party address",
+  },
+];
 
 const AgreementModal = () => {
-  const [modalStep, setModalStep] = useState(1);
+  const [modalStep, setModalStep] = useState(0);
   const [idNumber, setIdNumber] = useState("");
   const [agreementType, setAgreementType] = useState("");
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -37,8 +54,17 @@ const AgreementModal = () => {
   const [selectedCountry, setSelectedCountry] = useState("");
   const [dropdownVisible, setDropdownVisible] = useState(false);
 
+  const [selectedAgreement, setSelectedAgreement] = useState(null);
   const [errors, setErrors] = useState({});
   const { address } = useContext(WalletContext);
+  const [margins, setMargins] = useState({
+    marginLeft: "100px",
+    marginRight: "100px",
+  });
+
+  const handleAgreementSelection = (agreement) => {
+    setSelectedAgreement(agreement);
+  };
 
   // Fetch country list from API
   useEffect(() => {
@@ -172,7 +198,7 @@ const AgreementModal = () => {
 
   const renderStep = () => {
     switch (modalStep) {
-      case 1:
+      case 0:
         return (
           <div className="text-white flex flex-col items-center justify-center space-y-6 mb-8 ">
             <label
@@ -242,7 +268,7 @@ const AgreementModal = () => {
             </select>
           </div>
         );
-      case 2:
+      case 1:
         return (
           <>
             <h1 className="text-white text-[1.2em]">Agreement Content</h1>
@@ -260,8 +286,7 @@ const AgreementModal = () => {
             </div>
           </>
         );
-      case 3:
-        
+      case 2:
         return (
           <>
             <div className="text-white flex flex-col">
@@ -377,7 +402,7 @@ const AgreementModal = () => {
                 htmlFor="fullname"
                 className="font-[500] text-[1em] text-white"
               >
-                First Party FulNname
+                First Party FullNname
               </label>
               <input
                 type="text"
@@ -390,7 +415,7 @@ const AgreementModal = () => {
             </div>
           </>
         );
-      case 4:
+      case 3:
         return (
           <>
             <div className="mb-4">
@@ -466,100 +491,264 @@ const AgreementModal = () => {
     }
   };
 
-  return (
-    <div className="w-full px-4 flex flex-col gap-8 overflow-clip  justify-center items-center h-[80vh]">
-      <div className="rounded-2xl box border-gradien  p-6">
-        <div className="sh"></div>
-        <form className=" w-full space-y-5" onSubmit={handleSubmit}>
-          {modalStep > 1 && (
-            <button
-              type="button"
-              onClick={() => setModalStep(modalStep - 1)}
-              className="w-fit rounded-[2em] hover:text-[#A02294] items-center text-white font-bold justify-center flex"
-              disabled={modalStep === 1}
-            >
-              <FaArrowLeft className="mr-2" /> <p className="">Previous</p>
-            </button>
-          )}
-          <div className="w-full flex-col flex gap-4">
-            {errors.general && (
-              <span className="text-red-500">{errors.general}</span>
-            )}
-            {errors.second_party_address && (
-              <span className="text-red-500">
-                {"second_party_address: " + errors.second_party_address[0]}
-              </span>
-            )}
-            {errors.first_party_id_type && (
-              <span className="text-red-500">
-                {"first_party_id_type: " + errors.first_party_id_type[0]}
-              </span>
-            )}
-            {errors.country && (
-              <span className="text-red-500">
-                {"country: " + errors.country[0]}
-              </span>
-            )}
-            {errors.content && (
-              <span className="text-red-500">
-                {"content: " + errors.content[0]}
-              </span>
-            )}
-            {errors.agreementTitle && (
-              <span className="text-red-500">
-                {"agreement Title: " + errors.agreementTitle[0]}
-              </span>
-            )}
-            {errors.agreementType && (
-              <span className="text-red-500">
-                {"Agreement Type: " + errors.agreementType[0]}
-              </span>
-            )}
-          </div>
-          {renderStep()}
-          <div className="flex justify-between flex-row-reverse gap-8">
-            {modalStep !== 4 && (
-              <button
-                type="button"
-                onClick={() => setModalStep(modalStep + 1)}
-                className="bg-gradient-to-r from-[#19B1D2] to-[#0094FF] sm:w-[156px] w-full rounded-[2em] text-white font-bold py-2 px-4 border-gradient shadow-[0_0_0_1px_#0094FF,0_0_0_3px_rgba(28,167,214,0.41)] transition-transform transform hover:scale-105 active:shadow-none border-gradient"
-              >
-                Continue
-              </button>
-            )}
+  // Stepper Component
+  const Stepper = () => {
+    const [margins, setMargins] = useState({ marginLeft: 0, marginRight: 0 });
 
-            {modalStep == 4 && (
-              <button
-                type="submit"
-                className="bg-gradient-to-r from-[#19B1D2] to-[#0094FF] sm:w-[156px] w-full rounded-[2em] text-white font-bold py-2 px-4 border-gradient shadow-[0_0_0_1px_#0094FF,0_0_0_3px_rgba(28,167,214,0.41)] transition-transform transform hover:scale-105 active:shadow-none border-gradient"
-              >
-                {initCreationLoad ? "Creating" : "Create"}
-              </button>
-            )}
-            <button
-              type="button"
-              onClick={() => window.history.back()}
-              className="w-full rounded-[2em] sm:w-[156px] text-white font-bold py-2 px-6 border-[#9B9292] border bg-gradient-to-b from-[#04080C] to-[#09131A] shadow-[0_0_6px_1px_rgba(132,129,129,0.21),0_0_0_2px_rgba(132,129,129,0.16)] transition-transform transform hover:scale-105"
+    const stepRef = useRef([]);
+
+    useEffect(() => {
+      if (stepRef.current.length > 0) {
+        setMargins({
+          marginLeft: stepRef.current[0].offsetWidth / 2,
+          marginRight:
+            stepRef.current[stepperConfig.length - 1].offsetWidth / 2,
+        });
+      }
+    }, [stepperConfig]);
+    return (
+      <div className="relative w-full md:w-[55%] flex justify-between items-center mb-5">
+        {/* Circles */}
+        {stepperConfig.map((step, index) => (
+          <div
+            ref={(el) => (stepRef.current[index] = el)}
+            key={index}
+            className="flex flex-col items-center justify-center"
+            style={{ marginLeft: index !== 0 ? "20px" : "0" }}
+          >
+            <div
+              className={`w-7 h-7 rounded-full flex justify-center items-center mb-4 z-20 ${
+                modalStep > index
+                  ? "bg-[#0094FF] text-white"
+                  : modalStep === index
+                  ? "bg-transparent text-[#0094FF] border-[1px] border-[#0094FF]"
+                  : "bg-transparent text-white border-[1px] border-red"
+              }`}
             >
-              Cancel
-            </button>
+              {index + 1}
+            </div>
+            <div className="lg:block hidden text-sm text-[#EAFBFF] ">
+              {step.name}
+            </div>
           </div>
-        </form>
+        ))}
+
+        {/* Progress Bar */}
+        <div
+          className="progress-bar absolute top-[25%] left-0 h-[1px] "
+          style={{
+            width: `calc(100% - ${margins.marginLeft + margins.marginRight}px)`,
+            marginLeft: margins.marginLeft + 30,
+            marginRight: margins.marginRight,
+          }}
+        >
+          {stepperConfig.map((step, index) => (
+            <>
+              {index < stepperConfig.length - 1 && (
+                <div
+                  key={index}
+                  className={`progress-segment invisible lg:visible absolute top-0 h-full ${
+                    modalStep > index
+                      ? "bg-[#0094FF] transition-all duration-500 ease-in"
+                      : "bg-white"
+                  }`}
+                  style={{
+                    left: `${(index / (stepperConfig.length - 1)) * 100}%`,
+                    width: `${100 / (stepperConfig.length - 1) - 10}%`,
+                  }}
+                />
+              )}
+            </>
+          ))}
+        </div>
       </div>
+    );
+  };
 
-      <Modal
-        isOpen={isModalOpen}
-        onRequestClose={() => setIsModalOpen(false)}
-        className="flex items-center justify-center"
-        overlayClassName="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center"
-      >
-        <SuccessScreen
-          onClose={() => setIsModalOpen(false)}
-          isSuccess={true}
-          message={`Agreement between ${firstpartyFullname} and ${secondPartyFullname} Created Successfully`}
-        />
-      </Modal>
-    </div>
+  return (
+    <>
+      <div className="w-full px-4 flex flex-col gap-8 overflow-clip  justify-center items-center h-auto">
+        {/* Agreement Selection Section */}
+        {!selectedAgreement && (
+          <div className="w-full flex flex-row md:flex-col justify-center items-center text-center">
+            <h2 className="text-[#EAFBFF] text-[24px]">
+              Choose the Best Way to Create Your Agreement
+            </h2>
+            <div className="space-x-4 mt-8 flex">
+              <div
+                onClick={() => handleAgreementSelection("A")}
+                className="cursor-pointer"
+              >
+                <div
+                  className="w-[268px] h-[360px] bg-[radial-gradient(13.75%_27.94%_at_50%_50%,_rgba(39,_73,_98,_0.1)_0%,_rgba(45,_72,_92,_0.2)_100%)] 
+                rounded-[20px] flex flex-col items-center justify-center p-4 
+                border-[2px] border-[transparent] 
+                group transition-all duration-300 ease-in-out relative"
+                >
+                  <div className="w-[80px] h-[80px] z-30">
+                    <Image
+                      src="/template.svg"
+                      width={400}
+                      height={400}
+                      className="w-full h-full object-cover rounded-t-[20px]"
+                    />
+                  </div>
+                  <div className="flex z-20 flex-col justify-center items-center w-full h-[50%]  rounded-b-[20px] p-4">
+                    <p className="text-[#EAFBFF] text-[20px] font-[500] mb-2 mt-12">
+                      Start with a ready template
+                    </p>
+                    <p className="text-[#EAFBFF] text-[14px] font-[400]">
+                      Save time by customizing one of our ready-to-use agreement
+                      templates.
+                    </p>
+                  </div>
+                  <div className="group-hover:bg-[radial-gradient(13.75%_27.94%_at_50%_50%,_rgba(39,_73,_98,_0.2)_0%,_rgba(45,_72,_92,_0.4)_100%)] w-full h-full absolute inset-0 rounded-[20px] transition-all duration-300 ease-in-out"></div>
+                </div>
+              </div>
+
+              <div
+                onClick={() => handleAgreementSelection("B")}
+                className="cursor-pointer"
+              >
+                <div
+                  className="w-[268px] h-[360px] bg-[radial-gradient(13.75%_27.94%_at_50%_50%,_rgba(39,_73,_98,_0.1)_0%,_rgba(45,_72,_92,_0.2)_100%)] 
+                rounded-[20px] flex flex-col items-center justify-center p-4 
+                border-[2px] border-[transparent] 
+                group transition-all duration-300 ease-in-out relative"
+                >
+                  <div className="w-[80px] h-[80px] z-30">
+                    <Image
+                      src="/Notepen.svg"
+                      width={400}
+                      height={400}
+                      className="w-full h-full object-cover rounded-t-[20px]"
+                    />
+                  </div>
+                  <div className="flex z-20 flex-col justify-center items-center w-full h-[50%]  rounded-b-[20px] p-4">
+                    <p className="text-[#EAFBFF] text-[20px] font-[500] mt-12 mb-2">
+                      Build your agreement from scratch
+                    </p>
+                    <p className="text-[#EAFBFF] text-[14px] font-[400]">
+                      {" "}
+                      Create and customize every detail for a unique, tailored
+                      agreement
+                    </p>
+                  </div>
+                  <div className="group-hover:bg-[radial-gradient(13.75%_27.94%_at_50%_50%,_rgba(39,_73,_98,_0.2)_0%,_rgba(45,_72,_92,_0.4)_100%)] w-full h-full absolute inset-0 rounded-[20px] transition-all duration-300 ease-in-out"></div>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {selectedAgreement === "A" && (
+          <div className="w-full flex flex-col justify-center items-center text-center">
+            <h2 className="text-[#EAFBFF]">Agreement A is Not Ready</h2>
+            <p className="text-white">
+              You cannot proceed with this agreement at the moment.
+            </p>
+          </div>
+        )}
+
+        {selectedAgreement === "B" && (
+          <>
+            <Stepper />
+            <div className="rounded-2xl box border-gradien  p-6">
+              <div className="sh"></div>
+              <form className=" w-full space-y-5" onSubmit={handleSubmit}>
+                {modalStep > 1 && (
+                  <button
+                    type="button"
+                    onClick={() => setModalStep(modalStep - 1)}
+                    className="w-fit rounded-[2em] hover:text-[#A02294] items-center text-white font-bold justify-center flex"
+                    disabled={modalStep === 1}
+                  >
+                    <FaArrowLeft className="mr-2" />{" "}
+                    <p className="">Previous</p>
+                  </button>
+                )}
+                <div className="w-full flex-col flex gap-4">
+                  {errors.general && (
+                    <span className="text-red-500">{errors.general}</span>
+                  )}
+                  {errors.second_party_address && (
+                    <span className="text-red-500">
+                      {"second_party_address: " +
+                        errors.second_party_address[0]}
+                    </span>
+                  )}
+                  {errors.first_party_id_type && (
+                    <span className="text-red-500">
+                      {"first_party_id_type: " + errors.first_party_id_type[0]}
+                    </span>
+                  )}
+                  {errors.country && (
+                    <span className="text-red-500">
+                      {"country: " + errors.country[0]}
+                    </span>
+                  )}
+                  {errors.content && (
+                    <span className="text-red-500">
+                      {"content: " + errors.content[0]}
+                    </span>
+                  )}
+                  {errors.agreementTitle && (
+                    <span className="text-red-500">
+                      {"agreement Title: " + errors.agreementTitle[0]}
+                    </span>
+                  )}
+                  {errors.agreementType && (
+                    <span className="text-red-500">
+                      {"Agreement Type: " + errors.agreementType[0]}
+                    </span>
+                  )}
+                </div>
+                {renderStep()}
+                <div className="flex justify-between flex-row-reverse gap-8">
+                  {modalStep !== 3 && (
+                    <button
+                      type="button"
+                      onClick={() => setModalStep(modalStep + 1)}
+                      className="bg-gradient-to-r from-[#19B1D2] to-[#0094FF] sm:w-[156px] w-full rounded-[2em] text-white font-bold py-2 px-4 border-gradient shadow-[0_0_0_1px_#0094FF,0_0_0_3px_rgba(28,167,214,0.41)] transition-transform transform hover:scale-105 active:shadow-none border-gradient"
+                    >
+                      Continue
+                    </button>
+                  )}
+
+                  {modalStep == 3 && (
+                    <button
+                      type="submit"
+                      className="bg-gradient-to-r from-[#19B1D2] to-[#0094FF] sm:w-[156px] w-full rounded-[2em] text-white font-bold py-2 px-4 border-gradient shadow-[0_0_0_1px_#0094FF,0_0_0_3px_rgba(28,167,214,0.41)] transition-transform transform hover:scale-105 active:shadow-none border-gradient"
+                    >
+                      {initCreationLoad ? "Creating" : "Create"}
+                    </button>
+                  )}
+                  <button
+                    type="button"
+                    onClick={() => window.history.back()}
+                    className="w-full rounded-[2em] sm:w-[156px] text-white font-bold py-2 px-6 border-[#9B9292] border bg-gradient-to-b from-[#04080C] to-[#09131A] shadow-[0_0_6px_1px_rgba(132,129,129,0.21),0_0_0_2px_rgba(132,129,129,0.16)] transition-transform transform hover:scale-105"
+                  >
+                    Cancel
+                  </button>
+                </div>
+              </form>
+            </div>
+          </>
+        )}
+        <Modal
+          isOpen={isModalOpen}
+          onRequestClose={() => setIsModalOpen(false)}
+          className="flex items-center justify-center"
+          overlayClassName="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center"
+        >
+          <SuccessScreen
+            onClose={() => setIsModalOpen(false)}
+            isSuccess={true}
+            message={`Agreement between ${firstpartyFullname} and ${secondPartyFullname} Created Successfully`}
+          />
+        </Modal>
+      </div>
+    </>
   );
 };
 
