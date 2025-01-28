@@ -10,7 +10,7 @@
   background-size: contain;
   background-blend-mode: multiply;
   font-family: "Outfit", sans-serif;
-  background-color: #0C1215;
+  background-color: #0c1215;
   font-optical-sizing: auto;
   font-style: normal;
 }
@@ -152,8 +152,9 @@
   border-radius: inherit; /* Match the border radius of the card */
   padding: 0.47px; /* Adjust the width of the border */
   background: linear-gradient(90deg, #0094ff 0%, #a02294 100%);
-  -webkit-mask: linear-gradient(#0C1215 0 0) content-box, linear-gradient(#0C1215 0 0);
-  mask: linear-gradient(#0C1215 0 0) content-box, linear-gradient(#0C1215 0 0);
+  -webkit-mask: linear-gradient(#0c1215 0 0) content-box,
+    linear-gradient(#0c1215 0 0);
+  mask: linear-gradient(#0c1215 0 0) content-box, linear-gradient(#0c1215 0 0);
   -webkit-mask-composite: destination-out; /* For Safari */
   mask-composite: destination-out; /* For other browsers */
 }
@@ -174,8 +175,9 @@
   background: linear-gradient(90deg, #0094ff 0%, #a02294 100%);
 
   /* Masking the background so that the gradient appears only on the border */
-  -webkit-mask: linear-gradient(#0C1215 0 0) content-box, linear-gradient(#0C1215 0 0);
-  mask: linear-gradient(#0C1215 0 0) content-box, linear-gradient(#0C1215 0 0);
+  -webkit-mask: linear-gradient(#0c1215 0 0) content-box,
+    linear-gradient(#0c1215 0 0);
+  mask: linear-gradient(#0c1215 0 0) content-box, linear-gradient(#0c1215 0 0);
   mask-composite: exclude;
 }
 
@@ -477,4 +479,65 @@ button .text-transparent {
 .scrollbar-hide {
   -ms-overflow-style: none; /* for Internet Explorer, Edge */
   scrollbar-width: none; /* for Firefox */
+}
+
+/* Quill container and editor setup for a fixed size */
+.quill {
+  width: 100%; /* Adjust to your desired container width, or set to a fixed value like 600px */
+  max-width: 100%; /* Prevents it from expanding beyond the container */
+}
+
+.quill > .ql-container {
+  font-size: inherit;
+  border-radius: 0 0 5px 5px; /* Border radius for the container */
+  width: 100%; /* Ensures the width of the container spans the parent width */
+  height: 300px; /* Fixed height for the container, adjust as needed */
+  overflow: auto; /* Scrolls content if it exceeds the container height */
+}
+
+.quill > .ql-container > .ql-editor {
+  min-height: 50%; /* Ensures the editor takes up the entire container height */
+  overflow-y: auto; /* Scrolls content if it exceeds the height */
+  height: 100%; /* Ensures full use of the container's height */
+  color: #ffffff; /* Darker font color for better contrast */
+  font-family: "Arial", sans-serif; /* Optional: Choose a clean and bright font */
+  font-size: 16px; /* Optional: Adjust font size if needed */
+  line-height: 1.6;
+}
+
+/* Styling for the toolbar */
+.quill > .ql-toolbar {
+  border-radius: 5px 5px 0 0; /* Rounded corners for the toolbar */
+  width: 100%; /* Ensures the toolbar spans the entire width of the container */
+}
+
+.ql-toolbar.ql-snow .ql-picker-label {
+  color: inherit !important;
+  opacity: 0.76;
+}
+
+.ql-snow .ql-picker {
+  color: inherit !important;
+}
+
+.quill > .ql-container > .ql-editor.ql-blank::before {
+  font-style: inherit;
+  color: inherit;
+}
+
+.ql-snow.ql-toolbar button svg {
+  opacity: 0.76;
+  color: currentColor;
+}
+
+.ql-snow .ql-stroke {
+  stroke: currentColor !important;
+}
+
+.ql-snow .ql-fill {
+  fill: transparent !important;
+}
+
+.ql-picker-item {
+  color: #444 !important;
 }
