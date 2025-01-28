@@ -13,8 +13,9 @@ import SignaturePad from "react-signature-canvas";
 import { base64ToImageFile } from "@/utils/serializer";
 import { useAccount } from "@starknet-react/core";
 import "react-quill/dist/quill.snow.css";
-import ReactQuill from "react-quill";
-
+import TurndownService from "turndown";
+import dynamic from "next/dynamic";
+const ReactQuill = dynamic(() => import("react-quill"), { ssr: false });
 
 const AgreementModal = () => {
   const [modalStep, setModalStep] = useState(1);
@@ -42,6 +43,7 @@ const AgreementModal = () => {
 
   const [errors, setErrors] = useState({});
   const { address } = useContext(WalletContext);
+  const turndownService = new TurndownService();
 
   // Fetch country list from API
   useEffect(() => {
@@ -96,10 +98,12 @@ const AgreementModal = () => {
   // const creatoraddress = useAccount()?.address;
   const handleSubmit = async (event) => {
     event.preventDefault();
+    const markdown = turndownService.turndown(content);
+    const mergedContent = `<!-- HTML Content -->\n${content}\n\n<!-- Markdown Content -->\n${markdown}`;
 
     const formData = new FormData();
     formData.append("agreementType", agreementType);
-    formData.append("content", content);
+    formData.append("content", mergedContent);
     formData.append("country", searchTerm);
     formData.append("first_party_address", address);
     formData.append("first_party_id_type", idType);
@@ -250,7 +254,7 @@ const AgreementModal = () => {
           <>
             <h1 className="text-white text-[1.2em]">Agreement Content</h1>
             <div>
-            <ReactQuill
+              <ReactQuill
                 value={content}
                 onChange={(value) => setContent(value)}
                 placeholder="Write or Paste the Content of Your Agreement Here"
@@ -261,6 +265,7 @@ const AgreementModal = () => {
                     ["link", "blockquote", "code-block"],
                     [{ align: [] }],
                     ["clean"],
+                    [{ color: [] }, { background: [] }],
                   ],
                 }}
                 formats={[
@@ -274,19 +279,15 @@ const AgreementModal = () => {
                   "blockquote",
                   "code-block",
                   "align",
+                  "color",
+                  "background",
                 ]}
-                style={{
-                  height: "190px",
-                  width: "440px",
-                  marginBottom: "60px",
-                  borderRadius: "50px", // Adjust the value for desired roundness
-                }}
               />
             </div>
           </>
         );
+
       case 3:
-        
         return (
           <>
             <div className="text-white flex flex-col">

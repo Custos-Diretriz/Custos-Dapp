@@ -50,6 +50,7 @@
     "starknetkit": "1.1.9",
     "tailwind-merge": "^2.5.2",
     "tailwindcss-border-gradient-radius": "^3.0.1",
+    "turndown": "^7.2.0",
     "urql": "^4.0.7",
     "uuid": "^10.0.0",
     "yarn": "^1.22.22"
