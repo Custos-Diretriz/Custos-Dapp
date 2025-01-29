@@ -1,5 +1,6 @@
 import "./globals.css";
 import Footer from "@/components/footer";
+import "@rainbow-me/rainbowkit/styles.css";
 import Metadata from "./metadata";
 import BackgroundWrapper from "@/components/backgroundwrapper";
 import { WalletProvider } from "@/components/walletprovider";
@@ -8,9 +9,9 @@ import { NotificationProvider } from "@/context/NotificationProvider";
 import { GlobalStateProvider } from "@/context/GlobalStateProvider";
 
 // Add the manifest so that it can be injected at nextjs runtime.
-// NOTE: Removing this or moving this to the metadata.js file will not allow the 
+// NOTE: Removing this or moving this to the metadata.js file will not allow the
 // InstallPWA component to be loaded from the InstallPWA component.
-export const metadata = { ...Metadata, manifest: "/manifest.json" }
+export const metadata = { ...Metadata, manifest: "/manifest.json" };
 
 export default function RootLayout({ children }) {
   //  const pathname = usePathname();
@@ -37,7 +38,7 @@ export default function RootLayout({ children }) {
       <head>
         <title>{Metadata.title}</title>
         {Metadata.link}
-        <link rel="icon" href='/favicon.png' />
+        <link rel="icon" href="/favicon.png" />
       </head>
       <body className="flex flex-col min-h-screen justify-between">
         <BackgroundWrapper>
