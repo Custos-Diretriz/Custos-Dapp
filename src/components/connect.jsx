@@ -1,5 +1,4 @@
 "use client";
-
 import React, { useContext, useEffect, useState } from "react";
 import { FaLongArrowAltRight } from "react-icons/fa";
 import { generateAvatarURL } from "@cfx-kit/wallet-avatar";
@@ -16,37 +15,35 @@ function ConnectButtoncomponent({ open }) {
   const { connection, connectWallet, disconnectWallet, address, wallet } =
     useContext(WalletContext);
 
+
   useEffect(() => {
-    console.log("connected account; ", address);
-    setConnected(wallet);
-  }, [wallet, connected]);
+    setConnected(!!address);
+  }, [address, wallet]);
 
-  // const {account, address, status} = useAccount();
+  const handleConnect = () => {
+    setShowConnectModal(true);
+  };
 
-  // const { connectAsync, connectors } = useConnect();
-  //   const { disconnect } = useDisconnect({});
+  const handleDisconnectClick = () => {
+    setShowDisconnectModal(true);
+  };
 
-  //   const { starknetkitConnectModal } = useStarknetkitConnectModal({
-  //     connectors: connects, modalMode: "canAsk", dappName: "Custos Diretriz"
-  //   });
+  const handleStarknetSelect = async (selectedWallet) => {
+    try {
+      await connectStarknetWallet(selectedWallet.id);
+      setShowConnectModal(false);
+    } catch (error) {
+      console.error("Error in Starknet selection:", error);
+    }
+  };
 
-  //     const connectWallet = async () => {
-  //         const {wallet, connectorData, connector} = await connect({ connectors: connects, dappName: "CUSTOS DIRETRIZ", modalMode: "canAsk" })
-  // console.log('starknetkit account: ', connector.account);
-  // console.log('connector: ', connector);
-
-  //         if (account) {
-  //         setConnection(connector.account);
-  //         openNotification("success", "Wallet Connected", "Your wallet has been connected successfully!");
-  //         const cleanedAddress = padAddress(address);
-  //         setAdd(cleanedAddress);
-  //         }
-
-  //     };
-
-  const handleConnect = async () => {
-    console.log("Attempting to connect wallet...");
-    await connectWallet();
+  const handleEthereumConnect = async (walletType) => {
+    try {
+      await connectEthereumWallet(walletType);
+      setShowConnectModal(false);
+    } catch (error) {
+      console.error("Error in Ethereum connection:", error);
+    }
   };
 
   return (
@@ -89,11 +86,28 @@ function ConnectButtoncomponent({ open }) {
               {open && <span>Connect Wallet</span>}
               <FaLongArrowAltRight className={open ? "ml-2" : ""} />
             </button>
+
           </div>
-        </div>
-      )}
-    </div>
+        )}
+      </div>
+
+      {/* Connect Modal */}
+      <WalletModal
+        isOpen={showConnectModal}
+        onClose={() => setShowConnectModal(false)}
+        onSelectWallet={handleStarknetSelect}
+        handleEthereumConnect={handleEthereumConnect}
+      />
+
+      {/* Disconnect Modal */}
+      <DisconnectModal
+        isOpen={showDisconnectModal}
+        onClose={() => setShowDisconnectModal(false)}
+        onDisconnect={disconnectWallet}
+      />
+    </>
   );
 }
 
-export default ConnectButtoncomponent;
+
+export default ConnectButtonComponent;
