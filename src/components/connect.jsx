@@ -40,7 +40,6 @@ function ConnectButtoncomponent({ open }) {
           onClick={disconnectWallet}
         >
           {open ? (
-
             <div className="bg-[#121212] border-gradient2 rounded-full py-2 px-3 flex gap-2">
               <Image
                 className="rounded-full"
@@ -79,16 +78,14 @@ function ConnectButtoncomponent({ open }) {
                 <FaLongArrowAltRight className="text-lg" />
               </div>
             ) : (
-
               <button className="flex items-center text-white text-sm py-3 px-6 rounded-[100px] hover:bg-gradient-to-r from-[#19B1D2] to-[#0094FF] hover:bg-[#209af1] transition-colors duration-300 ease-in-out">
                 <span>Connect Wallet</span>
                 <FaLongArrowAltRight className="ml-2" />
               </button>
             )}
-
           </div>
-        )}
-      </div>
+        </div>
+      )}
 
       {/* Connect Modal */}
       <WalletModal
@@ -104,7 +101,7 @@ function ConnectButtoncomponent({ open }) {
         onClose={() => setShowDisconnectModal(false)}
         onDisconnect={disconnectWallet}
       />
-    </>
+    </div>
   );
 }
 
