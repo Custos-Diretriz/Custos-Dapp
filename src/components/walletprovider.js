@@ -96,9 +96,15 @@ export const WalletProvider = ({ children }) => {
       } else {
         console.log("No wallet connection in result:", result);
       }
-    };
-    starknetConnect();
-  }, [openNotification]);
+    } catch (error) {
+      console.error("Starknet connection error:", error);
+      openNotification(
+        "error",
+        "Connection Failed",
+        error.message || "Failed to connect Starknet wallet. Please try again."
+      );
+    }
+  };
 
   const connectWallet = async () => {
     const { wallet } = await connect({
