@@ -43,3 +43,6 @@ next-env.d.ts
 # Serwist
 public/sw*
 public/swe-worker*
+
+# Ignorar archivos .js en public
+public/*.js
