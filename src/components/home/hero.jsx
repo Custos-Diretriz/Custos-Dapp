@@ -1,28 +1,88 @@
 "use client";
-import React from "react";
+import React, { useState } from "react";
 import Image from "next/image";
-// import Agree from "./agree";
-// import gsap from "gsap";
-import { useEffect, useState, useRef } from "react";
+import { TracingBeam } from "./tracingBeam";
 import ShowLaunchDapps from "../showLaunchDapps";
+import { HoverBorderGradient } from "./hoverButton";
 
 const Hero = () => {
   const [showLaunchDapps, setShowLaunchDapps] = useState(false);
-  const starRef = useRef(null);
 
   const toggleLaunchDapps = () => {
     setShowLaunchDapps(!showLaunchDapps);
   };
+
   const closeModal = () => {
     setShowLaunchDapps(false);
   };
 
-  useEffect(() => {}, []);
+  // Define cardsData array inside the Hero component
+  const cardsData = [
+    {
+      src: "/hero-card3.png",
+      title: "Agreement documentation",
+      description: "Custos’ smart agreement management will secure your signed documents transparently.",
+    },
+  ];
+
+  const Card = ({ src, title, description }) => (
+    <div
+      className="transform transition-transform duration-300 hover:scale-110 hover:z-10 backdrop-filter backdrop-blur-[10px] bg-[#030D1B] shadow-lg rounded-lg w-full md:w-[780px] h-auto md:h-[380px] sm:w-full"
+      style={{
+        borderRadius: "20px",
+        border: "0.5px solid rgba(255, 255, 255, 0.1)",
+        margin: '0 auto',
+        // This controls the width of the card. You can adjust it for different breakpoints below.
+      }}
+    >
+      <div className="flex flex-col sm:flex-row items-stretch justify-start h-full w-full">
+        {/* Image Section */}
+        <div className="w-full sm:w-[45%] h-auto sm:h-full">
+          <Image
+            src={src}
+            alt={title}
+            width={388} // Image width will be 55% of the card width on larger screens
+            height={380}
+            objectFit="cover"
+            className="will-change-auto rounded-t-[20px] sm:rounded-l-[20px] sm:rounded-tr-none sm:rounded-b-none w-full h-full"
+
+          />
+        </div>
+  
+        {/* Text Section */}
+        <div className="flex flex-col justify-center items-center sm:items-start p-6 w-full sm:w-[45%] h-auto sm:h-full">
+          <div className="w-12 h-12 flex items-center justify-center bg-[#A02294] rounded-full mb-4 mx-auto sm:mx-0">
+            <img src="/star.png" alt="" className="w-6 h-6" />
+          </div>
+          <div className="font-bold text-lg sm:text-xl mb-2 bg-gradient-to-r from-[#0094FF] to-[#A02294] bg-clip-text text-transparent text-center sm:text-left">
+            {title}
+          </div>
+          <p className="text-gray-300 text-sm sm:text-base w-full sm:w-[90%] text-center sm:text-left">
+            {description}
+          </p>
+        </div>
+      </div>
+    </div>
+  );
+  
+
   return (
-    <main className="flex items-center justify-center min-h-screen">
+    <main
+      className="flex items-center justify-center min-h-screen"
+      style={{
+        backgroundImage: 'url("./patterns.png")',
+        backgroundSize: "cover",
+        backgroundPosition: "center",
+        backgroundAttachment: "fixed",
+      }}
+    >
       <div className="text-white py-20 mx-auto flex flex-col justify-center items-center w-full px-4">
-        <div onClick={toggleLaunchDapps} className=" flex w-fit h-fit">
-          <button className="relative br w-full text-white shadow-lg py-3 px-6 transform hover:scale-105 transition-transform duration-300 border-gradient bg-opacity-50  backdrop-filter backdrop-blur-lg flex items-center justify-center ">
+        <div onClick={toggleLaunchDapps} className="flex w-fit h-fit">
+          <HoverBorderGradient
+            containerClassName="rounded-full"
+            className="relative w-full text-white py-4 px-8 transform hover:scale-110 transition-all duration-300 bg-opacity-50 backdrop-filter backdrop-blur-lg flex items-center justify-center"
+            duration={3}
+          >
             <span className="flex items-center">Launch Custos Dapp</span>
             <Image
               src="/star.png"
@@ -31,96 +91,74 @@ const Hero = () => {
               width={100} 
               height={100}
             />
-          </button>
+          </HoverBorderGradient>
         </div>
         {showLaunchDapps && <ShowLaunchDapps closeModal={closeModal} />}
         <p className="text-6xl sm:text-5xl font-semibold my-6 bg-gradient-to-r from-[#EAF9FF] to-[#8E9A9A] bg-clip-text text-transparent text-center w-full p-3">
-          The new blockchain safe
+          The New Blockchain Safe
         </p>
         <p className="max-w-[16rem] sm:max-w-[18rem] md:max-w-lg mb-10 bg-gradient-to-r from-[#EAF9FF] to-[#8E9A9A] bg-clip-text text-transparent text-center">
           Custos will secure your evidence and legal agreements
         </p>
 
-        {/* <div className="image-container">
-          <Image src="./herod.png" alt="Zoom Image" />
-        </div> */}
-
-        <div className="flex flex-col lg:flex-row justify-center w-fit gap-[4em] mt-[4rem]">
-          <div className="transform box transition-transform duration-300 hover:scale-110 backdrop-filter backdrop-blur-[10px] bg-[#ffffff12] shadow-lg rounded-lg w-full">
-            <div className="sh"></div>
-            {/* <div className="w-fit sm:w-[20em] rounded-[1.1em] shadow-lg border-gradient bg-opacity-95 backdrop-filter backdrop-blur-[10px] flex flex-col items-center relative h-[20em] overflow-clip"> */}
-            <div className="w-fit p-2 sm:w-[20em] rounded-[1.1em] shadow-lg flex flex-col items-center relative h-full overflow-clip">
-              <div className="py-2 text-center h-full">
-                <div className="font-bold text-[1.2em] mb-2 bg-gradient-to-r from-[#0094FF] to-[#A02294] bg-clip-text text-transparent">
-                  Crime scene recorder
+        <div className="flex flex-col items-center gap-[1rem] mt-[2rem]">
+          <TracingBeam>
+            <div className="flex flex-wrap md:flex-row w-full gap-6 justify-center">
+              {/* First and Second Cards */}
+              {["/hero-card1.png", "/hero-card2.png"].map((src, index) => (
+                <div
+                  key={index}
+                  className="transform transition-transform duration-300 hover:scale-110 hover:z-10 backdrop-filter backdrop-blur-[10px] bg-[#030D1B] shadow-lg rounded-lg"
+                  style={{
+                    width: "388px",
+                    height: "380px",
+                    borderRadius: "20px",
+                    border: "0.5px solid rgba(255, 255, 255, 0.1)",
+                  }}
+                >
+                  <div className="flex flex-col items-center h-full">
+                    <div className="h-[70%] w-full">
+                      <Image
+                        src={src}
+                        alt="Card Image"
+                        layout="responsive"
+                        width={388}
+                        height={200}
+                        className="will-change-auto object-cover rounded-lg"
+                      />
+                    </div>
+                    <div className="flex flex-col items-center justify-center h-[30%] text-center">
+                      <div className="font-bold text-[1.2em] mb-2 bg-gradient-to-r from-[#0094FF] to-[#A02294] bg-clip-text text-transparent">
+                        {index === 0
+                          ? "Crime scene recorder"
+                          : "A very secure blockchain safe"}
+                      </div>
+                      <p className="text-gray-700 text-[0.8em] w-[80%] bg-gradient-to-r from-[#EAF9FF] to-[#8E9A9A] bg-clip-text text-transparent">
+                        {index === 0
+                          ? "We are providing a decentralized crime recorder. Videos on Custos are transparent."
+                          : "Leveraging Starknet’s advanced technology for unparalleled security, we built a safe for agreements and videos."}
+                      </p>
+                    </div>
+                  </div>
                 </div>
-                <p className="text-gray-700 text-[0.8em] w-[80%] m-auto text-center items-center justify-center bg-gradient-to-r from-[#EAF9FF] to-[#8E9A9A] bg-clip-text text-transparent">
-                  We are providing a decentralized crime recorder. Videos on
-                  Custos are transparent
-                </p>
-              </div>
-              <div className="h-fit">
-                <Image
-                  src="/ime.png"
-                  alt="Card Image"
-                  width={200}
-                  height={100}
-                  className="will-change-auto"
-                />
+              ))}
+
+              {/* Third Card */}
+              <div className="flex justify-center w-full mt-6">
+                {cardsData.map((card, index) => (
+                  <Card
+                    key={index}
+                    src={card.src}
+                    title={card.title}
+                    description={card.description}
+                    // Optional props for Card component to control width
+                cardWidth="md:w-[65%]" // Adjust width for medium screens and up
+                cardMaxWidth="350px" // Set a maximum width for responsiveness
+                  />
+                ))}
               </div>
             </div>
-          </div>
-
-          <div className="transform box transition-transform duration-300 hover:scale-110 backdrop-filter backdrop-blur-[10px] bg-[#ffffff12] shadow-lg rounded-lg w-full">
-            <div className="sh"></div>
-            <div className="w-fit p-2 sm:w-[20em] rounded-[1.1em] shadow-lg border-gradien flex flex-col items-center relative h-full overflow-hidden">
-              <div className="py-2 text-center h-full">
-                <div className="font-bold text-[1.2em] mb-2 bg-gradient-to-r from-[#0094FF] to-[#A02294] bg-clip-text text-transparent">
-                  A very secure blockchain safe
-                </div>
-                <p className="text-gray-700 text-[0.8em] w-[80%] m-auto text-center items-center justify-center bg-gradient-to-r from-[#EAF9FF] to-[#8E9A9A] bg-clip-text text-transparent">
-                  Leveraging on Starknet's advanced technology for unparalleled
-                  security and efficiency, we have built a safe for your
-                  agreement and videos.
-                </p>
-              </div>
-              <div className="h-fit mb-5">
-                <Image
-                  src="/img.png"
-                  alt="Card Image"
-                  width={150}
-                  height={100}
-                  className="will-change-auto"
-                />
-              </div>
-            </div>
-          </div>
-
-          {/* <div className="w-fit sm:w-[20em] rounded-[1.1em] shadow-lg border-gradient bg-opacity-95 backdrop-filter backdrop-blur-[10px] flex flex-col items-center relative h-[20em] overflow-clip"> */}
-          <div className="transform box transition-transform duration-300 hover:scale-110 backdrop-filter backdrop-blur-[10px] bg-[#ffffff12] shadow-lg rounded-lg w-full">
-            <div className="sh"></div>
-            {/* <div className="w-fit sm:w-[20em] rounded-[1.1em] shadow-lg border-gradient bg-opacity-95 backdrop-filter backdrop-blur-[10px] flex flex-col items-center relative h-[20em] overflow-clip"> */}
-            <div className="w-fit p-2 sm:w-[20em] rounded-[1.1em] shadow-lg flex flex-col items-center relative h-full overflow-clip">
-              <div className="py-2 text-center h-full">
-                <div className="font-bold text-[1.2em] mb-2 bg-gradient-to-r from-[#0094FF] to-[#A02294] bg-clip-text text-transparent">
-                  Agreement documentation
-                </div>
-                <p className="text-gray-700 text-[0.8em] w-[80%] m-auto text-center items-center justify-center bg-gradient-to-r from-[#EAF9FF] to-[#8E9A9A] bg-clip-text text-transparent">
-                  Custos' smart agreement management will secure your signed
-                  documents transparently
-                </p>
-              </div>
-              <div className="h-fit mb-4">
-                <Image
-                  src="/ima.png"
-                  alt="Card Image"
-                  width={200}
-                  height={100}
-                  className="will-change-auto"
-                />
-              </div>
-            </div>
-          </div>
+          </TracingBeam>
         </div>
       </div>
     </main>
