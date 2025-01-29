@@ -97,7 +97,7 @@ export const Header = ({ onToggle }) => {
           <NotificationsDropdown notificationDropDowm={notificationDropDowm} />
 
           <div className="hidden md:block">
-            <ConnectButtoncomponent />
+            <ConnectButtoncomponent open={true} />
           </div>
         </div>
       </div>
