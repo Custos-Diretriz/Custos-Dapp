@@ -97,6 +97,9 @@ const UploadFile = ({ setSelectedFiles }) => {
 
         {error && <p className="text-red-500 text-center mt-4">{error}</p>}
       </div>
+      <div className="w-full mt-[20px]" >
+        <p className="text-[20px] font-normal text-[#EAFBFF] text-center">You have not saved any file yet. Upload or drag and drop your assets here.</p>
+      </div>
     </div>
   );
 };
