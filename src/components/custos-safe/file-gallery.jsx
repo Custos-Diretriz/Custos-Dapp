@@ -3,7 +3,7 @@ import React, { useMemo } from "react";
 import Image from "next/image";
 import Button from "../Button";
 
-const formatDate = (dateStr: string) => {
+const formatDate = (dateStr) => {
   const date = new Date(dateStr);
   return date.toLocaleDateString("en-US", { weekday: "short", day: "numeric", month: "short", year: "numeric" });
 };
@@ -22,7 +22,7 @@ const groupFilesByMonth = (files) => {
   }, {});
 };
 
-const getLocation = (): Promise<{ latitude: number; longitude: number } | null> => {
+const getLocation = ()=> {
   return new Promise((resolve) => {
     if (!navigator.geolocation) {
       resolve(null);
