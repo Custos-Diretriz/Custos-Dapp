@@ -1,7 +1,7 @@
 import React from 'react';
-import SideBar from '@/app/vidandimage_storage/components/SideBar';
-import Header from '@/app/vidandimage_storage/components/Header';
-import UploadOrRecord from '@/app/vidandimage_storage/components/UploadOrRecord';
+// import SideBar from '@/app/vidandimage_storage/components/SideBar';
+// import Header from '@/app/vidandimage_storage/components/Header';
+// import UploadOrRecord from '@/app/vidandimage_storage/components/UploadOrRecord';
 import BackNavigation from '../components/BackNavigation';
 
 const Main = () => {
