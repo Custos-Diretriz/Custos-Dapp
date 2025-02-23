@@ -56,8 +56,8 @@ const Sidepane = () => {
       labelClassName: "text-base",
     },
     {
-      href: "/images",
-      label: "Images",
+      href: "/custos-safe",
+      label: "Custos Safe",
       icon: (
         <div className="relative w-full h-full">
           <Image 

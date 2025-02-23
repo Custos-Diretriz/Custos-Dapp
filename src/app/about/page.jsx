@@ -27,7 +27,9 @@ const About = () => {
           >
             <span className="flex items-center">Launch Custos Dapp</span>
             <Image
+            width={24}
               src="/star.png"
+              height={32}
               className="absolute w-6 h-8 z-20 animate-star"
               alt="Star Icon"
             />
