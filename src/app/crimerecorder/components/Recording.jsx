@@ -11,25 +11,30 @@ import bg from "../../../../public/Rectangle.png";
 import icon3 from "../../../../public/rotate.png";
 import Icons from "./Icons";
 import { useRouter } from "next/navigation";
-import { WalletContext } from "../../../components/walletprovider";
-import { useNotification } from "../../../context/NotificationProvider";
-import { GlobalStateContext } from "../../../context/GlobalStateProvider";
+import { WalletContext } from "@/components/walletprovider";
+import { useNotification } from "@/context/NotificationProvider";
+import { GlobalStateContext } from "@/context/GlobalStateProvider";
 import stopIcon from "../../../../public/record.png";
 import icon2 from "../../../../public/picture.png";
 import Modal from "react-modal";
-import { useModal } from "../../../context/ModalProvider";
+import { useModal } from "@/context/ModalProvider";
 import {
   executeCalls,
   fetchAccountCompatibility,
   fetchAccountsRewards,
   fetchGasTokenPrices,
+  // SEPOLIA_BASE_URL,
 } from "@avnu/gasless-sdk";
+import { FaRegCirclePlay } from "react-icons/fa6";
+import { BsStopCircle } from "react-icons/bs";
 import { Account, byteArray, CallData, RpcProvider, Signer } from "starknet";
 import SuccessScreen from "./Success";
 import ErrorScreen from "./error";
 import Filename from "./nameModal";
 import Image from "next/image";
 import { publicProvider, useAccount } from "@starknet-react/core";
+import { accessListify, Typed } from "ethers";
+// import { fetchDataFromAPI } from "./avnucall";
 
 const NFT_STORAGE_TOKEN = process.env.NEXT_PUBLIC_IPFS_KEY;
 
@@ -60,16 +65,15 @@ export const Recording = ({ text, icon1, imgText, category }) => {
   const [currentFacingMode, setCurrentFacingMode] = useState("environment");
   const [isRecording, setIsRecording] = useState(false);
   const [loading, setLoading] = useState(false);
-  const [isUploading, setIsUploading] = useState(false);
   const [paymasterRewards, setPaymasterRewards] = useState([]);
   const [gasTokenPrices, setGasTokenPrices] = useState([]);
   const [gasTokenPrice, setGasTokenPrice] = useState();
   const [gaslessCompatibility, setGaslessCompatibility] = useState();
   const [errorMessage, setErrorMessage] = useState();
   const callRef = useRef(null);
-  const [isUploadModalOpen, setUploadModalOpen] = useState(false);
-  const [isSuccessModalOpen, setSuccessModalOpen] = useState(false);
-  const [isErrorModalOpen, setErrorModalOpen] = useState(false);
+  const [isUploadModalOpen, setUploadModalOpen] = useState(false); // For the file name input modal
+  const [isSuccessModalOpen, setSuccessModalOpen] = useState(false); // For the success confirmation modal
+  const [isErrorModalOpen, setErrorModalOpen] = useState(false); // For the success confirmation modal
   const [fileName, setFileName] = useState("");
   const recordedVideoRef = useRef(null);
   const photoRef = useRef(null);
@@ -93,6 +97,7 @@ export const Recording = ({ text, icon1, imgText, category }) => {
       callRef.current = JSON.stringify(calls, null, 2);
     }
 
+    // Execute the transaction with gasless option
     const triggerWallet = async () => {
       if (uri !== "") {
         setLoading(true);
@@ -107,15 +112,69 @@ export const Recording = ({ text, icon1, imgText, category }) => {
             { ...options, apiKey: process.env.NEXT_PUBLIC_AVNU_KEY }
           );
 
+          // @faytey - The code below is for routing the gasless txn through the server
+          //    But this method has a bug in that it only works for argent and the signature generated
+          //    is always rejected by avnu signature verification. seems to be an error from argent though
+          //   I will leave it here for reference
+
+          //             // 1. Prepare transaction through API
+          //             const prepareResponse = await fetch("/api/execute", {
+          //               method: "POST",
+          //               headers: { "Content-Type": "application/json" },
+          //               body: JSON.stringify({
+          //                 userAddress: account.address,
+          //                 calls: JSON.parse(callRef.current),
+          //                 gasTokenAddress: undefined,
+          //                 maxGasTokenAmount: undefined, // Use default values
+          //               }),
+
+          //             });
+
+          //             if (!prepareResponse.ok) throw new Error("Preparation failed");
+          //             console.log("first response...", prepareResponse)
+
+          //             const {typedData}  = await prepareResponse.json();
+
+          //             console.log("restored typed data...",typedData)
+          //             // const safeTypedData = normalizeTypedData(typedData);
+
+          //             const signature = await account.signer.signMessage(
+          //               typedData,
+          //               account.address
+          //             );
+          // const serializedSignature = {
+          //   ...signature,
+          //   r: signature.r.toString(),
+          //   s: signature.s.toString(),
+          // };
+
+          //             const executeResponse = await fetch("/api/execute-signed", {
+          //               method: "POST",
+          //               headers: { "Content-Type": "application/json" },
+          //               body: JSON.stringify({
+          //                 userAddress: account.address,
+          //                 typedData,
+          //                 signature: serializedSignature,
+          //                 deploymentData: undefined,
+          //               }),
+          //             });
+
+          //             if (!executeResponse.ok) throw new Error("Execution failed");
+          //             const { transactionHash } = await executeResponse.json();
+          //             console.log("success...",transactionHash)
+
           console.log("success", transactionResponse);
+
           openNotification("success", "Transaction successful", "");
           setLoading(false);
           openModal("success");
+          // setSuccessModalOpen(true);
         } catch (error) {
           console.error("Transaction failed:", error);
           openNotification("error", "Transaction failed", `${error}`);
           setLoading(false);
           openModal("error");
+          // setErrorModalOpen(true);
         }
       }
     };
@@ -135,6 +194,7 @@ export const Recording = ({ text, icon1, imgText, category }) => {
 
   useEffect(() => {
     console.log(options);
+
     fetchGasTokenPrices(options).then(setGasTokenPrices);
   }, []);
 
@@ -143,6 +203,40 @@ export const Recording = ({ text, icon1, imgText, category }) => {
     setErrorMessage(undefined);
   }, [account, gasTokenPrice, gaslessCompatibility]);
 
+  const otherRecorder = (selectedMedia) => {
+    return selectedMedia === "vid" ? "aud" : "vid";
+  };
+
+  const closeUploadModal = () => {
+    setUploadModalOpen(false);
+  };
+  const closeSuccessModal = () => {
+    // setSuccessModalOpen(false);
+    closeModal();
+    route.push("/crimerecorders");
+  };
+  const closeErrorModal = () => {
+    openModal("error");
+    // setErrorModalOpen(false);
+  };
+
+  const handleFileNameSubmit = (inputFileName) => {
+    console.log("Filename received:", inputFileName); // Debugging log
+    if (!inputFileName) {
+      console.error("Filename is required!");
+      return;
+    }
+
+    // Append the correct file extension based on the media type (e.g., .webm for video, .png for image)
+    let fileExtension = category === "video" ? ".webm" : ".png";
+    const fullFileName = inputFileName + fileExtension;
+
+    console.log("Full filename with extension:", fullFileName); // Debugging log
+
+    setFileName(fullFileName); // Store the filename with extension
+    setUploadModalOpen(false); // Close the modal after filename submission
+    uploadToIPFS(recordedChunks, fullFileName); // Proceed with the IPFS upload
+  };
   const checkPermissions = async () => {
     try {
       const permissions = await navigator.permissions.query({ name: "camera" });
@@ -160,130 +254,37 @@ export const Recording = ({ text, icon1, imgText, category }) => {
       );
     }
   };
-  const closeSuccessModal = () => {
-    setIsSuccessModalOpen(false);
-    route.push("/crimerecorders");
-  };
 
-  const closeErrorModal = () => {
-    setIsErrorModalOpen(false);
-  };
-  const handleModalClose = (type) => {
-    if (type === "success") {
-      closeModal();
-      route.push("/crimerecorders");
-    } else if (type === "error") {
-      closeModal();
-    }
-  };
   const startCamera = async () => {
-    await checkPermissions();
+    checkPermissions();
     try {
-      const constraints = {
-        video: { facingMode: currentFacingMode },
-        audio: true,
-      };
-
-      const stream = await navigator.mediaDevices.getUserMedia(constraints);
+      const stream = await navigator.mediaDevices.getUserMedia({
+        video: true, // Simpler configuration
+        audio: true, // Disable audio if not needed
+      });
       setMediaStream(stream);
-
       if (videoRef.current) {
         videoRef.current.srcObject = stream;
-        videoRef.current.muted = true;
-        videoRef.current.style.display = "block";
+        videoRef.current.muted = true; // Mute to avoid feedback
+        videoRef.current.style.display = "block"; // Show the video feed when camera starts
       }
     } catch (error) {
       console.error("Error accessing the camera", error);
-      openNotification("error", "Camera Error", error.message);
+      alert("Error accessing the camera: " + error.message);
     }
   };
 
   const stopCamera = () => {
     if (mediaStream) {
       mediaStream.getTracks().forEach((track) => {
-        track.stop();
-        track.enabled = false;
+        track.stop(); // Stop individual tracks
+        track.enabled = false; // Disable track (extra precaution)
       });
-      if (videoRef.current) {
-        videoRef.current.srcObject = null;
-      }
+      videoRef.current.srcObject = null; // Clear the video element
       setMediaStream(null);
+      console.log("Camera stopped successfully.");
     }
   };
-
-  const handleFileNameSubmit = async (inputFileName) => {
-    if (!inputFileName) {
-      openNotification("error", "Error", "Filename is required");
-      return;
-    }
-
-    const validFileName = inputFileName.replace(/[^a-zA-Z0-9-_]/g, '');
-    const fileExtension = category === "video" ? ".webm" : ".png";
-    const fullFileName = `${validFileName}${fileExtension}`;
-
-    setFileName(fullFileName);
-    setUploadModalOpen(false);
-
-    try {
-      await uploadToIPFS(recordedChunks, fullFileName);
-    } catch (error) {
-      openNotification("error", "Upload failed", error.message);
-      setErrorMessage("Failed to upload file");
-      openModal("error");
-    }
-  };
-
-  async function uploadToIPFS(fileBlob, fileName) {
-    if (!fileBlob || !fileName) {
-      throw new Error("Missing file data or filename");
-    }
-
-    if (!account) {
-      throw new Error("Wallet not connected");
-    }
-
-    setIsUploading(true);
-    setLoading(true);
-
-    try {
-      const MAX_FILE_SIZE = 50 * 1024 * 1024; // 50MB limit
-      if (fileBlob.size > MAX_FILE_SIZE) {
-        throw new Error("File size exceeds 50MB limit");
-      }
-
-      const formData = new FormData();
-      formData.append("file", fileBlob, fileName);
-
-      const response = await fetch("https://api.pinata.cloud/pinning/pinFileToIPFS", {
-        method: "POST",
-        headers: {
-          Authorization: `Bearer ${NFT_STORAGE_TOKEN}`,
-        },
-        body: formData,
-      });
-
-      if (!response.ok) {
-        const errorData = await response.json().catch(() => ({}));
-        throw new Error(errorData.message || `Upload failed with status: ${response.status}`);
-      }
-
-      const data = await response.json();
-      
-      if (!data.IpfsHash) {
-        throw new Error("No IPFS hash received");
-      }
-
-      setUri(data.IpfsHash);
-      openNotification("success", "Upload successful", "File uploaded to IPFS");
-
-    } catch (error) {
-      console.error("Upload error:", error);
-      throw error;
-    } finally {
-      setIsUploading(false);
-      setLoading(false);
-    }
-  }
 
   const startRecording = async () => {
     await startCamera();
@@ -294,13 +295,12 @@ export const Recording = ({ text, icon1, imgText, category }) => {
 
     const chunks = [];
     const recorder = new MediaRecorder(mediaStream);
-    
     recorder.ondataavailable = (event) => chunks.push(event.data);
     recorder.onstop = async () => {
       const blob = new Blob(chunks, { type: "video/webm" });
-      setRecordedChunks(blob);
+      setRecordedChunks(blob); // Set recorded video for upload
       stopCamera();
-      setUploadModalOpen(true);
+      setUploadModalOpen(true); // Open modal for filename input after recording stops
     };
 
     recorder.start();
@@ -309,105 +309,120 @@ export const Recording = ({ text, icon1, imgText, category }) => {
   };
 
   const stopRecording = () => {
-    if (mediaRecorder && mediaRecorder.state !== "inactive") {
+    if (mediaRecorder) {
       mediaRecorder.stop();
       setIsRecording(false);
+      setUploadModalOpen(true);
     }
     stopCamera();
-    setUploadModalOpen(true);
   };
 
   const takePicture = async () => {
-    if (!videoRef.current || !canvasRef.current) {
-      openNotification("error", "Error", "Camera not initialized");
-      return;
-    }
+    const context = canvasRef.current.getContext("2d");
+    canvasRef.current.width = videoRef.current.videoWidth;
+    canvasRef.current.height = videoRef.current.videoHeight;
+    context.drawImage(
+      videoRef.current,
+      0,
+      0,
+      canvasRef.current.width,
+      canvasRef.current.height
+    );
 
-    try {
-      const context = canvasRef.current.getContext("2d");
-      canvasRef.current.width = videoRef.current.videoWidth;
-      canvasRef.current.height = videoRef.current.videoHeight;
-      context.drawImage(
-        videoRef.current,
-        0,
-        0,
-        canvasRef.current.width,
-        canvasRef.current.height
-      );
-
-      const dataURL = canvasRef.current.toDataURL("image/png");
-      const blob = await fetch(dataURL).then(res => res.blob());
-      
-      if (!blob) {
-        throw new Error("Failed to capture image");
-      }
-
-      setRecordedChunks(blob);
-      setUploadModalOpen(true);
-    } catch (error) {
-      console.error("Error taking picture:", error);
-      openNotification("error", "Error", "Failed to capture image");
-    } finally {
-      stopCamera();
-    }
+    const dataURL = canvasRef.current.toDataURL("image/png");
+    const blob = await fetch(dataURL).then((res) => res.blob());
+    setRecordedChunks(blob); // Set picture for upload
+    setUploadModalOpen(true); // Open modal for filename input after picture is taken
   };
 
   const switchCamera = async () => {
-    try {
-      const newFacingMode = currentFacingMode === "user" ? "environment" : "user";
-      setCurrentFacingMode(newFacingMode);
-
-      // Stop current stream
-      if (mediaStream) {
-        mediaStream.getTracks().forEach(track => track.stop());
-      }
-
-      // Start new stream with updated facing mode
-      const newStream = await navigator.mediaDevices.getUserMedia({
-        video: { facingMode: newFacingMode },
-        audio: true,
-      });
-
-      if (videoRef.current) {
-        videoRef.current.srcObject = newStream;
-      }
-
-      setMediaStream(newStream);
-
-      // Handle recording state
-      if (isRecording && mediaRecorder) {
-        const oldRecorder = mediaRecorder;
-        oldRecorder.stop();
-
-        const newRecorder = new MediaRecorder(newStream);
-        const chunks = [];
-
-        newRecorder.ondataavailable = (event) => chunks.push(event.data);
-        newRecorder.onstop = async () => {
-          const blob = new Blob(chunks, { type: "video/webm" });
-          setRecordedChunks(blob);
-        };
-
-        newRecorder.start();
-        setMediaRecorder(newRecorder);
-      }
-
-      setIsClicked(!isClicked);
-    } catch (error) {
-      console.error("Error switching camera:", error);
-      openNotification("error", "Camera Error", "Failed to switch camera");
+    setIsClicked((prev) => {
+      return !prev;
+    });
+    setCurrentFacingMode((prev) => (prev === "user" ? "environment" : "user"));
+    if (isRecording) {
+      mediaRecorder.pause();
+    }
+    stopCamera();
+    await startCamera();
+    if (isRecording) {
+      mediaRecorder.resume();
     }
   };
+
+  async function uploadToIPFS(fileBlob, fileName) {
+    const formData = new FormData();
+    formData.append("file", fileBlob, fileName);
+    setLoading(true);
+    try {
+      console.log("account is ", account, typeof account);
+
+      // Check if the wallet is connected
+      if (!account) {
+        console.error(
+          "Wallet not connected. Cannot associate file with account."
+        );
+        setLoading(false);
+        setErrorMessage("Transaction failed: Wallet not connected");
+        openModal("error");
+        // setErrorModalOpen(true);
+        return;
+      }
+      console.log("Uploading file:", fileName); // Log the file name
+
+      const response = await fetch(
+        "https://api.pinata.cloud/pinning/pinFileToIPFS",
+        {
+          method: "POST",
+          headers: {
+            Authorization: `Bearer ${NFT_STORAGE_TOKEN}`,
+          },
+          body: formData,
+        }
+      );
+
+      // Handle response
+      if (!response.ok) {
+        throw new Error(
+          `Failed to upload file to IPFS: ${response.status} ${response.statusText}`
+        );
+      }
+
+      const data = await response.json();
+      const ipfsHash = data.IpfsHash;
+
+      console.log("IPFS Hash:", ipfsHash);
+      setUri(ipfsHash);
+
+      console.log("File uploaded successfully and data saved!");
+    } catch (error) {
+      console.error("Error uploading file:", error);
+      setLoading(false);
+      setErrorMessage("Error uploading file");
+      openModal("error");
+      // setErrorModalOpen(true);
+    } finally {
+      setLoading(false);
+    }
+  }
 
   const handleStopMedia = async () => {
     if (category === "video") {
       if (isRecording) {
-        stopRecording();
+        stopRecording(); // Stop the recording if it's ongoing
+        setIsRecording(false);
       } else {
-        startRecording();
+        startRecording(); // Start recording if it hasn't started yet
+        setIsRecording(true);
       }
     } else if (category === "image") {
       takePicture();
+    }
+
+    // Check if the account is available
+    if (!account) {
+      console.error("Account not connected");
+      return;
     }
   };
 
@@ -417,116 +432,123 @@ export const Recording = ({ text, icon1, imgText, category }) => {
     } else if (category === "image") {
       startCamera();
     }
-
-    return () => {
-      stopCamera();
-      if (mediaRecorder && mediaRecorder.state !== "inactive") {
-        mediaRecorder.stop();
-      }
-    };
   }, []);
 
-  const LoadingOverlay = () => (
-    <div className="fixed inset-0 z-50 bg-black bg-opacity-70 flex items-center justify-center backdrop-blur">
-      <div className="flex flex-col items-center">
-        <Image
-          src="/logo.svg"
-          alt="Loading"
-          width={100}
-          height={100}
-          priority
-        />
-        <p className="text-white mt-4 text-lg">
-          {isUploading ? "Uploading file to IPFS..." : "Sending transaction onchain..."}
-        </p>
-      </div>
-    </div>
-  );
+  useEffect(() => {
+    if (typeof window !== "undefined" && navigator?.mediaDevices) {
+      navigator.mediaDevices.enumerateDevices().then((devices) => {
+        devices.forEach((device) => {
+          console.log(
+            device.kind + ": " + device.label + " id = " + device.deviceId
+          );
+        });
+      });
+    }
+  }, []);
 
   return (
-    <div className="w-full flex flex-col mt-10 items-center gap-6">
-      <Filename
-        open={isUploadModalOpen}
-        onClose={() => {
-          setUploadModalOpen(false);
-          stopCamera();
-        }}
-        onSubmit={handleFileNameSubmit}
-      />
-      
-      <p className="text-white text-lg sm:text-xl">{text}</p>
-      
-      <div className="bg-gradient-to-r from-[#0094ff] to-[#A02294] w-full max-w-lg rounded-xl md:mb-5">
-        <div
-          className="w-full h-full flex flex-col justify-center items-center rounded-xl p-6 sm:p-10"
-          style={{
-            backgroundColor: "#1e2f37",
-            backgroundImage: `url(${bg.src})`,
-            backgroundSize: "contain",
-          }}>
-          <div id="vid-recorder" className="w-full">
-            <video
-              ref={videoRef}
-              autoPlay
-              playsInline
-              muted
-              id="web-cam-container"
-              className="rounded-xl mb-6 w-full"
-            >
-              Your browser doesn&apos;t support the video tag
-            </video>
-            <canvas ref={canvasRef} style={{ display: "none" }}></canvas>
-          </div>
-          
-          <div className="flex items-center space-x-4">
-            <button
-              className={`switch-camera-button ${isClicked ? 'clicked' : ''}`}
-              onClick={switchCamera}
-              disabled={!mediaStream || isUploading}
-            >
-              <Icons
-                icon={icon3}
-                text="Switch Camera"
-                isFlipped={isClicked}
-              />
-            </button>
+    <>
+      <div className="w-full flex flex-col mt-10 items-center gap-6">
+        {/* <SuccessScreen open={isSuccessModalOpen} onClose={closeSuccessModal} className="flex items-center justify-center fixed inset-0 backdrop-blur-sm"/>
+        <ErrorScreen open={isErrorModalOpen} onClose={closeErrorModal} message={errorMessage} className="flex items-center justify-center fixed inset-0 backdrop-blur-sm"/> */}
 
-            <button 
-              onClick={handleStopMedia}
-              disabled={isUploading}
-            >
-              <Icons
-                icon={isRecording ? stopIcon : icon1}
-                text={isRecording ? "Stop Recording" : imgText}
-              />
-            </button>
+        <Filename
+          open={isUploadModalOpen}
+          onClose={closeUploadModal}
+          onSubmit={handleFileNameSubmit}
+        />
+        <p className="text-white text-lg sm:text-xl">{text}</p>
+        <div className="w-full max-w-lg rounded-xl md:mb-5">
+          <div
+            className="w-full h-full flex flex-col justify-center items-center rounded-xl p-6 sm:p-10"
+            style={{
+              backgroundColor: "#1e2f37",
+              backgroundImage: `url(${bg.src})`,
+              backgroundSize: "contain",
+            }}
+          >
+            <div id="vid-recorder" className="w-full">
+              <video
+                ref={videoRef}
+                autoPlay
+                muted
+                id="web-cam-container"
+                className="rounded-xl mb-6 w-full"
+              >
+                Your browser doesn&apos;t support the video tag
+              </video>
+              <canvas ref={canvasRef} style={{ display: "none" }}></canvas>
+            </div>
+            <div className="flex items-center space-x-4">
+              <button
+                className={
+                  isClicked
+                    ? "switch-camera-button clicked"
+                    : "switch-camera-button"
+                }
+                onClick={switchCamera}
+              >
+                <Icons
+                  icon={icon3}
+                  text={`Switch Camera`}
+                  isFlipped={isClicked}
+                />
+              </button>
+
+              <button onClick={handleStopMedia}>
+                {isRecording ? (
+                  <Icons
+                    icon={stopIcon}
+                    text={isRecording ? "Stop Recording" : imgText}
+                  />
+                ) : (
+                  <>
+                  {imgText === "Click to Take a Picture"?  <div className="flex flex-col justify-center items-center gap-2 mb-6">
+                    <BsStopCircle
+                      size={24}
+                      className="w-8 h-8 md:w-12 md:h-12 lg:w-16 lg:h-16"
+                      color="#0094ff"
+                    />
+                    <span className="text-white text-xs md:text-sm lg:text-base">
+                      {imgText}
+                    </span>
+                  </div> : <div className="flex flex-col justify-center items-center gap-2 mb-6">
+                    <FaRegCirclePlay
+                      size={24}
+                      className="w-8 h-8 md:w-12 md:h-12 lg:w-16 lg:h-16"
+                      color="#0094ff"
+                    />
+                    <span className="text-white text-xs md:text-sm lg:text-base">
+                      {imgText}
+                    </span>
+                  </div>}
+                  </>
+                )}
+              </button>
+            </div>
+            {loading && ( // Display overlay when loading
+              <div className="fixed inset-0 z-50 bg-black bg-opacity-70 flex items-center justify-center">
+                <div className="flex flex-col items-center">
+                  <Image
+                    src="/logo.svg"
+                    alt="Loading"
+                    width={100}
+                    height={100}
+                  />
+                  <p className="text-white mt-4 text-lg">
+                    sending your file onchain, please wait...
+                  </p>
+                </div>
+                <style jsx>{`
+                  div {
+                    backdrop-filter: blur(10px); /* Blur background */
+                  }
+                `}</style>
+              </div>
+            )}
           </div>
         </div>
       </div>
-
-      {(loading || isUploading) && <LoadingOverlay />}
-
-      <Modal
-        isOpen={isSuccessModalOpen}
-        onRequestClose={closeSuccessModal}
-        contentLabel="Success Modal"
-        className="modal"
-        overlayClassName="modal-overlay"
-      >
-        <SuccessScreen onClose={closeSuccessModal} />
-      </Modal>
-
-      <Modal
-        isOpen={isErrorModalOpen}
-        onRequestClose={closeErrorModal}
-        contentLabel="Error Modal"
-        className="modal"
-        overlayClassName="modal-overlay"
-      >
-        <ErrorScreen onClose={closeErrorModal} message={errorMessage} />
-      </Modal>
-    </div>
+    </>
   );
 };
-
-export default Recording;
