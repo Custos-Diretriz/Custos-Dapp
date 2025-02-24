@@ -1,8 +1,6 @@
 import React from 'react';
 import BackNavigation from '../components/BackNavigation';
 import UploadOrReload from '../components/UploadOrRecord';
-import Header from '../components/Header';
-import SideBar from '../components/SideBar';
 
 const Main = () => {
   return (

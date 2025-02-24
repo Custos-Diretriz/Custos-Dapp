@@ -4,8 +4,12 @@ import Image from "next/image";
 import Button from "../Button";
 
 const formatDate = (dateStr) => {
-  const date = new Date(dateStr);
-  return date.toLocaleDateString("en-US", { weekday: "short", day: "numeric", month: "short", year: "numeric" });
+  return new Date(dateStr).toLocaleDateString("en-US", {
+    weekday: "short",
+    day: "numeric",
+    month: "short",
+    year: "numeric",
+  });
 };
 
 const groupFilesByMonth = (files) => {
@@ -14,24 +18,22 @@ const groupFilesByMonth = (files) => {
     const monthKey = date.toLocaleDateString("en-US", { month: "long", year: "numeric" });
     const dayKey = formatDate(file.timestamp);
 
-    if (!acc[monthKey]) acc[monthKey] = {};
-    if (!acc[monthKey][dayKey]) acc[monthKey][dayKey] = [];
-
+    acc[monthKey] = acc[monthKey] || {};
+    acc[monthKey][dayKey] = acc[monthKey][dayKey] || [];
     acc[monthKey][dayKey].push(file);
+
     return acc;
   }, {});
 };
 
-const getLocation = ()=> {
+const getLocation = () => {
   return new Promise((resolve) => {
-    if (!navigator.geolocation) {
-      resolve(null);
-    } else {
-      navigator.geolocation.getCurrentPosition(
-        (position) => resolve({ latitude: position.coords.latitude, longitude: position.coords.longitude }),
-        () => resolve(null)
-      );
-    }
+    if (!navigator.geolocation) return resolve(null);
+
+    navigator.geolocation.getCurrentPosition(
+      (position) => resolve({ latitude: position.coords.latitude, longitude: position.coords.longitude }),
+      () => resolve(null)
+    );
   });
 };
 
@@ -54,7 +56,7 @@ const handleFileUpload = async (setSelectedFiles) => {
         (file) => ["image/", "video/"].some((type) => file.type.startsWith(type)) && file.size <= 50 * 1024 * 1024
       );
 
-      if (validFiles.length === 0) {
+      if (!validFiles.length) {
         alert("Invalid file type or file size exceeds 50MB.");
         return;
       }
@@ -95,7 +97,7 @@ const FileGallery = ({ selectedFiles, setSelectedFiles }) => {
             <div key={day} className="mt-3">
               <h3 className="text-[14px] font-normal text-[#EAFBFF]">{day}</h3>
 
-              <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 mt-4 grid-auto-flow-dense" style={{ gridAutoRows: "208px" }}>
+              <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 mt-4" style={{ gridAutoRows: "208px" }}>
                 {files.map((file, index) => (
                   <div key={index} className="relative overflow-hidden rounded-lg" style={{ height: "208px" }}>
                     {file.file.type.startsWith("image/") ? (
@@ -104,7 +106,7 @@ const FileGallery = ({ selectedFiles, setSelectedFiles }) => {
                         alt="uploaded"
                         layout="fill"
                         objectFit="cover"
-                        className="rounded-lg"
+                        className="rounded-lg object-fill"
                       />
                     ) : (
                       <video
