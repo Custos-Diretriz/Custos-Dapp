@@ -24,25 +24,6 @@ const BackgroundWrapper = ({ children }) => {
         }}
       />
 
-      {/* Left background */}
-      <img
-        src="/leftbg.svg"
-        alt="Left Background"
-        className="absolute left-0 top-0 h-fit object-cover w-[15%] z-0"
-        style={{
-          zIndex: -1,
-        }}
-      />
-
-      {/* Right background */}
-      <img
-        src="/rightbg.svg"
-        alt="Right Background"
-        className="absolute right-0 top-0 h-fit object-cover w-[15%] z-0"
-        style={{
-          zIndex: -1,
-        }}
-      />
 
       {/* Main content */}
       {children}
