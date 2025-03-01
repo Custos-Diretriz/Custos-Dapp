@@ -13,21 +13,14 @@ const UploadFile = ({ setSelectedFiles }) => {
 
   const getLocation = () => {
     return new Promise((resolve, reject) => {
-      if (!navigator.geolocation) {
-        reject("Geolocation is not supported by your browser.");
-      } else {
-        navigator.geolocation.getCurrentPosition(
-          (position) => {
-            resolve({
-              latitude: position.coords.latitude,
-              longitude: position.coords.longitude,
-            });
-          },
-          () => {
-            reject("Unable to retrieve your location.");
-          }
-        );
-      }
+      navigator.geolocation.getCurrentPosition(
+        (position) =>
+          resolve({
+            latitude: position.coords.latitude,
+            longitude: position.coords.longitude,
+          }),
+        () => reject(new Error("Unable to retrieve your location."))
+      );
     });
   };
 
@@ -98,7 +91,7 @@ const UploadFile = ({ setSelectedFiles }) => {
           <p className="text-[20px] font-semibold text-[#EAFBFF]">
             Upload your assets here
           </p>
-          <Image width={22} height={22} src={"/blue-star.svg"} alt="star" />
+          <Image width={22} height={22} src="/blue-star.svg" alt="star" />
         </div>
 
         <div

@@ -165,7 +165,7 @@ const FileGallery = ({ selectedFiles, setSelectedFiles }) => {
                         alt="uploaded"
                         layout="fill"
                         objectFit="cover"
-                        className="rounded-lg"
+                        className="rounded-lg object-fill"
                       />
                     )}
                   </div>
