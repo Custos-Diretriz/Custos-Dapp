@@ -2,8 +2,8 @@
 import { useState, useEffect } from "react";
 import { FiX, FiMenu } from "react-icons/fi";
 import "../globals.css";
-import Header from "@/components/dapps/header";
-import Sidepane from "@/components/dapps/sidepane";
+import Header from "../../components/dapps/header";
+import Sidepane from "../../components/dapps/sidepane";
 
 export default function RootLayout({ children }) {
   const [isMobileOpen, setMobileOpen] = useState(false);

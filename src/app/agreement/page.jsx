@@ -12,7 +12,7 @@ import { WalletContext } from "../../components/walletprovider";
 // import { UseReadContractData } from "@/utils/fetchcontract";
 import agreementAbi from "../../utils/agreementAbi.json";
 import { UseReadContractData } from "../../utils/fetchcontract";
-import Loading from "@/components/loading";
+import Loading from "../../components/loading";
 import { useNotification } from "../../context/NotificationProvider";
 
 function AgreementList() {

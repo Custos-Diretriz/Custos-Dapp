@@ -10,7 +10,7 @@ import parse from 'html-react-parser';
 import { byteArrayToString, hexTimestampToFormattedDate, numberToHex, padAddress } from "../../../utils/serializer";
 import { WalletContext } from "../../../components/walletprovider";
 import { useNotification } from "../../../context/NotificationProvider";
-import { provider, UseWriteToContract } from "@/utils/fetchcontract";
+import { provider, UseWriteToContract } from "../../../utils/fetchcontract";
 
 
 const detectContentFormat = (content) => {

@@ -5,9 +5,10 @@ import { InjectedConnector } from "starknetkit/injected";
 import { WebWalletConnector } from "starknetkit/webwallet";
 import { mainnet } from "@starknet-react/chains";
 import { connect, disconnect } from "starknetkit";
-import { useNotification } from "@/context/NotificationProvider";
-import { padAddress } from "@/utils/serializer";
+
 import { RpcProvider, Account } from "starknet";
+import { useNotification } from "../context/NotificationProvider";
+import { padAddress } from "../utils/serializer";
 
 export const WalletContext = createContext();
 const apiKey = process.env.NEXT_PUBLIC_ALCHEMY_KEY;

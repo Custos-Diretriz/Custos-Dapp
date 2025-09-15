@@ -2,11 +2,11 @@ import "./globals.css";
 import Footer from "../components/footer";
 import "@rainbow-me/rainbowkit/styles.css";
 import Metadata from "./metadata";
-import BackgroundWrapper from "@/components/backgroundwrapper";
-import { WalletProvider } from "@/components/walletprovider";
-import { ModalProvider } from "@/context/ModalProvider";
-import { NotificationProvider } from "@/context/NotificationProvider";
-import { GlobalStateProvider } from "@/context/GlobalStateProvider";
+import BackgroundWrapper from "../components/backgroundwrapper";
+import { WalletProvider } from "../components/walletprovider";
+import { ModalProvider } from "../context/ModalProvider";
+import { NotificationProvider } from "../context/NotificationProvider";
+import { GlobalStateProvider } from "../context/GlobalStateProvider";
 import { Analytics } from "@vercel/analytics/react"
 
 // Add the manifest so that it can be injected at nextjs runtime.

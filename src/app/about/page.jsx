@@ -2,8 +2,8 @@
 
 import { useState, useEffect, useRef } from "react";
 import Image from "next/image";
-import Navbar from "@/components/navbar";
-import ShowLaunchDapps from "@/components/showLaunchDapps";
+import Navbar from "../../components/navbar";
+import ShowLaunchDapps from "../../components/showLaunchDapps";
 import { FaLongArrowAltRight } from "react-icons/fa";
 
 const About = () => {

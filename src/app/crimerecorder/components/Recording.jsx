@@ -11,13 +11,13 @@ import bg from "../../../../public/Rectangle.png";
 import icon3 from "../../../../public/rotate.png";
 import Icons from "./Icons";
 import { useRouter } from "next/navigation";
-import { WalletContext } from "@/components/walletprovider";
-import { useNotification } from "@/context/NotificationProvider";
-import { GlobalStateContext } from "@/context/GlobalStateProvider";
+import { WalletContext } from "../../../components/walletprovider";
+import { useNotification } from "../../../context/NotificationProvider";
+import { GlobalStateContext } from "../../../context/GlobalStateProvider";
 import stopIcon from "../../../../public/record.png";
 import icon2 from "../../../../public/picture.png";
 import Modal from "react-modal";
-import { useModal } from "@/context/ModalProvider";
+import { useModal } from "../../../context/ModalProvider";
 import {
   executeCalls,
   fetchAccountCompatibility,

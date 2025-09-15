@@ -1,4 +1,5 @@
 import React, { useRef, useEffect } from "react";
+import { TextHoverEffect } from "../ui/text-hover-effect";
 
 const Section = ({ children, id, headerText }) => {
   const sectionRef = useRef(null);
@@ -15,7 +16,7 @@ const Section = ({ children, id, headerText }) => {
         });
       },
       {
-        threshold: 0.3, 
+        threshold: 0.3,
       }
     );
 
@@ -33,9 +34,17 @@ const Section = ({ children, id, headerText }) => {
   return (
     <section ref={sectionRef} id={id} className="section">
       {headerText && (
-        <h2 className="text-3xl font-bold mb-12 text-center header-animation">
-          {headerText}
-        </h2>
+        <>
+          <TextHoverEffect
+            text={headerText}
+            // fontSize="text-7xl md:text-8xl"
+            className="text-4xl md:text-8xl"
+          />
+          {/* <h1 className="gradient-stroke">CREATE AGREEMENTS</h1> */}
+        </>
+        // <h2 className="text-3xl font-bold mb-12 text-center header-animation">
+        //   {headerText}
+        // </h2>
       )}
       <div className="content">{children}</div>
     </section>

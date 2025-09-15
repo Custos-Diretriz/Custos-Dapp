@@ -26,6 +26,8 @@ const AgreementNav = ({ activeTab, setActiveTab, text, mode }) => {
         </div>
         <div className="flex justify-between items-center">
           <p className="text-3xl font-bold text-white">{text}</p>
+       
+
           {/* <div className={`${globalState !== "" ? "flex" : "hidden"}`}>
             <div className="button-transition">
               <Image

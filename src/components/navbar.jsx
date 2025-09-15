@@ -5,6 +5,7 @@ import Link from "next/link";
 import { FaChevronDown, FaArrowRight, FaPlus, FaVideo } from "react-icons/fa";
 import { AiOutlineMenu, AiOutlineClose } from "react-icons/ai";
 import ConnectButtoncomponent from "./connect";
+import { HoverBorderGradient } from "./ui/hover-border-gradient";
 
 const Navbar = () => {
   const [showLaunchDapps, setShowLaunchDapps] = useState(false);
@@ -30,75 +31,17 @@ const Navbar = () => {
 
   return (
     <>
-      {/* CSS Reset and Cross-browser styles */}
-      <style jsx global>{`
-        /* CSS Reset */
-        *,
-        *::before,
-        *::after {
-          box-sizing: border-box;
-          margin: 0;
-          padding: 0;
-          -webkit-font-smoothing: antialiased;
-          -moz-osx-font-smoothing: grayscale;
-        }
-
-        /* Cross-browser button reset */
-        button {
-          appearance: none;
-          -webkit-appearance: none;
-          -moz-appearance: none;
-          border: none;
-          background: transparent;
-          cursor: pointer;
-          font-family: inherit;
-        }
-
-        /* Cross-browser image rendering */
-        img {
-          max-width: 100%;
-          height: auto;
-          display: block;
-        }
-
-        /* Fix for Safari mobile modal */
-        .modal-overlay {
-          -webkit-overflow-scrolling: touch;
-          overscroll-behavior: contain;
-        }
-
-        /* Ensure consistent link styling */
-        a {
-          text-decoration: none;
-          color: inherit;
-          -webkit-tap-highlight-color: transparent;
-        }
-
-        /* Consistent backdrop blur across browsers */
-        .backdrop-blur {
-          backdrop-filter: blur(10px);
-          -webkit-backdrop-filter: blur(10px);
-        }
-
-        /* Fix for Firefox backdrop opacity */
-        @-moz-document url-prefix() {
-          .bg-opacity-90 {
-            background-color: rgba(0, 0, 0, 0.95);
-          }
-        }
-      `}</style>
-
-      <nav className="py-4 z-50 backdrop-blur fixed top-0 w-full bg-[#84c2f513] shadow-md">
+      <nav className="mx-2  md:mx-8 my-4 glass-b bg-[#2749626b] rounded-full border-[0.5px] border-[#ffffff44] py-4 nav-shadow">
         <div className="w-full mx-auto px-4">
-          <div className="flex justify-around items-center">
+          <div className="flex justify-between  md:justify-around items-center">
             <div className="flex-shrink-0">
               <Link href="/" className="block">
                 <Image
-                  src="/logo.png"
+                  src="/logo-new.svg"
                   alt="Logo"
                   width={250}
                   height={50}
-                  className="rounded-lg"
+                  className="rounded-lg w-[150px] md:w-[250px]"
                   priority
                 />
               </Link>
@@ -107,15 +50,21 @@ const Navbar = () => {
             <div className="hidden lg:flex items-center">
               <ul className="flex gap-12 items-center">
                 <li>
-                  <button
-                    onClick={toggleLaunchDapps}
-                    className="text-white hover:text-[#c92eff] flex items-center transition-colors duration-200"
+                  <a
+                    href="/agreement"
+                    className="text-white hover:text-[#c92eff] transition-colors duration-200"
                   >
-                    Launch Dapps
-                    <FaChevronDown className="w-5 h-5 ml-1" />
-                  </button>
+                    Create Agreement
+                  </a>
                 </li>
-
+                <li>
+                  <a
+                    href="/crimerecorder"
+                    className="text-white hover:text-[#c92eff] transition-colors duration-200"
+                  >
+                    Crime Recorder
+                  </a>
+                </li>
                 <li>
                   <button
                     onClick={toggleCompany}
@@ -124,368 +73,101 @@ const Navbar = () => {
                     Company
                   </button>
                 </li>
+                <li>
+                  <button className="text-white hover:text-[#c92eff] transition-colors duration-200">
+                    Services
+                  </button>
+                </li>
               </ul>
             </div>
 
-            <div className="flex items-center space-x-4">
-              <div className="lg:hidden">
-                <button
-                  onClick={toggleMenu}
-                  className="p-2 hover:bg-[#ffffff1a] rounded-lg transition-colors duration-200"
-                >
-                  {isMenuOpen ? (
-                    <AiOutlineClose className="text-white w-6 h-6" />
-                  ) : (
-                    <AiOutlineMenu className="text-white w-6 h-6" />
-                  )}
-                </button>
-              </div>
-              <div className="hidden lg:block">
-                <ConnectButtoncomponent />
-              </div>
+            <div className="hidden md:block">
+              <HoverBorderGradient
+                containerClassName="rounded-full group"
+                as="button"
+                className="dark:bg-black bg-[#0495F8] px-8 py-3 text-[white] dark:text-white flex items-center space-x-2 
+               transition-transform duration-300 ease-out hover:scale-105 hover:shadow-lg"
+              >
+                <span>Get Started</span>
+                <FaArrowRight className="ml-1 rotate-[-35deg] transition-transform duration-300 ease-out group-hover:translate-x-1 group-hover:rotate-0" />
+              </HoverBorderGradient>
             </div>
+
+            <button
+              onClick={toggleMenu}
+              className="md:hidden p-2 hover:bg-[#ffffff1a] rounded-lg transition-colors duration-200"
+              aria-label="Toggle menu"
+            >
+              {isMenuOpen ? (
+                <AiOutlineClose className="text-white w-6 h-6" />
+              ) : (
+                <AiOutlineMenu className="text-white w-6 h-6" />
+              )}
+            </button>
           </div>
 
           {/* Mobile Menu */}
           {isMenuOpen && (
-            <div className="lg:hidden bg-[#000000ee] p-4 mt-4 rounded-lg modal-overlay">
-              <div className="flex items-center justify-center mb-8">
-                <ul className="flex flex-col space-y-4 w-full">
-                  <li className="collapse bg-[#00000098] rounded-lg overflow-hidden">
-                    <input
-                      type="radio"
-                      name="my-accordion-2"
-                      defaultChecked
-                      className="w-full"
-                    />
-                    <div className="collapse-title text-xl font-medium text-white p-4">
-                      Launch Dapps
-                    </div>
-                    <div className="collapse-content">
-                      <div className="inset-0 z-50 flex items-center justify-center bg-[#00000098] bg-opacity-90 ">
-                        <div className="relative rounded-lg shadow-lg w-full sm:flex md:flex-row h-full md:h-auto ">
-                          <div className="flex p-3 flex-col justify-between bg-opacity-90">
-                            <div>
-                              <p className="mt-4 text-gray-300">
-                                Decentralized apps help you leverage blockchain
-                                technology to secure your evidence and legal
-                                agreements.
-                              </p>
-                            </div>
-                          </div>
-                          <div className="flex flex-col gap-4 sm:gap-4  m-auto w-full sm:p-0 p-3 rounded-lg md:h-auto ">
-                            <a
-                              href="/agreement"
-                              className="text-white mb-4 z-[100] w-full hover:bg-[#015A9B] p-3 rounded-lg cursor-pointer "
-                            >
-                              <p className="flex items-center text-xl font-semibold">
-                                <FaPlus className="mr-2" />
-                                Create Agreement
-                              </p>
-                              <p className="text-gray-300 text-sm mt-1 ml-7">
-                                Custos ensures that agreements are securely
-                                stored.
-                              </p>
-                            </a>
-                            <a
-                              href="/crimerecorder"
-                              className="text-white mb-4 z-[100] hover:bg-[#015A9B] p-3 rounded-lg cursor-pointer "
-                            >
-                              <p className="flex items-center text-xl font-semibold text-white">
-                                <FaVideo className="mr-2" />
-                                Record Video
-                              </p>
-                              <p className="text-gray-300 text-sm mt-1 ml-7">
-                                Custos ensures that agreements are securely
-                                stored.
-                              </p>
-                            </a>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                  </li>
-
-                  {/* Company Section */}
-                  <li className="collapse bg-[#00000098] rounded-lg overflow-hidden">
-                    <input
-                      type="radio"
-                      name="my-accordion-2"
-                      className="w-full"
-                    />
-                    <div className="collapse-title text-xl font-medium text-white p-4">
-                      Company
-                    </div>
-                    <div className="collapse-content">
-                      <div className="inset-0 z-50 flex items-center justify-center bg-[#00000098] bg-opacity-90 ">
-                        <div className="relative rounded-lg shadow-lg w-full sm:flex md:flex-row h-full md:h-auto ">
-                          <div className="flex p-3 flex-col justify-between bg-opacity-90">
-                            <div>
-                              <p className="text-2xl text-white">
-                                Invulnerable
-                              </p>
-                              <p className="my-4 text-gray-300">
-                                Custos Diretriz is mastering the art of
-                                preservation and shielding on the blockchain.
-                              </p>
-                              <Link
-                                href="https://t.me/+x1zr5LaAMbdjZWZk"
-                                className="mt-4 z-[100] hover:bg-[#015A9B] flex items-center text-[#00bfff]"
-                              >
-                                Join the Community
-                                <FaArrowRight className="ml-1" />
-                              </Link>
-                              <Link
-                                href="https://t.me/+x1zr5LaAMbdjZWZk"
-                                className="mt-2 z-[100] hover:bg-[#015A9B] flex items-center text-[#00bfff]"
-                              >
-                                Learn More About Custos
-                                <FaArrowRight className="ml-1" />
-                              </Link>
-                            </div>
-                          </div>
-                          <div className="flex flex-col gap-4 sm:gap-4 m-auto w-full p-0 rounded-lg md:h-auto]">
-                            <Link
-                              href="/about"
-                              className="text-white z-[100] hover:bg-[#015A9B] rounded-lg w-full items-center p-2 bg-base-200"
-                            >
-                              <p className="flex sm:text-xl gap-4 sm:gap-6 h-full font-semibold text-white ">
-                                <Image
-                                  src="/about.svg"
-                                  width={32}
-                                  height={32}
-                                  alt="about"
-                                  className="rounded-lg h-fit p-1 w-[2em]"
-                                />
-                                <p className="flex flex-col ">
-                                  About Us
-                                  <p className="text-gray-300 text-[0.8em] mt-1 font-thin">
-                                    Get to know the team behind Custos
-                                  </p>
-                                </p>
-                              </p>
-                            </Link>
-                            <Link
-                              href="#"
-                              className="text-white z-[100] hover:bg-[#015A9B] rounded-lg w-full items-center p-2 bg-base-200"
-                            >
-                              <p className="flex sm:text-xl gap-4 sm:gap-6 h-full font-semibold text-white ">
-                                <Image
-                                  src="/careers.svg"
-                                  alt="careers"
-                                  width={50}
-                                  height={50}
-                                  className="rounded-lg h-fit w-[2em]"
-                                />
-                                <p className="flex flex-col ">
-                                  Careers
-                                  <p className="text-gray-300 text-[0.8em] mt-1 font-thin">
-                                    Find your dream role
-                                  </p>
-                                </p>
-                              </p>
-                            </Link>
-                            <Link
-                              href="#"
-                              className="text-white z-[100] hover:bg-[#015A9B] rounded-lg w-full items-center p-2"
-                            >
-                              <p className="flex sm:text-xl gap-4 sm:gap-6 h-full font-semibold text-white ">
-                                <Image
-                                  src="/call.svg"
-                                  alt="call"
-                                  width={50}
-                                  height={50}
-                                  className="rounded-lg h-fit w-[2em]"
-                                />
-                                <p className="flex flex-col ">
-                                  Contact Us
-                                  <p className="text-gray-300 text-[0.8em] mt-1 font-thin">
-                                    Reach out to us for questions and
-                                    clarifications
-                                  </p>
-                                </p>
-                              </p>
-                            </Link>
-                          </div>
-                        </div>
-
-                        {/* Other company links... */}
-                      </div>
-                    </div>
-                  </li>
-                </ul>
-              </div>
-              <div className="w-fit mx-auto">
-                <ConnectButtoncomponent />
+            <div className="fixed left-0 right-0 top-20 md:hidden bg-[#000000ee] p-4 mt-4 rounded-lg shadow-lg z-50">
+              <div className="flex flex-col space-y-4">
+                <a
+                  href="/agreement"
+                  className="text-white hover:text-[#c92eff] py-2 px-4 rounded-lg transition-colors duration-200"
+                >
+                  Create Agreement
+                </a>
+                <a
+                  href="/crimerecorder"
+                  className="text-white hover:text-[#c92eff] py-2 px-4 rounded-lg transition-colors duration-200"
+                >
+                  Crime Recorder
+                </a>
+                <button
+                  onClick={toggleCompany}
+                  className="text-white hover:text-[#c92eff] py-2 px-4 rounded-lg text-left transition-colors duration-200"
+                >
+                  Company
+                </button>
+                <button className="text-white hover:text-[#c92eff] py-2 px-4 rounded-lg text-left transition-colors duration-200">
+                  Services
+                </button>
+                <div className="pt-4 border-t border-gray-700">
+                  <ConnectButtoncomponent />
+                </div>
               </div>
             </div>
           )}
         </div>
       </nav>
 
-      {showLaunchDapps && (
-        <div className="sm:fixed absolute inset-0 z-50 flex items-center justify-center w-full bg-[#00000098] bg-opacity-90 ">
-          <div className="relative bg-[#091219] rounded-lg shadow-lg border-gradient md:w-[50%] w-full sm:flex md:flex-row h-full md:h-auto ">
-            <button
-              onClick={closeModal}
-              className="absolute top-0 right-0 flex items-center justify-center text-[3em] text-white w-12 h-12 rounded-full"
-              style={{ zIndex: 60 }}
-            >
-              &times;
-            </button>
-
-            <div className=" flex p-6 flex-col justify-between bg-opacity-90 bg-[#091219] bg-[url('/Rectangle.png')] bg-cover bg-center bg-repeat">
-              <div>
-                <p className="text-3xl text-white">Launch Dapps</p>
-                <p className="mt-4 text-gray-300">
-                  Decentralized apps help you leverage blockchain technology to
-                  secure your evidence and legal agreements.
-                </p>
-              </div>
-              <Image
-                src="/group.png"
-                alt="group"
-                width={200}
-                height={100}
-                className="rounded-lg mt-8"
-              />
-            </div>
-
-            <div className="flex flex-col gap-4 sm:gap-4  m-auto w-full sm:p-0 p-4 rounded-lg md:h-auto bg-[#091219]">
-              <a
-                href="/agreement"
-                className="text-white mb-4 z-[100] w-full hover:bg-[#015A9B] sm:p-4 rounded-lg cursor-pointer"
-              >
-                <p className="flex items-center text-xl font-semibold">
-                  <FaPlus className="mr-2" />
-                  Create Agreement
-                </p>
-                <p className="text-gray-300 mt-1">
-                  Custos ensures that agreements are securely stored.
-                </p>
-              </a>
-
-              <a
-                href="/crimerecorder"
-                className="text-white mb-4 z-[100] hover:bg-[#015A9B] sm:p-4 rounded-lg cursor-pointer"
-              >
-                <p className="flex items-center text-xl font-semibold text-white">
-                  <FaVideo className="mr-2" />
-                  Record Video
-                </p>
-                <p className="text-gray-300 mt-1">
-                  Custos ensures that agreements are securely stored.
-                </p>
-              </a>
-            </div>
-          </div>
-        </div>
-      )}
-
       {showCompany && (
-        <div className="sm:fixed absolute inset-0 z-50  flex items-center justify-center bg-[#00000098] bg-opacity-90 ">
-          <div className="relative bg-[#091219] rounded-lg shadow-lg border-gradient md:w-[50%] w-full sm:flex md:flex-row h-full md:h-auto ">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-[#000000ee] bg-opacity-90">
+          <div className="relative bg-[#091219] rounded-lg shadow-lg border-gradient md:w-[50%] w-full p-6">
             <button
               onClick={closeModal}
-              className="absolute top-0 right-0 flex items-center justify-center text-[3em] text-white w-12 h-12 rounded-full"
-              style={{ zIndex: 60 }}
+              className="absolute top-4 right-4 text-white hover:text-gray-300"
             >
-              &times;
+              <AiOutlineClose className="w-6 h-6" />
             </button>
-
-            <div className=" flex p-6 flex-col justify-between bg-opacity-90 bg-[#091219] bg-[url('/Rectangle.png')] bg-cover bg-center bg-repeat">
-              <div>
-                <p className="text-3xl text-white">Invulnerable</p>
-                <p className="my-4 text-gray-300">
-                  Custos Diretriz is mastering the art of preservation and
-                  shielding on the blockchain.
-                </p>
-                <Link
-                  href="#"
-                  className="mt-4 text-gray-300 z-[100] hover:bg-[#015A9B] flex items-center"
-                >
-                  Join the Community
-                  <FaArrowRight className="ml-1" />
-                </Link>
-                <Link
-                  href="#"
-                  className="mt-2 text-gray-300 z-[100] hover:bg-[#015A9B] flex items-center"
-                >
-                  Learn More About Custos
-                  <FaArrowRight className="ml-1" />
-                </Link>
-              </div>
-              <Image
-                src="/gifs/company.gif"
-                alt="gif"
-                width={400}
-                height={100}
-                className="rounded-lg "
-              />
-            </div>
-
-            <div className="flex flex-col gap-4 sm:gap-4 m-auto w-full p-0 rounded-lg md:h-auto bg-[#091219]">
+            <div className="flex flex-col space-y-4">
+              <h2 className="text-2xl text-white font-bold">Company</h2>
               <Link
                 href="/about"
-                className="text-white z-[100] hover:bg-[#015A9B] rounded-lg w-full items-center p-2"
+                className="text-white hover:text-[#c92eff] transition-colors duration-200"
               >
-                <p className="flex sm:text-xl gap-4 sm:gap-6 h-full font-semibold text-white ">
-                  <Image
-                    src="/about.svg"
-                    alt="about"
-                    width={50}
-                    height={50}
-                    className="rounded-lg h-fit p-1 w-[2em]"
-                  />
-                  <p className="flex flex-col ">
-                    About Us
-                    <p className="text-gray-300 text-[0.8em] mt-1 font-thin">
-                      Get to know the team behind Custos
-                    </p>
-                  </p>
-                </p>
+                About Us
               </Link>
-
               <Link
                 href="#"
-                className="text-white z-[100] hover:bg-[#015A9B] rounded-lg w-full items-center p-2"
+                className="text-white hover:text-[#c92eff] transition-colors duration-200"
               >
-                <p className="flex sm:text-xl gap-4 sm:gap-6 h-full font-semibold text-white ">
-                  <Image
-                    src="/careers.svg"
-                    alt="careers"
-                    width={50}
-                    height={50}
-                    className="rounded-lg h-fit w-[2em]"
-                  />
-                  <p className="flex flex-col ">
-                    Careers
-                    <p className="text-gray-300 text-[0.8em] mt-1 font-thin">
-                      Find your dream role
-                    </p>
-                  </p>
-                </p>
+                Careers
               </Link>
-
               <Link
                 href="#"
-                className="text-white z-[100] hover:bg-[#015A9B] rounded-lg w-full items-center p-2"
+                className="text-white hover:text-[#c92eff] transition-colors duration-200"
               >
-                <p className="flex sm:text-xl gap-4 sm:gap-6 h-full font-semibold text-white ">
-                  <Image
-                    src="/call.svg"
-                    alt="call"
-                    width={50}
-                    height={50}
-                    className="rounded-lg h-fit w-[2em]"
-                  />
-                  <p className="flex flex-col ">
-                    Contact Us
-                    <p className="text-gray-300 text-[0.8em] mt-1 font-thin">
-                      Reach out to us for questions and clarifications
-                    </p>
-                  </p>
-                </p>
+                Contact
               </Link>
             </div>
           </div>

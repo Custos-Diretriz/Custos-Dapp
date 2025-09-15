@@ -1,8 +1,8 @@
 /* eslint-disable react/no-unescaped-entities */
 "use client";
-import { UseWriteToContract } from "@/utils/fetchcontract";
+import { UseWriteToContract } from "../../../utils/fetchcontract";
 import { useState, useContext, useRef, useEffect } from "react";
-import { FaArrowLeft } from "react-icons/fa";
+import { FaArrowLeft, FaLongArrowAltRight } from "react-icons/fa";
 import { Header } from "../components/AgreementNav";
 import { redirect } from "next/navigation";
 import { WalletContext } from "../../../components/walletprovider";
@@ -18,6 +18,8 @@ import dynamic from "next/dynamic";
 const MDEditor = dynamic(() => import("@uiw/react-md-editor"), { ssr: false });
 import Image from "next/image";
 import AgreementTemplate from "../agreementTemplate/page";
+// import { Input } from "../../components/ui/input";
+import CreateAgreementWithAi from "../withAi/page";
 
 // Arrays for select options
 const agreementTypeOptions = [
@@ -587,10 +589,11 @@ const AgreementModal = ({ initialStep, ttitle, tcontent, agreement }) => {
   };
 
   return (
-    <div className="w-full h-full sm:flex-row flex flex-col items-center justify-center">
-      {/* <div className=""> */}
+    <div className="w-full h-full sm:flex-ro flex flex-col items-center justify-center">
+      {/* <div className="flex justify-between "> */}
+      <div className="flex justify-between  w-full mt-[1%]">
         <button
-          className="sm:w-fit w-full sm:flex hidden absolute top-[10%] left-[10%] z-20 items-start text-[#EAFBFF] px-4 sm:px-0"
+          className="sm:w-fit w-full sm:flex justify-between  hidden   z-20 items-start text-[#EAFBFF] px-4 sm:px-0"
           onClick={() => window.history.back()}
         >
           <div className="sm:w-fit w-full  flex justify-start items-centr">
@@ -598,7 +601,12 @@ const AgreementModal = ({ initialStep, ttitle, tcontent, agreement }) => {
             <p className="text-[#EAFBFF] font-bold">Back</p>
           </div>
         </button>
-      {/* </div> */}
+        <div className="flex items-center gap-2">
+          {" "}
+          <div className="w-[1em] h-[1em] bg-blue-500 rounded-full"></div>
+          <p> step 1 of 8</p>
+        </div>
+      </div>
       <div className="w-full px-4 flex flex-col gap-8 overflow-clip  justify-center items-center h-auto">
         {/* Agreement Selection Section */}
         {!selectedAgreement && (
@@ -607,21 +615,44 @@ const AgreementModal = ({ initialStep, ttitle, tcontent, agreement }) => {
               Choose the Best Way to Create Your Agreement
             </h2>
             <div className="space-y-4 md:space-x-4 md:space-y-0 mt-8 flex flex-col md:flex-row">
+              {/* Card 1: AI Lawyer */}
+              <div
+                onClick={() => handleAgreementSelection("C")}
+                className="cursor-pointer"
+              >
+                <div
+                  className="w-full md:w-[268px] h-[360px] bg-[radial-gradient(13.75%_27.94%_at_50%_50%,_rgba(39,_73,_98,_0.1)_0%,_rgba(45,_72,_92,_0.2)_100%)] 
+      rounded-[20px] flex flex-col items-center justify-center p-4 
+      border-[2px] border-[transparent] 
+      group transition-all duration-300 ease-in-out relative"
+                >
+                  <div className="w-[80px] h-[80px] z-30 flex items-center justify-center">
+                    {/* You can use an AI icon or a placeholder image */}
+                    <Image
+                      src="/agreementWithAi.svg"
+                      width={400}
+                      height={400}
+                      className="w-full h-full object-cover rounded-t-[20px]"
+                      alt="AI Lawyer"
+                    />
+                  </div>
+                  <div className="flex z-20 flex-col justify-center items-center w-full h-[50%] rounded-b-[20px] p-4">
+                    <p className="text-[#EAFBFF] text-[20px] font-[500] mb-2 mt-12 text-center">
+                      Create your Agreement with Custos AI Lawyer
+                    </p>
+                    <p className="text-[#EAFBFF] text-[14px] font-[400] text-center">
+                      In 60 seconds, Custos AI Lawyer will create a Lawyer
+                      Standard agreement for you
+                    </p>
+                  </div>
+                  <div className="group-hover:bg-[radial-gradient(13.75%_27.94%_at_50%_50%,_rgba(39,_73,_98,_0.2)_0%,_rgba(45,_72,_92,_0.4)_100%)] w-full h-full absolute inset-0 rounded-[20px] transition-all duration-300 ease-in-out"></div>
+                </div>
+              </div>
+              {/* Card 2: Template */}
               <div
                 onClick={() => handleAgreementSelection("A")}
                 className="cursor-pointer"
               >
-                <div className=" py-4 sm:hidden flex items-start float-left w-full">
-                  <button
-                    className="sm:w-fit w-full flex items-start text-[#EAFBFF] px-4 sm:px-0"
-                    onClick={() => window.history.back()}
-                  >
-                    <div className="sm:w-fit w-full  flex justify-start items-centr">
-                      <FaArrowLeft className="mr-2 mt-[3px] text-[#EAFBFF]" />
-                      <p className="text-[#EAFBFF] font-bold">Back</p>
-                    </div>
-                  </button>
-                </div>
                 <div
                   className="w-full md:w-[268px] h-[360px] bg-[radial-gradient(13.75%_27.94%_at_50%_50%,_rgba(39,_73,_98,_0.1)_0%,_rgba(45,_72,_92,_0.2)_100%)] 
               rounded-[20px] flex flex-col items-center justify-center p-4 
@@ -649,6 +680,7 @@ const AgreementModal = ({ initialStep, ttitle, tcontent, agreement }) => {
                 </div>
               </div>
 
+              {/* Card 3: Build from scratch */}
               <div
                 onClick={() => handleAgreementSelection("B")}
                 className="cursor-pointer"
@@ -737,6 +769,12 @@ const AgreementModal = ({ initialStep, ttitle, tcontent, agreement }) => {
             </div>
           </>
         )}
+
+        {selectedAgreement === "C" && (
+          <>
+            <CreateAgreementWithAi />
+          </>
+        )}
         <Modal
           isOpen={isModalOpen}
           onRequestClose={() => setIsModalOpen(false)}
@@ -754,4 +792,7 @@ const AgreementModal = ({ initialStep, ttitle, tcontent, agreement }) => {
   );
 };
 
-export default AgreementModal;
+// Replace default export to provide a no-prop page component required by Next.js
+export default function Page() {
+  return <AgreementModal />;
+}
