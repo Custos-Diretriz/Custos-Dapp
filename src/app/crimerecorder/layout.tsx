@@ -1,0 +1,101 @@
+"use client";
+import { useState, useEffect, ReactNode } from "react";
+import { FiX, FiMenu } from "react-icons/fi";
+import "../globals.css";
+import Header from "../../components/dapps/header";
+import Sidepane from "../../components/dapps/sidepane";
+import { JSX } from "react/jsx-runtime";
+
+interface RootLayoutProps {
+  children: ReactNode;
+}
+
+export default function RootLayout({ children }: RootLayoutProps): JSX.Element {
+  const [isMobileOpen, setMobileOpen] = useState<boolean>(false);
+  const [isCollapsed, setCollapsed] = useState<boolean>(false);
+  const [isMobile, setIsMobile] = useState<boolean>(false);
+
+  useEffect(() => {
+    const checkMobile = (): void => {
+      const mobile: boolean = window.innerWidth < 768;
+      setIsMobile(mobile);
+      if (!mobile) setMobileOpen(false);
+    };
+
+    checkMobile();
+    window.addEventListener("resize", checkMobile);
+    return () => window.removeEventListener("resize", checkMobile);
+  }, []);
+
+  const toggleMenu = (): void => {
+    if (isMobile) {
+      setMobileOpen(!isMobileOpen);
+    } else {
+      setCollapsed(!isCollapsed);
+    }
+  };
+
+  useEffect(() => {
+    if (isMobile && isMobileOpen) {
+      document.body.style.overflow = "hidden";
+    } else {
+      document.body.style.overflow = "auto";
+    }
+  }, [isMobileOpen, isMobile]);
+
+  return (
+    <div className="flex min-h-screen w-full">
+      {/* Mobile Overlay */}
+      {isMobile && (
+        <div
+          className={`fixed inset-0 bg-black/50 z-40 transition-opacity 
+            ${isMobileOpen ? "opacity-100" : "opacity-0 pointer-events-none"}`}
+          onClick={() => setMobileOpen(false)}
+        />
+      )}
+
+      <div
+        className={`
+        fixed md:relative h-full z-50
+        ${
+          isMobile
+            ? `transform transition-transform duration-300 w-64 
+           ${isMobileOpen ? "translate-x-0" : "-translate-x-full"}`
+            : `transition-all duration-300 
+           ${isCollapsed ? "w-20" : "w-64"}`
+        }`}
+      >
+        <Sidepane />
+      </div>
+
+      {/* Main Content */}
+      <div className={`flex flex-col w-full`}>
+        {/* Header with spacing for fixed button */}
+        <div className="fixed w-full right-0 top-0 z-30 p-2 flex">
+          <Header onToggle={toggleMenu} />
+          {isMobile && (
+            <button
+              onClick={toggleMenu}
+              className="z-30 top-4 left-4 w-fit bg-inherit backdrop-blur"
+              aria-label={isMobile ? "Toggle menu" : "Collapse menu"}
+            >
+              {isMobile ? (
+                isMobileOpen ? (
+                  <FiX className="w-8 h-8 text-[#ffffff]" />
+                ) : (
+                  <FiMenu className="w-8 h-8 text-[#ffffff]" />
+                )
+              ) : (
+                ""
+              )}
+            </button>
+          )}
+        </div>
+
+        <div className="w-full items-center mt-20 flex justify-center m-auto">
+          {children}
+        </div>
+      </div>
+    </div>
+  );
+}

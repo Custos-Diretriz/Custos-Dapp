@@ -8,13 +8,15 @@ const __dirname = path.dirname(__filename);
 const withPWA = withPWAInit({
   dest: "public",
   register: true,
-  disable: false,
+  disable: true, // Temporarily disable PWA to fix build
   cacheOnFrontEndNav: true,
   aggressiveFrontEndNavCaching: true,
   reloadOnOnline: true,
   workboxOptions: {
     disableDevLogs: false,
   },
+  buildExcludes: [/middleware-manifest\.json$/],
+  sw: "sw.js",
 });
 
 export default withPWA({
