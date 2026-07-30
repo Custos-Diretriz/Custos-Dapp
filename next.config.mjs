@@ -14,11 +14,21 @@ const withPWA = withPWAInit({
   reloadOnOnline: true,
   workboxOptions: {
     disableDevLogs: false,
+    navigateFallbackDenylist: [/^\/api\//],
+    runtimeCaching: [
+      {
+        urlPattern: /^https:\/\/auth\.privy\.io\/.*/i,
+        handler: "NetworkOnly",
+      },
+      {
+        urlPattern: /\/api\/guest-save/i,
+        handler: "NetworkOnly",
+      },
+    ],
   },
 });
 
 export default withPWA({
-  // Your Next.js config
   reactStrictMode: true,
   images: {
     domains: ["custosbackend.onrender.com"],
@@ -35,10 +45,49 @@ export default withPWA({
         port: "",
         pathname: "/media/**",
       },
+      {
+        protocol: "https",
+        hostname: "gateway.pinata.cloud",
+        port: "",
+        pathname: "/ipfs/**",
+      },
     ],
   },
-  webpack: (config, { dev, isServer }) => {
-    // Disable cache in development
+  // `webpack` here is Next's own bundled instance — plugins built from the
+  // standalone `webpack` package won't attach to this compiler.
+  webpack: (config, { dev, isServer, webpack }) => {
+    // --- Privy optional dependencies ---------------------------------
+    // Privy lazily references modules for features we don't enable
+    // (fiat onramp, Farcaster mini-apps, React Native). pnpm's strict
+    // node_modules won't resolve them, so ignore them at the bundler.
+    config.plugins.push(
+      new webpack.IgnorePlugin({
+        resourceRegExp:
+          /^(@farcaster\/.*|@stripe\/crypto|react-native|@react-native-async-storage\/async-storage)$/,
+      })
+    );
+
+    // Explicit aliases for the ones already seen — belt and braces,
+    // and clearer than a regex when someone reads this later.
+    config.resolve.alias = {
+      ...config.resolve.alias,
+      "@stripe/crypto": false,
+      "@farcaster/mini-app-solana": false,
+    };
+
+    if (!isServer) {
+      config.resolve.fallback = {
+        ...config.resolve.fallback,
+        fs: false,
+        net: false,
+        tls: false,
+      };
+    }
+
+    config.externals = config.externals || [];
+    config.externals.push("pino-pretty", "lokijs", "encoding");
+
+    // --- Your existing cache setup -----------------------------------
     if (dev) {
       config.cache = false;
     } else {
@@ -51,6 +100,7 @@ export default withPWA({
         maxAge: 5184000000, // 60 days
       };
     }
+
     return config;
   },
 });
