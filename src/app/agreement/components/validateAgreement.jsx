@@ -1,19 +1,19 @@
 /* eslint-disable react/no-unescaped-entities */
 "use client";
 import { useContext, useEffect, useState } from "react";
+import { useWallets } from "@privy-io/react-auth";
 import useIdentityVerification from "../../../utils/verification";
 import { GlobalStateContext } from "../../../context/GlobalStateProvider";
 import { useRouter } from "next/navigation";
 import { provider, UseWriteToContract } from "../../../utils/fetchcontract";
 import Image from "next/image";
-import {
-  hexToNumber,
-  stringToByteArray,
-  stringToFelt,
-} from "../../../utils/serializer";
+import { hexToNumber, stringToByteArray } from "../../../utils/serializer";
 import SuccessScreen from "./Success";
 import Loading from "../../../components/loading";
 import { useNotification } from "../../../context/NotificationProvider";
+import { WalletContext } from "../../../components/walletprovider";
+import { CHAIN_TYPES } from "../../../lib/chains";
+import { createAgreement } from "../../../utils/evmAgreement";
 
 const ValidateAgreementModal = ({
   fullname,
@@ -34,75 +34,94 @@ const ValidateAgreementModal = ({
   const { writeToContract, isLoading, isError } = UseWriteToContract();
   const { openNotification } = useNotification();
 
-  const EVENT_SELECTOR =
-    "0x014c05f7f3f16c18069b3e5dfe85b725aad852e37813fa307559077b451d54d2";
+  const { selectedChain } = useContext(WalletContext);
+  const { wallets } = useWallets();
+  const isEvm = selectedChain?.type === CHAIN_TYPES.EVM;
+
+  const privyWallet =
+    wallets?.find((w) => w.walletClientType === "privy") || wallets?.[0] || null;
+
+  /** Tell the backend which onchain id this agreement got. */
+  const linkAgreementId = async (id) => {
+    const formData = new FormData();
+    formData.append("agreement_id", id);
+
+    const url = `${process.env.NEXT_PUBLIC_BACKEND_URL}/agreement/agreement/update_by_access_token/?access_token=${encodeURIComponent(
+      agreement?.access_token || ""
+    )}`;
+
+    const response = await fetch(url, { method: "PUT", body: formData });
+    if (!response.ok) throw new Error("Failed to link the onchain agreement");
+  };
+
+  // ---------------- EVM ----------------
+
+  const validateEvm = async () => {
+    const { agreementId: newId } = await createAgreement({
+      chain: selectedChain,
+      privyWallet,
+      content: agreement?.content || "",
+      secondPartyAddress: agreement?.second_party_address,
+      firstPartyValidId: agreement?.first_party_valid_id || "",
+      secondPartyValidId: agreement?.second_party_valid_id || "",
+      agreementTitle: agreement?.agreementType || "",
+    });
+
+    if (newId == null) throw new Error("Could not read the new agreement id");
+    await linkAgreementId(newId);
+  };
+
+  // ---------------- Starknet ----------------
+
+  const validateStarknet = async () => {
+    if (!writeToContract) {
+      throw new Error("writeToContract function is not available");
+    }
+
+    const params = [
+      `"${stringToByteArray(agreement?.content || "N/A")}"`,
+      agreement?.second_party_address || "N/A",
+      `"${stringToByteArray(agreement?.first_party_valid_id || "N/A")}"`,
+      `"${stringToByteArray(agreement?.second_party_valid_id || "N/A")}"`,
+      `"${stringToByteArray(agreement?.agreementType || "N/A")}"`,
+    ];
+
+    const result = await writeToContract(
+      "agreement",
+      "create_agreement",
+      params
+    );
+
+    const txReceipt = await provider.waitForTransaction(
+      result.transaction_hash
+    );
+
+    let newId;
+    if (txReceipt.isSuccess()) {
+      newId = hexToNumber(txReceipt.events[0]?.keys?.[1]);
+    }
+    if (newId == null) throw new Error("Could not read the new agreement id");
+    await linkAgreementId(newId);
+  };
 
   const handleValidate = async () => {
     setIsValidating(true);
     try {
-      if (!writeToContract) {
-        throw new Error("writeToContract function is not available");
+      if (!agreement?.second_party_address) {
+        throw new Error("This agreement has no second party address");
       }
 
-      const params = [
-        `"${stringToByteArray(agreement?.content || "N/A")}"`,
-        agreement?.second_party_address || "N/A",
-        `"${stringToByteArray(agreement?.first_party_valid_id || "N/A")}"`,
-        `"${stringToByteArray(agreement?.second_party_valid_id || "N/A")}"`,
-        `"${stringToByteArray(agreement?.agreementType || "N/A")}"`,
-      ];
+      if (isEvm) await validateEvm();
+      else await validateStarknet();
 
-      if (params.some((param) => param == null)) {
-        throw new Error("One or more parameters are null or undefined");
-      }
-
-      const result = await writeToContract(
-        "agreement",
-        "create_agreement",
-        params
-      );
-
-      const txReceipt = await provider.waitForTransaction(
-        result.transaction_hash
-      );
-
-      let agreement_id;
-      if (txReceipt.isSuccess()) {
-        const events = txReceipt.events;
-        agreement_id = events[0]?.keys?.[1];
-        agreement_id = hexToNumber(agreement_id);
-      }
-
-      if (result?.transaction_hash) {
-        const formData = new FormData();
-        formData.append("agreement_id", agreement_id);
-
-        const url = `${process.env.NEXT_PUBLIC_BACKEND_URL}/agreement/agreement/update_by_access_token/?access_token=${encodeURIComponent(
-          agreement?.access_token || ""
-        )}`;
-
-        const response = await fetch(url, {
-          method: "PUT",
-          body: formData,
-        });
-
-        if (response.ok) {
-          setIsSuccess(true);
-          openNotification("success", "Agreement validation updated", "");
-        } else {
-          openNotification(
-            "error",
-            "",
-            "Failed to update agreement validation status"
-          );
-        }
-      }
+      setIsSuccess(true);
+      openNotification("success", "Agreement anchored onchain", "");
     } catch (err) {
       console.error("Contract interaction failed", err);
       openNotification(
         "error",
         "",
-        err.message || "Contract interaction failed"
+        err.shortMessage || err.message || "Contract interaction failed"
       );
       setIsSuccess(false);
     } finally {
@@ -188,6 +207,10 @@ const ValidateAgreementModal = ({
                   value={termsAndConditions}
                   placeholder="Loading terms and conditions..."
                 />
+                <p className="text-[11px] text-[#9B9292]">
+                  Only a fingerprint of this agreement is written to{" "}
+                  {selectedChain?.name}. The document itself stays private.
+                </p>
               </>
             )}
 

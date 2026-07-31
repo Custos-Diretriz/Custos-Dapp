@@ -1,72 +1,102 @@
 "use client";
-import React, { useEffect, useState, useContext } from "react";
-import Modal from "react-modal";
+import React, { useEffect, useState, useContext, useMemo, useCallback } from "react";
 import {
   AgreementCard,
   PendingAgreementCard,
 } from "./components/agreementcard";
 import NoAgreementscreen from "./components/noAgreementscreen";
 import AgreementNav from "./components/AgreementNav";
-import SignAgreementModal from "./components/signagreementmodal";
 import { WalletContext } from "../../components/walletprovider";
-// import { UseReadContractData } from "@/utils/fetchcontract";
-import agreementAbi from "../../utils/agreementAbi.json";
 import { UseReadContractData } from "../../utils/fetchcontract";
 import Loading from "../../components/loading";
 import { useNotification } from "../../context/NotificationProvider";
+import { CHAIN_TYPES } from "../../lib/chains";
+import { getUserAgreements } from "../../utils/evmAgreement";
+import {
+  byteArrayToString,
+  hexTimestampToFormattedDate,
+  numberToHex,
+} from "../../utils/serializer";
 
 function AgreementList() {
   const [loadingAgreements, setLoadingAgreements] = useState(false);
   const [loadingPendingAgreements, setLoadingPendingAgreements] =
     useState(false);
-  const [showAgreementModal, setShowAgreementModal] = useState(false);
   const [pendingAgreements, setPendingAgreements] = useState([]);
   const [agreements, setAgreements] = useState([]);
-  const [totalAgreements, setTotalAgreements] = useState([]);
-  const [selectedAgreement, setSelectedAgreement] = useState(null);
-  const { address } = useContext(WalletContext);
-  console.log("new address", address);
+  const { address, selectedChain } = useContext(WalletContext);
 
   const [activeTab, setActiveTab] = useState("all");
 
   const { openNotification } = useNotification();
   const { fetchData } = UseReadContractData();
+
+  const isEvm = selectedChain?.type === CHAIN_TYPES.EVM;
+
+  // ---------------- onchain ----------------
+
+  const loadEvm = useCallback(async () => {
+    return getUserAgreements({ chain: selectedChain, userAddress: address });
+  }, [selectedChain, address]);
+
+  /** Decode Cairo values into the same shape evmAgreement returns. */
+  const loadStarknet = useCallback(async () => {
+    const raw = await fetchData("agreement", "get_user_agreements", [address]);
+    if (!Array.isArray(raw)) return [];
+
+    return raw.map((a) => ({
+      id: Number(a.id ?? 0),
+      creator: numberToHex(a.creator),
+      second_party_address: numberToHex(a.second_party_address),
+      agreement_title: byteArrayToString(a.agreement_title),
+      content: byteArrayToString(a.content),
+      timestamp: a.timestamp,
+      validate_signature: a.validate_signature,
+      onchain: true,
+      starknet: true,
+    }));
+  }, [fetchData, address]);
+
   useEffect(() => {
-    const fetchAgreements = async () => {
+    if (!address) {
+      setAgreements([]);
+      return;
+    }
+
+    let cancelled = false;
+    const run = async () => {
       setLoadingAgreements(true);
       try {
-        // Ensure fetchData returns an array of promises
-        const agreementsDetails = await fetchData(
-          "agreement",
-          "get_user_agreements",
-          [address]
-        );
-        // Check if agreementsDetails is an array
-        if (Array.isArray(agreementsDetails)) {
-          setAgreements(agreementsDetails);
-          console.log("agreements are", agreementsDetails);
-        } else {
-          openNotification("error", "", "fetchData did not return an array");
-          throw new Error("fetchData did not return an array");
-        }
+        const result = isEvm ? await loadEvm() : await loadStarknet();
+        if (!cancelled) setAgreements(result);
       } catch (error) {
+        console.error("Error fetching agreement details:", error);
         openNotification(
           "error",
           "Error fetching agreement details",
-          `${error}`
+          error.shortMessage || `${error}`
         );
-        console.error("Error fetching agreement details:", error);
+        if (!cancelled) setAgreements([]);
       } finally {
-        setLoadingAgreements(false);
+        if (!cancelled) setLoadingAgreements(false);
       }
     };
 
-    if (address) {
-      fetchAgreements();
-    }
-  }, [address]);
+    run();
+    return () => {
+      cancelled = true;
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [address, isEvm, selectedChain?.key]);
+
+  // ---------------- backend ----------------
 
   useEffect(() => {
+    if (!address) {
+      setPendingAgreements([]);
+      return;
+    }
+
     const FetchPendingAgreements = async () => {
       setLoadingPendingAgreements(true);
       try {
@@ -74,29 +104,56 @@ function AgreementList() {
           `${process.env.NEXT_PUBLIC_BACKEND_URL}/agreement/agreement/by_party/?address=${address}`
         );
         const data = await res.json();
-        console.log("response::", data);
-        setPendingAgreements(data);
+        setPendingAgreements(Array.isArray(data) ? data : []);
       } catch (error) {
         openNotification("error", "Error fetching agreements", `${error}`);
         console.error("Error fetching agreements:", error);
+        setPendingAgreements([]);
       } finally {
         setLoadingPendingAgreements(false);
       }
     };
 
-    if (address) {
-      FetchPendingAgreements();
-    } else {
-      setPendingAgreements(null);
-    }
+    FetchPendingAgreements();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [address]);
+
+  /**
+   * Content isn't onchain anymore — only its hash. The backend row carries
+   * the readable document, joined here by the agreement_id it stores.
+   */
+  const onchainAgreements = useMemo(() => {
+    const byId = new Map();
+    for (const row of pendingAgreements || []) {
+      if (row.agreement_id != null) byId.set(Number(row.agreement_id), row);
+    }
+
+    return agreements.map((a) => {
+      const row = byId.get(a.id);
+      return row
+        ? {
+            ...a,
+            content: a.content ?? row.content,
+            access_token: row.access_token,
+            second_party_fullname: row.second_party_fullname,
+            backendId: row.id,
+          }
+        : a;
+    });
+  }, [agreements, pendingAgreements]);
+
+  /** Backend rows already anchored shouldn't render twice. */
+  const unanchoredPending = useMemo(
+    () => (pendingAgreements || []).filter((a) => a.agreement_id == null),
+    [pendingAgreements]
+  );
 
   const printAgreement = (agreement) => {
     const printContent = `
-      <h1>${agreement.title}</h1>
-      <p>Second Party Address: ${agreement.secondPartyAddress}</p>
-      <p>Created by  : ${agreement.creatorName}</p>
-      <p>${agreement.content}</p>
+      <h1>${agreement.agreement_title || agreement.agreementType || "Agreement"}</h1>
+      <p>Second party: ${agreement.second_party_address || ""}</p>
+      <p>Created by: ${agreement.creator || agreement.first_party_address || ""}</p>
+      <div>${agreement.content || ""}</div>
     `;
     const printWindow = window.open("", "", "width=800,height=600");
     printWindow.document.write(printContent);
@@ -104,118 +161,64 @@ function AgreementList() {
     printWindow.print();
   };
 
-  const toggleSignModal = (agreement) => {
-    setSelectedAgreement(agreement);
-    setShowAgreementModal(!showAgreementModal);
-  };
-
   const gridClass =
     "grid w-full gap-4 grid-cols-1 sm:grid-cols-2 xl:grid-cols-3";
 
+  const renderList = (pending, onchain) =>
+    pending.length > 0 || onchain.length > 0 ? (
+      <div className={gridClass}>
+        {pending.map((agreement, index) => (
+          <PendingAgreementCard
+            key={`p-${agreement.id ?? index}`}
+            agreement={agreement}
+            printAgreement={printAgreement}
+          />
+        ))}
+        {onchain.map((agreement, index) => (
+          <AgreementCard
+            key={`o-${agreement.id ?? index}`}
+            agreement={agreement}
+            printAgreement={printAgreement}
+          />
+        ))}
+      </div>
+    ) : (
+      <NoAgreementscreen />
+    );
+
   const renderAgreements = () => {
     if (activeTab === "all") {
-      return agreements.length > 0 || pendingAgreements?.length > 0 ? (
-        <div className={gridClass}>
-          {pendingAgreements?.map((agreement, index) => (
-            <PendingAgreementCard
-              key={index}
-              agreement={agreement}
-              printAgreement={printAgreement}
-              toggleSignModal={toggleSignModal}
-            />
-          ))}
-          {agreements.map((agreement, index) => (
-            <AgreementCard
-              key={index}
-              agreement={agreement}
-              printAgreement={printAgreement}
-              toggleSignModal={toggleSignModal}
-            />
-          ))}
-        </div>
-      ) : (
-        <NoAgreementscreen />
-      );
+      return renderList(unanchoredPending, onchainAgreements);
     }
 
-    if (activeTab == "pending") {
-      const filteredPendingAgreements = pendingAgreements?.filter(
-        (agreement) => {
-          if (agreement.access_token != null) {
-            console.log('agreement with first pt')
-            return agreement.second_party_signature == null || agreement.agreement_id == null;
-          } else if (agreement.access_token == null) {
-            console.log('agreement with sec pt')
-            return agreement.agreement_id == null && agreement.second_party_signature == null;
-          }
-          return false;
-        }
-      );
-
-      return filteredPendingAgreements?.length > 0 ? (
-        <div className={gridClass}>
-          {filteredPendingAgreements.map((agreement, index) => (
-            <PendingAgreementCard
-              key={index}
-              agreement={agreement}
-              printAgreement={printAgreement}
-              toggleSignModal={toggleSignModal}
-            />
-          ))}
-        </div>
-      ) : (
-        <NoAgreementscreen />
+    if (activeTab === "pending") {
+      return renderList(
+        unanchoredPending.filter((a) => a.second_party_signature == null),
+        []
       );
     }
 
     if (activeTab === "signed") {
-      const signedAgreements = pendingAgreements?.filter(
-        (agreement) => agreement.second_party_signature !== null
-      );
-
-      return signedAgreements?.length > 0 ? (
-        <div className={gridClass}>
-          {signedAgreements.map((agreement, index) => (
-            <PendingAgreementCard
-              key={index}
-              agreement={agreement}
-              printAgreement={printAgreement}
-              toggleSignModal={toggleSignModal}
-            />
-          ))}
-        </div>
-      ) : (
-        <NoAgreementscreen />
+      return renderList(
+        unanchoredPending.filter((a) => a.second_party_signature != null),
+        []
       );
     }
 
     if (activeTab === "validated") {
-      return agreements.length > 0 || pendingAgreements?.length > 0 ? (
-        <div className={gridClass}>
-          {agreements.map((agreement, index) => (
-            <AgreementCard
-              key={index}
-              agreement={agreement}
-              printAgreement={printAgreement}
-              toggleSignModal={toggleSignModal}
-            />
-          ))}
-        </div>
-      ) : (
-        <NoAgreementscreen />
-      );
-    }}
+      return renderList([], onchainAgreements);
+    }
+
+    return null;
+  };
 
   const tabCounts = {
-    all: (agreements?.length || 0) + (pendingAgreements?.length || 0),
-    pending:
-      pendingAgreements?.filter(
-        (a) => a.agreement_id == null && a.second_party_signature == null
-      ).length || 0,
-    signed:
-      pendingAgreements?.filter((a) => a.second_party_signature !== null)
-        .length || 0,
-    validated: agreements?.length || 0,
+    all: onchainAgreements.length + unanchoredPending.length,
+    pending: unanchoredPending.filter((a) => a.second_party_signature == null)
+      .length,
+    signed: unanchoredPending.filter((a) => a.second_party_signature != null)
+      .length,
+    validated: onchainAgreements.length,
   };
 
   return (

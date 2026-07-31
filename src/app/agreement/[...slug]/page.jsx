@@ -4,9 +4,6 @@ import DOMPurify from "dompurify";
 import Slugnav from "../components/slugnav";
 import { format } from "date-fns";
 import Image from "next/image";
-import parse from "html-react-parser";
-import { useRouter } from "next/navigation";
-import mammoth from "mammoth";
 import { useNotification } from "../../../context/NotificationProvider";
 import Loading from "../../../components/loading";
 import { WalletContext } from "../../../components/walletprovider";
@@ -16,13 +13,22 @@ import {
   hexTimestampToFormattedDate,
   numberToHex,
 } from "../../../utils/serializer";
+import { CHAIN_TYPES } from "../../../lib/chains";
+import { getAgreementDetails, verifyContent } from "../../../utils/evmAgreement";
 
 // Remove markdown editor imports and use ReactQuill instead
 import dynamic from "next/dynamic";
 const ReactQuill = dynamic(() => import("react-quill"), { ssr: false });
 import "react-quill/dist/quill.snow.css";
 
-const AgreementSlug = ({ params }, agreementparam) => {
+const truncateMiddle = (value, lead = 10, tail = 8) => {
+  const str = String(value ?? "");
+  return str.length > lead + tail + 1
+    ? `${str.slice(0, lead)}…${str.slice(-tail)}`
+    : str;
+};
+
+const AgreementSlug = ({ params }) => {
   const [agreement, setAgreement] = useState(null);
   const [loading, setLoading] = useState(true);
   const [accessToken, setAccessToken] = useState(null);
@@ -30,23 +36,31 @@ const AgreementSlug = ({ params }, agreementparam) => {
   const [editableFields, setEditableFields] = useState({});
   // Force content format to HTML now that we got ReactQuill
   const [contentFormat, setContentFormat] = useState("html");
+  const [contentVerified, setContentVerified] = useState(null);
+
   const { openNotification } = useNotification();
-  const router = useRouter();
-  const { address } = useContext(WalletContext);
+  const { address, selectedChain } = useContext(WalletContext);
+  const { fetchData } = UseReadContractData();
+
   const slug = params?.slug || [];
   const [key, value] = slug;
+  const isOnchain = key === "onchain";
 
   useEffect(() => {
     if (key === "access_token") {
       setAccessToken(value || params?.agreementAccessToken);
       fetchAgreementByAccessToken(value);
-    } else if (key == "onchain") {
-      console.log("here at last");
+    } else if (key === "onchain") {
       getOnchainAgreement(value);
     } else {
       fetchAgreementById(value);
     }
-  }, [key, value]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [key, value, selectedChain?.key]);
+
+  // ------------------------------------------------------------------
+  // Backend reads
+  // ------------------------------------------------------------------
 
   const fetchAgreementById = async (agreementId) => {
     try {
@@ -76,57 +90,95 @@ const AgreementSlug = ({ params }, agreementparam) => {
       );
       if (response.ok) {
         const data = await response.json();
-        console.log(data);
         setAgreement(data);
         initializeEditableFields(data);
       } else {
         console.error("Failed to fetch agreement by access token");
-        openNotification("error", "", "Failed to fetch agreement by access token");
+        openNotification(
+          "error",
+          "",
+          "Failed to fetch agreement by access token"
+        );
       }
     } catch (error) {
       console.error("Error fetching agreement by access token:", error);
-      openNotification("error", "Error feching agreement by access token", `${error}`);
+      openNotification(
+        "error",
+        "Error fetching agreement by access token",
+        `${error}`
+      );
     } finally {
       setLoading(false);
     }
   };
 
-  const { fetchData } = UseReadContractData();
-
-  const detectContentFormat = (content) => {
-    if (content.startsWith("<") || content.includes("<html ")) {
-      return "html";
-    } else if (content.includes("**") || content.includes("#")) {
-      return "markdown";
-    } else {
-      return "text";
-    }
-  };
+  // ------------------------------------------------------------------
+  // Onchain read
+  // ------------------------------------------------------------------
 
   const getOnchainAgreement = async (id) => {
     setLoading(true);
+    setContentVerified(null);
     try {
-      // Fetch on-chain agreement details
-      const agreementsDetails = await fetchData(
-        "agreement",
-        "get_agreement_details",
-        [id]
-      );
+      if (selectedChain?.type === CHAIN_TYPES.EVM) {
+        const onchain = await getAgreementDetails({
+          chain: selectedChain,
+          agreementId: id,
+        });
 
-      // Process and transform the on-chain data
-      const transformedAgreement = {
-        agreementType: byteArrayToString(agreementsDetails.agreement_title),
-        second_party_address: numberToHex(agreementsDetails.second_party_address),
-        first_party_address: numberToHex(agreementsDetails.creator),
-        first_party_valid_id: byteArrayToString(agreementsDetails.first_party_valid_id),
-        second_party_valid_id: byteArrayToString(agreementsDetails.second_party_valid_id),
-        content: byteArrayToString(agreementsDetails.content),
-        created_at: hexTimestampToFormattedDate(agreementsDetails.timestamp),
-      };
+        // content lives in the backend now — the chain holds only its hash
+        let content = "";
+        try {
+          const res = await fetch(
+            `${process.env.NEXT_PUBLIC_BACKEND_URL}/agreement/agreement/by_agreement_id/?agreement_id=${id}`
+          );
+          if (res.ok) content = (await res.json())?.content || "";
+        } catch (e) {
+          console.warn("Could not load agreement content:", e?.message);
+        }
 
-      // Force HTML format for rich editing
+        if (content) {
+          try {
+            setContentVerified(
+              await verifyContent({
+                chain: selectedChain,
+                agreementId: id,
+                content,
+              })
+            );
+          } catch (e) {
+            console.warn("Verification unavailable:", e?.message);
+          }
+        }
+
+        setAgreement({
+          onchain: true,
+          agreementType: onchain.agreement_title,
+          second_party_address: onchain.second_party_address,
+          first_party_address: onchain.creator,
+          first_party_id_hash: onchain.first_party_id_hash,
+          second_party_id_hash: onchain.second_party_id_hash,
+          content_hash: onchain.content_hash,
+          validate_signature: onchain.validate_signature,
+          content,
+          created_at: onchain.timestamp, // ms since epoch
+        });
+      } else {
+        const d = await fetchData("agreement", "get_agreement_details", [id]);
+        setAgreement({
+          onchain: true,
+          starknet: true,
+          agreementType: byteArrayToString(d.agreement_title),
+          second_party_address: numberToHex(d.second_party_address),
+          first_party_address: numberToHex(d.creator),
+          first_party_valid_id: byteArrayToString(d.first_party_valid_id),
+          second_party_valid_id: byteArrayToString(d.second_party_valid_id),
+          content: byteArrayToString(d.content),
+          created_at: hexTimestampToFormattedDate(d.timestamp),
+        });
+      }
+
       setContentFormat("html");
-      setAgreement(transformedAgreement);
     } catch (error) {
       openNotification("error", "Error fetching agreement details", `${error}`);
       console.error("Error fetching agreement details:", error);
@@ -134,6 +186,10 @@ const AgreementSlug = ({ params }, agreementparam) => {
       setLoading(false);
     }
   };
+
+  // ------------------------------------------------------------------
+  // Editing (backend agreements only)
+  // ------------------------------------------------------------------
 
   const initializeEditableFields = (data) => {
     setEditableFields({
@@ -151,14 +207,13 @@ const AgreementSlug = ({ params }, agreementparam) => {
 
   const handleSave = async () => {
     setIsEditing(false);
-
-    setLoading(true)
-    openNotification("info", "saving agreement..")
+    setLoading(true);
+    openNotification("info", "saving agreement..");
     try {
       const formData = new FormData();
-      Object.entries(editableFields).forEach(([key, value]) => {
-        if (value !== null && value !== "") {
-          formData.append(key, value);
+      Object.entries(editableFields).forEach(([field, val]) => {
+        if (val !== null && val !== "") {
+          formData.append(field, val);
         }
       });
       const response = await fetch(
@@ -171,8 +226,7 @@ const AgreementSlug = ({ params }, agreementparam) => {
 
       if (response.ok) {
         const updatedAgreement = await response.json();
-        setLoading(false)
-        openNotification("success", "Agreement updated successfully")
+        openNotification("success", "Agreement updated successfully");
         setAgreement(updatedAgreement);
         setIsEditing(false);
       } else {
@@ -182,6 +236,8 @@ const AgreementSlug = ({ params }, agreementparam) => {
     } catch (error) {
       console.error("Error saving edited agreement:", error);
       openNotification("error", "Error saving edited agreement", `${error}`);
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -189,8 +245,19 @@ const AgreementSlug = ({ params }, agreementparam) => {
     setEditableFields((prev) => ({ ...prev, [field]: value }));
   };
 
+  // ------------------------------------------------------------------
+  // Render helpers
+  // ------------------------------------------------------------------
+
   // Use DOMPurify to sanitize HTML and render the content
   const renderContent = (content) => {
+    if (!content) {
+      return (
+        <span className="text-[#8E9A9A]">
+          No content available for this agreement.
+        </span>
+      );
+    }
     return (
       <div
         className="agreement-content-wrapper"
@@ -198,6 +265,14 @@ const AgreementSlug = ({ params }, agreementparam) => {
       />
     );
   };
+
+  function formatDate(date) {
+    if (!date) return "Unknown";
+    const d = new Date(date);
+    return Number.isNaN(d.getTime())
+      ? String(date)
+      : format(d, "EEEE, do MMMM yyyy. hh:mm:ss aaaa");
+  }
 
   if (loading) {
     return (
@@ -213,10 +288,6 @@ const AgreementSlug = ({ params }, agreementparam) => {
         Agreement not found
       </div>
     );
-  }
-
-  function formatDate(date) {
-    return format(new Date(date), "EEEE, do MMMM yyyy. hh:mm:ss aaaa");
   }
 
   return (
@@ -257,7 +328,7 @@ const AgreementSlug = ({ params }, agreementparam) => {
             <div className="w-full flex flex-col lg:flex-row gap-2 justify-end max-lg:items-start">
               <span className="flex-shrink-0 text-sm">Time Stamp:</span>
               <span className="bg-gradient-to-r from-[#19B1D2] to-[#0094FF] bg-clip-text text-left text-transparent">
-                {key == "onchain"
+                {agreement?.starknet
                   ? agreement?.created_at
                   : formatDate(agreement?.created_at)}
               </span>
@@ -266,6 +337,27 @@ const AgreementSlug = ({ params }, agreementparam) => {
         </div>
 
         <div className="space-y-4">
+          {/* the point of hashing: proof the document is unaltered */}
+          {isOnchain && contentVerified !== null && (
+            <p
+              className={`w-fit rounded-full px-3 py-1 text-xs ${
+                contentVerified
+                  ? "bg-[#0094FF]/15 text-[#0094FF]"
+                  : "bg-red-500/15 text-red-400"
+              }`}
+            >
+              {contentVerified
+                ? `Content verified against ${selectedChain?.name}`
+                : "Warning: this content does not match what was anchored onchain"}
+            </p>
+          )}
+
+          {isOnchain && agreement?.validate_signature && (
+            <p className="w-fit rounded-full bg-[#0094FF]/15 px-3 py-1 text-xs text-[#0094FF]">
+              Signature validated by the creator
+            </p>
+          )}
+
           <div className="flex flex-col gap-2">
             <strong className="text-lg">Content:</strong>
             {isEditing ? (
@@ -282,42 +374,55 @@ const AgreementSlug = ({ params }, agreementparam) => {
               </div>
             )}
           </div>
-          {key == "onchain" ? (
-            ""
-          ) : (
-            <>
-              <div className="flex flex-col gap-2">
-                <strong className="text-lg">Email:</strong>
-                {isEditing ? (
-                  <input
-                    type="email"
-                    value={editableFields?.email}
-                    onChange={(e) => handleInputChange("email", e.target.value)}
-                    className="w-full p-2 bg-[#091219] text-[#EAFBFF] border border-[#19B1D2] rounded"
-                  />
-                ) : (
-                  <span className="text-sm">{agreement.email || "N/A"}</span>
-                )}
-              </div>
-            </>
+
+          {!isOnchain && (
+            <div className="flex flex-col gap-2">
+              <strong className="text-lg">Email:</strong>
+              {isEditing ? (
+                <input
+                  type="email"
+                  value={editableFields?.email}
+                  onChange={(e) => handleInputChange("email", e.target.value)}
+                  className="w-full p-2 bg-[#091219] text-[#EAFBFF] border border-[#19B1D2] rounded"
+                />
+              ) : (
+                <span className="text-sm">{agreement.email || "N/A"}</span>
+              )}
+            </div>
           )}
+
           <div className="flex flex-col gap-2">
             <strong className="text-lg">First Party Address:</strong>
-            <span className="text-sm">{agreement?.first_party_address}</span>
+            <span className="text-sm break-all">
+              {agreement?.first_party_address}
+            </span>
           </div>
-          <div className="flex flex-col gap-2">
-            <strong className="text-lg">First Party Valid ID:</strong>
-            <Image
-              src={agreement?.first_party_valid_id || "/not-found-image.png"}
-              alt="First Party ID"
-              className="w-[16em] h-[10em] bg-[#091219] object-cover rounded-lg"
-              width={100}
-              height={100}
-            />
-          </div>
-          {key == "onchain" ? (
-            ""
+
+          {/* EVM stores only digests — render those, not a broken image */}
+          {agreement?.first_party_id_hash ? (
+            <div className="flex flex-col gap-2">
+              <strong className="text-lg">First Party ID Fingerprint:</strong>
+              <span
+                className="w-fit rounded-lg bg-white/[0.04] px-3 py-2 font-mono text-[11px] text-[#9B9292]"
+                title={agreement.first_party_id_hash}
+              >
+                {truncateMiddle(agreement.first_party_id_hash, 14, 10)}
+              </span>
+            </div>
           ) : (
+            <div className="flex flex-col gap-2">
+              <strong className="text-lg">First Party Valid ID:</strong>
+              <Image
+                src={agreement?.first_party_valid_id || "/not-found-image.png"}
+                alt="First Party ID"
+                className="w-[16em] h-[10em] bg-[#091219] object-cover rounded-lg"
+                width={100}
+                height={100}
+              />
+            </div>
+          )}
+
+          {!isOnchain && (
             <>
               <div className="flex flex-col gap-2">
                 <strong className="text-lg">First Party Country:</strong>
@@ -356,7 +461,9 @@ const AgreementSlug = ({ params }, agreementparam) => {
               <div className="flex flex-col gap-2">
                 <strong className="text-sm">First Party Signature:</strong>
                 <Image
-                  src={agreement?.first_party_signature || "/not-found-image.png"}
+                  src={
+                    agreement?.first_party_signature || "/not-found-image.png"
+                  }
                   alt="First Party Signature"
                   className="w-[16em] h-[10em] bg-white object-cover rounded-lg"
                   width={100}
@@ -365,27 +472,39 @@ const AgreementSlug = ({ params }, agreementparam) => {
               </div>
             </>
           )}
-          {key == "onchain" ? (
-            ""
-          ) : (
+
+          {agreement?.second_party_id_hash && (
+            <div className="flex flex-col gap-2">
+              <strong className="text-lg">Second Party ID Fingerprint:</strong>
+              <span
+                className="w-fit rounded-lg bg-white/[0.04] px-3 py-2 font-mono text-[11px] text-[#9B9292]"
+                title={agreement.second_party_id_hash}
+              >
+                {truncateMiddle(agreement.second_party_id_hash, 14, 10)}
+              </span>
+            </div>
+          )}
+
+          {!isOnchain && (
             <>
               <div className="flex flex-col gap-2">
                 <strong className="text-lg">Second Party Address:</strong>
-                <span className="text-sm">{agreement.second_party_address}</span>
+                <span className="text-sm break-all">
+                  {agreement.second_party_address}
+                </span>
               </div>
               <div className="flex flex-col gap-2">
                 <strong className="text-lg">Second Party Valid ID:</strong>
-                <span className="text-sm">
-                  <Image
-                    src={agreement?.second_party_valid_id || "/not-found-image.png"}
-                    alt="First Party Signature"
-                    width={20}
-                    height={20}
-                    className="w-[16em] h-[10em] bg-white object-cover rounded-lg"
-                  />
-                </span>
+                <Image
+                  src={
+                    agreement?.second_party_valid_id || "/not-found-image.png"
+                  }
+                  alt="Second Party ID"
+                  width={100}
+                  height={100}
+                  className="w-[16em] h-[10em] bg-white object-cover rounded-lg"
+                />
               </div>
-
               <div className="flex flex-col gap-2">
                 <strong className="text-lg">Second Party Country:</strong>
                 <span className="text-sm">
@@ -401,14 +520,27 @@ const AgreementSlug = ({ params }, agreementparam) => {
               <div className="flex flex-col gap-2">
                 <strong className="text-sm">Second Party Signature:</strong>
                 <Image
-                  src={agreement?.second_party_signature || "/not-found-image.png"}
-                  alt="First Party Signature"
-                  width={20}
-                  height={20}
+                  src={
+                    agreement?.second_party_signature || "/not-found-image.png"
+                  }
+                  alt="Second Party Signature"
+                  width={100}
+                  height={100}
                   className="w-[16em] h-[10em] bg-white object-cover rounded-lg"
                 />
               </div>
             </>
+          )}
+
+          {isOnchain && agreement?.content_hash && (
+            <div className="flex flex-col gap-2 pt-4 border-t border-white/[0.06]">
+              <strong className="text-sm text-[#8E9A9A]">
+                Content fingerprint (SHA-256):
+              </strong>
+              <span className="break-all font-mono text-[11px] text-[#9B9292]">
+                {agreement.content_hash}
+              </span>
+            </div>
           )}
         </div>
       </div>

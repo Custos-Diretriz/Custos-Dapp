@@ -14,6 +14,7 @@ export const CHAINS = {
     explorer: "https://celo-sepolia.blockscout.com",
     nativeCurrency: { name: "CELO", symbol: "CELO", decimals: 18 },
     contractAddress: "0xD1059539a04Df897C226C8952d976202fb70E3B0",
+    agreementAddress: "0xCBD5CDfAe27C4140c0b69B35E56BdD7672839B1F",
   },
   starknet: {
     key: "starknet",
@@ -51,3 +52,21 @@ export const CRIME_RECORD_ABI = [
   "function paused() view returns (bool)",
   "event EvidenceStored(address indexed user, string fileHash, string contentHash, uint256 timestamp, bool isGuest)",
 ];
+const AGREEMENT_TUPLE =
+  "tuple(uint256 id, address creator, address secondPartyAddress, string agreementTitle, bytes32 contentHash, bytes32 firstPartyIdHash, bytes32 secondPartyIdHash, uint256 timestamp, bool validateSignature)";
+
+export const AGREEMENT_ABI = [
+  "function createAgreement(bytes32 contentHash, address secondPartyAddress, bytes32 firstPartyIdHash, bytes32 secondPartyIdHash, string agreementTitle) external returns (uint256)",
+  "function validateAgreement(uint256 agreementId) external",
+  `function getAgreementDetails(uint256 agreementId) view returns (${AGREEMENT_TUPLE})`,
+  "function verifyContent(uint256 agreementId, bytes32 hash) view returns (bool)",
+  "function getUserAgreementCount(address user) view returns (uint256)",
+  `function getUserAgreementsPaginated(address user, uint256 offset, uint256 limit) view returns (${AGREEMENT_TUPLE}[] page, uint256 total)`,
+  "function agreementCount() view returns (uint256)",
+  "event AgreementCreated(uint256 indexed agreementId, address indexed creator, address indexed secondPartyAddress, bytes32 contentHash, uint256 timestamp)",
+  "event AgreementValidated(uint256 indexed agreementId, address indexed creator, uint256 timestamp)",
+];
+
+/** Chains with an agreement contract deployed. */
+export const agreementChains = () =>
+  Object.values(CHAINS).filter((c) => !!c.agreementAddress);

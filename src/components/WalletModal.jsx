@@ -22,12 +22,6 @@ export default function WalletModal() {
       chains: "Celo & other EVM chains",
     },
     {
-      key: methods.PRIVY,
-      title: "Existing EVM wallet",
-      body: "MetaMask, Rainbow, Coinbase Wallet or WalletConnect.",
-      chains: "Celo & other EVM chains",
-    },
-    {
       key: methods.STARKNETKIT,
       title: "Starknet wallet",
       body: "ArgentX, Braavos or Argent Mobile. Uses gasless transactions.",
