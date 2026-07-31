@@ -1,6 +1,5 @@
 "use client";
-import React, { useEffect, useState } from "react";
-import { usePathname } from "next/navigation";
+import React from "react";
 import { cn } from "../../lib/utils";
 import Sidepane from "./sidepane";
 import Header from "./header";
@@ -8,42 +7,16 @@ import MobileTabBar from "./mobiletabbar";
 
 /**
  * Shared chrome for the authenticated dapp surfaces (agreements + crime
- * recorder): desktop icon rail, mobile drawer, sticky header and a mobile
- * bottom tab bar.
+ * recorder): a desktop icon rail, sticky header and a mobile bottom tab bar.
+ * Mobile has no sidebar — the tab bar is the only navigation.
  */
 export default function DappShell({ children, contentClassName }) {
-  const [mobileOpen, setMobileOpen] = useState(false);
-  const pathname = usePathname();
-
-  // Close the drawer whenever navigation happens.
-  useEffect(() => {
-    setMobileOpen(false);
-  }, [pathname]);
-
-  // Lock body scroll behind the drawer.
-  useEffect(() => {
-    if (!mobileOpen) return;
-    const previous = document.body.style.overflow;
-    document.body.style.overflow = "hidden";
-    return () => {
-      document.body.style.overflow = previous;
-    };
-  }, [mobileOpen]);
-
-  useEffect(() => {
-    const onKeyDown = (e) => {
-      if (e.key === "Escape") setMobileOpen(false);
-    };
-    window.addEventListener("keydown", onKeyDown);
-    return () => window.removeEventListener("keydown", onKeyDown);
-  }, []);
-
   return (
     <div className="flex min-h-[100dvh] w-full">
-      <Sidepane mobileOpen={mobileOpen} setMobileOpen={setMobileOpen} />
+      <Sidepane />
 
       <div className="flex min-w-0 flex-1 flex-col">
-        <Header onOpenMenu={() => setMobileOpen(true)} />
+        <Header />
 
         <main
           className={cn(
