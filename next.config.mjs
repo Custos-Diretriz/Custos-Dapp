@@ -31,6 +31,12 @@ const withPWA = withPWAInit({
 export default withPWA({
   reactStrictMode: true,
   images: {
+    // Most of the UI chrome (nav icons, bell, success screen, loading logo) is
+    // SVG served from /public. Without this the optimizer answers every one of
+    // them with 400 "image type is not allowed". Sandboxed and script-less, so
+    // a hostile SVG still can't execute.
+    dangerouslyAllowSVG: true,
+    contentSecurityPolicy: "default-src 'self'; script-src 'none'; sandbox;",
     domains: ["custosbackend.onrender.com"],
     remotePatterns: [
       {
