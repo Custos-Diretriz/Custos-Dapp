@@ -5,6 +5,11 @@
   "engines": {
     "node": "24.x"
   },
+  "pnpm": {
+  "overrides": {
+    "ox": "0.14.33"
+  }
+},
   "scripts": {
     "dev": "next dev",
     "build": "next build",
