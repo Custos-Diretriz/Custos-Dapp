@@ -12,7 +12,7 @@ import { WalletContext } from "../../components/walletprovider";
 // import { UseReadContractData } from "@/utils/fetchcontract";
 import agreementAbi from "../../utils/agreementAbi.json";
 import { UseReadContractData } from "../../utils/fetchcontract";
-import Loading from "@/components/loading";
+import Loading from "../../components/loading";
 import { useNotification } from "../../context/NotificationProvider";
 
 function AgreementList() {
@@ -109,10 +109,13 @@ function AgreementList() {
     setShowAgreementModal(!showAgreementModal);
   };
 
+  const gridClass =
+    "grid w-full gap-4 grid-cols-1 sm:grid-cols-2 xl:grid-cols-3";
+
   const renderAgreements = () => {
     if (activeTab === "all") {
       return agreements.length > 0 || pendingAgreements?.length > 0 ? (
-        <div className="grid w-full gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
+        <div className={gridClass}>
           {pendingAgreements?.map((agreement, index) => (
             <PendingAgreementCard
               key={index}
@@ -150,7 +153,7 @@ function AgreementList() {
       );
 
       return filteredPendingAgreements?.length > 0 ? (
-        <div className="grid w-full gap-4 grid-cols-1 sm:grid-cols-2 md:grid-cols-3">
+        <div className={gridClass}>
           {filteredPendingAgreements.map((agreement, index) => (
             <PendingAgreementCard
               key={index}
@@ -171,7 +174,7 @@ function AgreementList() {
       );
 
       return signedAgreements?.length > 0 ? (
-        <div className="grid w-full gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
+        <div className={gridClass}>
           {signedAgreements.map((agreement, index) => (
             <PendingAgreementCard
               key={index}
@@ -188,7 +191,7 @@ function AgreementList() {
 
     if (activeTab === "validated") {
       return agreements.length > 0 || pendingAgreements?.length > 0 ? (
-        <div className="grid w-full gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
+        <div className={gridClass}>
           {agreements.map((agreement, index) => (
             <AgreementCard
               key={index}
@@ -203,13 +206,25 @@ function AgreementList() {
       );
     }}
 
+  const tabCounts = {
+    all: (agreements?.length || 0) + (pendingAgreements?.length || 0),
+    pending:
+      pendingAgreements?.filter(
+        (a) => a.agreement_id == null && a.second_party_signature == null
+      ).length || 0,
+    signed:
+      pendingAgreements?.filter((a) => a.second_party_signature !== null)
+        .length || 0,
+    validated: agreements?.length || 0,
+  };
+
   return (
-    <div className="w-full flex flex-col">
-      {/* Secondary Navbar */}
+    <div className="flex w-full flex-col gap-6">
       <AgreementNav
         activeTab={activeTab}
         setActiveTab={setActiveTab}
-        text={"Agreement"}
+        text="Agreements"
+        counts={tabCounts}
       />
 
       <div className="w-full">

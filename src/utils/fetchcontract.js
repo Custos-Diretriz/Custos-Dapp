@@ -3,8 +3,8 @@ import crimeAbi from "./coverCrimeAbi.json";
 import agreementAbi from "./agreementAbi.json";
 import { Contract, RpcProvider } from "starknet";
 import { useContext, useEffect, useState } from "react";
-import { WalletContext } from "@/components/walletprovider";
-import { useNotification } from "@/context/NotificationProvider";
+import { WalletContext } from "../components/walletprovider";
+import { useNotification } from "../context/NotificationProvider";
 // import { useAccount } from "@starknet-react/core";
 
 export const provider = new RpcProvider({

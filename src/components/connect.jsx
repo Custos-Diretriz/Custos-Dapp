@@ -1,102 +1,154 @@
 "use client";
-import React, { useContext, useEffect, useState } from "react";
-import { FaLongArrowAltRight } from "react-icons/fa";
+import React, { useContext } from "react";
 import { generateAvatarURL } from "@cfx-kit/wallet-avatar";
-import { padAddress, truncAddress } from "../utils/serializer";
+import { truncAddress } from "../utils/serializer";
 import Image from "next/image";
+import { cn } from "../lib/utils";
 import { WalletContext } from "./walletprovider";
-import WalletModal from "./WalletModal";
 import DisconnectModal from "./DisconnectModal";
+import ChainSelector from "./chainselector";
 
-function ConnectButtonComponent() {
-  const [connected, setConnected] = useState(false);
-  const [showConnectModal, setShowConnectModal] = useState(false);
-  const [showDisconnectModal, setShowDisconnectModal] = useState(false);
-  const { connection, connectWallet, disconnectWallet, address, wallet } =
-    useContext(WalletContext);
+/** Email/phone → a short handle: "jerydam@gmail.com" becomes "jerydam". */
+const shortHandle = (identifier) => {
+  if (!identifier) return "";
+  const at = identifier.indexOf("@");
+  return at > 0 ? identifier.slice(0, at) : identifier;
+};
 
-  useEffect(() => {
-    setConnected(!!wallet);
-  }, [wallet, connected]);
+/**
+ * @param showChainSelector render the network switcher alongside the pill
+ * @param compact           icon-first pill for tight spots (mobile header, collapsed rail)
+ * @param full              stretch to the container width (mobile drawer)
+ * @param maxLabelChars     hard cap on the social-login handle (sidebar uses 4)
+ */
+function ConnectButtonComponent({
+  showChainSelector = true,
+  compact = false,
+  full = false,
+  maxLabelChars,
+}) {
+  const {
+    address,
+    isGuest,
+    ready,
+    openWalletModal,
+    disconnectWallet,
+    isEmbedded,
+    loginIdentifier,
+    loginName,
+  } = useContext(WalletContext);
+  const [showDisconnectModal, setShowDisconnectModal] = React.useState(false);
 
-  const handleConnect = async () => {
-    await connectWallet();
-    // setShowConnectModal(true);
-  };
+  const handle = isEmbedded
+    ? loginName || shortHandle(loginIdentifier)
+    : "";
 
-  const handleDisconnectClick = () => {
-    setShowDisconnectModal(true);
-  };
+  let label;
+  if (handle) {
+    if (maxLabelChars) {
+      label = handle.slice(0, maxLabelChars);
+    } else {
+      label = handle.length > 14 ? `${handle.slice(0, 12)}…` : handle;
+    }
+  } else {
+    label = truncAddress(address);
+  }
 
-  // const handleStarknetSelect = async (selectedWallet) => {
-  //   try {
-  //     await connectStarknetWallet(selectedWallet.id);
-  //     setShowConnectModal(false);
-  //   } catch (error) {
-  //     console.error("Error in Starknet selection:", error);
-  //   }
-  // };
+  const pillShell = cn(
+    "cursor-pointer border-gradient2 rounded-full p-[1px] text-[#ededef]",
+    "transition-transform duration-200 active:scale-[0.97]",
+    "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#0094FF]/70",
+    full ? "w-full" : "w-auto"
+  );
 
-  // const handleEthereumConnect = async (walletType) => {
-  //   try {
-  //     await connectEthereumWallet(walletType);
-  //     setShowConnectModal(false);
-  //   } catch (error) {
-  //     console.error("Error in Ethereum connection:", error);
-  //   }
-  // };
+  const pillInner = cn(
+    "flex h-11 items-center gap-2 rounded-full bg-[#121212]",
+    compact ? "px-2.5" : "px-3.5",
+    full && "w-full justify-center"
+  );
 
   return (
-    <>
-      <div className="justify-end flex max-w-[13em] overflow-hidden w-fit items-end">
-        {connected ? (
-          <div
-            className="cursor-pointer border-gradient2 w-full rounded-full text-[#ededef] p-[1px]"
-            onClick={handleDisconnectClick}
-          >
-            <div className="bg-[#121212] border-gradient2 rounded-full py-2 px-3 flex gap-2">
-              <Image
-                className="rounded-full"
-                src={generateAvatarURL(address)}
-                alt=""
-                width={24}
-                height={24}
-              />
-              <span className="w-full bg-transparent rounded-full overflow-hidden text-sm">
-                {truncAddress(address)}
-              </span>
-            </div>
-          </div>
-        ) : (
-          <div
-            className="w-full backdrop-blur-[10px] border-gradient2 cursor-pointer p-[2px] rounded-[100px]"
-            onClick={handleConnect}
-          >
-            <div className="bg-[#121212] rounded-[100px]">
-              <button className="flex items-center text-white text-sm py-3 px-6 rounded-[100px] hover:bg-gradient-to-r from-[#19B1D2] to-[#0094FF] hover:bg-[#209af1] transition-colors duration-300 ease-in-out">
-                <span>Connect Wallet</span>
-                <FaLongArrowAltRight className="ml-2" />
-              </button>
-            </div>
-          </div>
+    <div className={cn("flex flex-col", full ? "w-full" : "w-auto")}>
+      <div
+        className={cn(
+          "flex items-center gap-2",
+          full ? "w-full flex-col items-stretch" : "justify-end"
         )}
+      >
+        {showChainSelector && <ChainSelector full={full} />}
+
+        <div className={cn("flex min-w-0", full ? "w-full" : "justify-end")}>
+          {!ready ? (
+            <div
+              className={cn(
+                "flex h-11 items-center rounded-full bg-[#121212] px-4 text-sm text-[#19B1D2]",
+                full && "w-full justify-center"
+              )}
+            >
+              <span className="animate-pulse">Connecting…</span>
+            </div>
+          ) : !isGuest ? (
+            <button
+              type="button"
+              className={pillShell}
+              onClick={() => setShowDisconnectModal(true)}
+              aria-label={`Wallet ${label} — open account menu`}
+            >
+              <span className={pillInner}>
+                <Image
+                  className="shrink-0 rounded-full"
+                  src={generateAvatarURL(address)}
+                  alt=""
+                  width={24}
+                  height={24}
+                />
+                <span
+                  className={cn(
+                    "truncate text-sm",
+                    compact ? "max-w-[9ch] max-[380px]:hidden" : "max-w-[14ch]"
+                  )}
+                >
+                  {label}
+                </span>
+              </span>
+            </button>
+          ) : (
+            <button
+              type="button"
+              className={pillShell}
+              onClick={openWalletModal}
+              aria-label="Connect a wallet"
+            >
+              <span className={pillInner}>
+                <span className="h-2 w-2 shrink-0 rounded-full bg-[#0094FF]" />
+                <span className="whitespace-nowrap text-sm">Connect</span>
+              </span>
+            </button>
+          )}
+        </div>
       </div>
 
-      {/* Connect Modal */}
-      <WalletModal
-        isOpen={showConnectModal}
-        onClose={() => setShowConnectModal(false)}
-        // onSelectWallet={handleStarknetSelect}
-        // handleEthereumConnect={handleEthereumConnect}
-      />
+      {ready && isGuest && !compact && (
+        <p
+          className={cn(
+            "mt-1 text-[10px] leading-tight text-[#19B1D2]",
+            full ? "text-center" : "text-right"
+          )}
+        >
+          Guest mode — evidence still saved onchain
+        </p>
+      )}
 
-      {/* Disconnect Modal */}
       <DisconnectModal
         isOpen={showDisconnectModal}
         onClose={() => setShowDisconnectModal(false)}
-        onDisconnect={disconnectWallet}
+        onDisconnect={async () => {
+          await disconnectWallet();
+          setShowDisconnectModal(false);
+        }}
+        address={address}
       />
-    </>
+    </div>
   );
 }
 

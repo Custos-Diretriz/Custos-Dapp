@@ -3,23 +3,100 @@
 @tailwind utilities;
 
 /* @import url("https://fonts.googleapis.com/css2?family=Kanit:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&display=swap"); */
-@import url("https://fonts.googleapis.com/css2?family=Outfit:wght@100..900&display=swap");
+@import url("https://fonts.googleapis.com/css2?family=Londrina+Outline&family=Onest:wght@100..900&display=swap");
 
 :root {
   background-position: center;
   background-size: contain;
   background-blend-mode: multiply;
-  font-family: "Outfit", sans-serif;
+  font-family: "Onest", sans-serif;
   background-color: #0c1215;
   font-optical-sizing: auto;
   font-style: normal;
   height: -webkit-fill-available;
 }
+@font-face {
+  font-family: "Londrina Outline";
+  src: url("/fonts/LondrinaOutline-Regular.ttf") format("truetype");
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "Onest";
+  src: url("/fonts/Onest-Regular.ttf") format("truetype");
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
 * {
+  font-family: "Onest", sans-serif;
+
   outline: none;
   /* border:none; */
   /* border-width: none; */
   -webkit-appearance: none;
+}
+
+/* ------------------------------------------------------------------
+   Mobile hardening
+   ------------------------------------------------------------------ */
+
+/* Nothing should ever push the page sideways on a phone. */
+html,
+body {
+  max-width: 100%;
+  overflow-x: hidden;
+}
+
+/* iOS zooms the page when a focused input is under 16px. */
+@media (max-width: 640px) {
+  input,
+  select,
+  textarea {
+    font-size: 16px;
+  }
+}
+
+/* Media and embeds stay inside their column. */
+img,
+video,
+canvas,
+svg {
+  max-width: 100%;
+}
+
+/* Hover affordances are noise on touch devices; keep taps instant. */
+@media (hover: none) {
+  .button-transition:hover,
+  .launch-pad-button-container:hover,
+  .image-container:hover {
+    transform: none;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+/* Rich agreement bodies are user-authored HTML — stop long tokens and wide
+   tables from blowing out the card. */
+.agreement-card-excerpt * {
+  max-width: 100% !important;
+  word-break: break-word;
+}
+.agreement-card-excerpt img,
+.agreement-card-excerpt table {
+  height: auto;
 }
 
 #preload-banner {
@@ -579,3 +656,50 @@ button[data-name="fullscreen"] {
     height: -webkit-fill-available;
   }
 }
+
+.nav-shadow {
+  box-shadow: 10px 10px 90px -17px rgba(46, 157, 190, 0.49);
+  -webkit-box-shadow: 10px 10px 90px -17px rgba(46, 157, 190, 0.49);
+  -moz-box-shadow: 10px 10px 90px -17px rgba(46, 157, 190, 0.49);
+}
+
+.glass-bg {
+  /* From https://css.glass */
+  background: rgba(255, 255, 255, 0.2);
+  /* border-radius: 16px; */
+  box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1);
+  backdrop-filter: blur(5px);
+  -webkit-backdrop-filter: blur(5px);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+}
+
+.gradient-stroke {
+  font-size: 4rem;
+  font-weight: 900;
+  color: transparent;
+  -webkit-text-stroke: 2px transparent;
+  background: linear-gradient(to right, #3b82f6, #9333ea);
+  -webkit-background-clip: text;
+  background-clip: text;
+}
+
+.londrina-outline-regular {
+  font-family: "Londrina Outline", sans-serif;
+  /* font-weight: 400; */
+  /* font-style: normal; */
+}
+
+@keyframes scroll {
+  0% {
+    transform: translateX(0%);
+  }
+  100% {
+    transform: translateX(-50%);
+  }
+}
+
+.animate-scroll {
+  display: flex;
+  animation: scroll 30s linear infinite; /* adjust speed here */
+}
+

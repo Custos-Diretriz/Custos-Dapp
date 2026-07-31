@@ -12,8 +12,8 @@ import {
   stringToFelt,
 } from "../../../utils/serializer";
 import SuccessScreen from "./Success";
-import Loading from "@/components/loading";
-import { useNotification } from "@/context/NotificationProvider";
+import Loading from "../../../components/loading";
+import { useNotification } from "../../../context/NotificationProvider";
 
 const ValidateAgreementModal = ({
   fullname,

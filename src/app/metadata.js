@@ -46,7 +46,11 @@ export const metadata = {
 };
 
 export const viewport = {
-  themeColor: "#000000",
+  themeColor: "#04080C",
+  width: "device-width",
+  initialScale: 1,
+  // required for env(safe-area-inset-*) to report real values on notched devices
+  viewportFit: "cover",
 };
 
 const Metadata = () => {

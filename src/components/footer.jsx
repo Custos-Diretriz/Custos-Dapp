@@ -108,7 +108,7 @@ function Footer() {
           </div>
         </div>
         <div className="mt-8 text-center">
-          © 2024 Custos Diretriz. All rights reserved.
+          © 2025 Custos Diretriz. All rights reserved.
         </div>
       </div>
     </div>

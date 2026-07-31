@@ -22,13 +22,20 @@ const Slugnav = ({ agreement }) => {
   };
 
   return (
-    <div className='rounded-2xl flex-col w-full flex gap-2 h-fit px-6 py-3 shadow-2xl bg-gradient-to-t from-[#04080C] to-[#09131A]'>
-      <button className="w-full text-[#EAFBFF] flex justify-start items-center align-middle" onClick={() => window.history.back()}>
-        <FaArrowLeft className="mr-2 text-[#EAFBFF]" /> <p className="text-[#EAFBFF]">Back</p>
+    <div className="rounded-2xl flex-col w-full flex gap-2 h-fit px-6 py-3 shadow-2xl bg-gradient-to-t from-[#04080C] to-[#09131A]">
+      <button
+        className="w-full text-[#EAFBFF] flex justify-start items-center align-middle"
+        onClick={() => window.history.back()}
+      >
+        <FaArrowLeft className="mr-2 text-[#EAFBFF]" />{" "}
+        <p className="text-[#EAFBFF]">Back</p>
       </button>
+   
 
       <div className="mt-4 flex justify-end items-center w-full m-auto">
-        <div className="w-full flex text-[#EAFBFF] text-[1.3em] justify-start">Agreement</div>
+        <div className="w-full flex text-[#EAFBFF] text-[1.3em] justify-start">
+          Agreement
+        </div>
         <div className="w-full md:flex justify-end items-center gap-4 hidden">
           <div className="relative">
             <button
@@ -37,7 +44,7 @@ const Slugnav = ({ agreement }) => {
             >
               Export Agreement
             </button>
-            
+
             {showOptions && (
               <div className="absolute right-0 mt-2 w-48 rounded-md shadow-lg bg-white ring-1 ring-black ring-opacity-5">
                 <div className="py-1">
@@ -71,15 +78,25 @@ const Slugnav = ({ agreement }) => {
           {agreement && agreement.access_token ? (
             <button
               onClick={handleValidateClick}
-              disabled={!agreement.second_party_signature || agreement.validate_signature}
+              disabled={
+                !agreement.second_party_signature ||
+                agreement.validate_signature
+              }
               className="w-fit px-2 py-2 text-white rounded-[2em] shadow-lg transform hover:scale-105 transition-transform duration-300 border-gradient bg-[#0094FF] disabled:bg-transparent disabled:border disabled:text-gray-500 disabled:hover:scale-100 disabled:hover:cursor-none flex items-center justify-center relative text-[0.8em] cursor-pointer"
             >
-              {agreement.validate_signature || (agreement.access_token && agreement.second_party_signature) ? 'Validate Agreement' : 'Validated'}
+              {agreement.validate_signature ||
+              (agreement.access_token && agreement.second_party_signature)
+                ? "Validate Agreement"
+                : "Validated"}
             </button>
           ) : (
             <button
               onClick={handleSignClick}
-              disabled={agreement && (agreement.second_party_signature || agreement.validate_signature)}
+              disabled={
+                agreement &&
+                (agreement.second_party_signature ||
+                  agreement.validate_signature)
+              }
               className="w-fit px-2 py-2 text-white rounded-[2em] shadow-lg transform hover:scale-105 transition-transform duration-300 border-gradient bg-[#0094FF] disabled:bg-transparent disabled:border disabled:text-gray-500 disabled:hover:scale-100 disabled:hover:cursor-none flex items-center justify-center relative text-[0.8em] cursor-pointer"
             >
               Sign Agreement

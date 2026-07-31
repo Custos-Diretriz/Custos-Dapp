@@ -15,7 +15,7 @@ import {
   byteArrayToString,
   hexTimestampToFormattedDate,
   numberToHex,
-} from "@/utils/serializer";
+} from "../../../utils/serializer";
 
 // Remove markdown editor imports and use ReactQuill instead
 import dynamic from "next/dynamic";
