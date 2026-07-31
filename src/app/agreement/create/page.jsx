@@ -3,7 +3,6 @@
 import { UseWriteToContract } from "../../../utils/fetchcontract";
 import { useState, useContext, useRef, useEffect } from "react";
 import { FaArrowLeft, FaLongArrowAltRight } from "react-icons/fa";
-import { Header } from "../components/AgreementNav";
 import { redirect } from "next/navigation";
 import { WalletContext } from "../../../components/walletprovider";
 import Modal from "react-modal";

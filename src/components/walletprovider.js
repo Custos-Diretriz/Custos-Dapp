@@ -97,6 +97,10 @@ export const WalletProvider = ({ children }) => {
   const loginIdentifier =
     user?.email?.address || user?.phone?.number || user?.google?.email || null;
 
+  // Preferred short label for social logins — Google gives us a full name, so
+  // the first name beats the email local-part when it's there.
+  const loginName = user?.google?.name?.trim().split(/\s+/)[0] || null;
+
   // ------------------------------------------------------------------
   // Starknet (starknetkit — preserves the AVNU gasless path)
   // ------------------------------------------------------------------
@@ -190,6 +194,14 @@ export const WalletProvider = ({ children }) => {
     ensurePrivyChain,
   ]);
 
+  useEffect(() => {
+    if (!privyReady || !authenticated || !isEvm) return;
+    if (!privyWallet) {
+      console.warn(
+        "Privy authenticated but no wallet — enable embedded wallet creation in the Privy dashboard."
+      );
+    }
+  }, [privyReady, authenticated, isEvm, privyWallet]);
   // reflect Privy auth state into `method`
   useEffect(() => {
     if (!privyReady) return;
@@ -203,7 +215,10 @@ export const WalletProvider = ({ children }) => {
   // ------------------------------------------------------------------
   // Unified API
   // ------------------------------------------------------------------
-
+  useEffect(() => {
+    console.log("[privy]", { privyReady, authenticated, wallets: wallets?.length });
+  }, [privyReady, authenticated, wallets]);
+  
   const openWalletModal = useCallback(() => setWalletModalOpen(true), []);
   const closeWalletModal = useCallback(() => setWalletModalOpen(false), []);
 
@@ -213,13 +228,16 @@ export const WalletProvider = ({ children }) => {
    */
   const connectWallet = useCallback(
     async (methodKey) => {
-      try {
-        const target =
-          methodKey ||
-          (isEvm ? CONNECTION_METHODS.PRIVY : CONNECTION_METHODS.STARKNETKIT);
+      const target =
+        methodKey ||
+        (isEvm ? CONNECTION_METHODS.PRIVY : CONNECTION_METHODS.STARKNETKIT);
 
+      // close our modal first so react-modal's focus trap can't fight
+      // Privy's dialog for the email/OTP input
+      closeWalletModal();
+
+      try {
         if (target === CONNECTION_METHODS.PRIVY) {
-          // ensure we're on an EVM chain before a Privy login
           if (!isEvm) {
             const evmChain = chains.find((c) => c.type === CHAIN_TYPES.EVM);
             if (evmChain) {
@@ -238,7 +256,6 @@ export const WalletProvider = ({ children }) => {
           }
           await connectStarknet();
         }
-        closeWalletModal();
       } catch (error) {
         console.error("Connection error:", error);
         openNotification("error", "Connection Failed", error.message);
@@ -381,6 +398,7 @@ export const WalletProvider = ({ children }) => {
         // privy detail (for UI copy)
         isEmbedded,
         loginIdentifier,
+        loginName,
 
         // starknet (existing consumers unchanged)
         wallet,

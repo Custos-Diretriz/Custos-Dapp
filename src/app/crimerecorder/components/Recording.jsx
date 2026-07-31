@@ -1,13 +1,9 @@
 "use client";
 import React, { useContext, useEffect, useState, useRef, useCallback } from "react";
-import bg from "../../../../public/Rectangle.png";
-import icon3 from "../../../../public/rotate.png";
-import Icons from "./Icons";
 import { useRouter } from "next/navigation";
 import { WalletContext } from "../../../components/walletprovider";
 import { useNotification } from "../../../context/NotificationProvider";
 import { GlobalStateContext } from "../../../context/GlobalStateProvider";
-import stopIcon from "../../../../public/record.png";
 import { useModal } from "../../../context/ModalProvider";
 import {
   executeCalls,
@@ -15,11 +11,17 @@ import {
   fetchAccountsRewards,
   fetchGasTokenPrices,
 } from "@avnu/gasless-sdk";
-import { FaRegCirclePlay } from "react-icons/fa6";
-import { BsStopCircle } from "react-icons/bs";
 import { byteArray, CallData } from "starknet";
 import Filename from "./nameModal";
-import Image from "next/image";
+import StatusChips from "../../../components/dapps/StatusChips";
+import {
+  CaptureCard,
+  CaptureViewport,
+  CaptureButton,
+  SwitchCameraButton,
+  RecIndicator,
+  LoadingOverlay,
+} from "./CaptureFrame";
 import { CHAIN_TYPES, txUrl } from "../../../lib/chains";
 import { saveEvidence, saveEvidenceBatch } from "../../../utils/evmEvidence";
 import {
@@ -479,115 +481,57 @@ export const Recording = ({ text, icon1, imgText, category }) => {
   }, []);
 
   return (
-    <>
-      <div className="w-full flex flex-col mt-10 items-center gap-6">
-        <Filename
-          open={isUploadModalOpen}
-          onClose={closeUploadModal}
-          onSubmit={handleFileNameSubmit}
-        />
+    <div className="flex w-full flex-col items-center gap-5">
+      <Filename
+        open={isUploadModalOpen}
+        onClose={closeUploadModal}
+        onSubmit={handleFileNameSubmit}
+      />
 
-        <p className="text-white text-lg sm:text-xl">{text}</p>
+      <p className="text-center text-base text-white sm:text-lg">{text}</p>
 
-        <div className="flex items-center gap-2 text-xs">
-          <span className="px-3 py-1 rounded-full bg-[#1e2f37] text-[#19B1D2]">
-            {selectedChain.name}
-          </span>
-          <span className="px-3 py-1 rounded-full bg-[#1e2f37] text-[#0094FF]">
-            {isGuest ? "Guest session" : "Wallet connected"}
-          </span>
+      <StatusChips />
+
+      <CaptureCard>
+        <div id="vid-recorder">
+          <CaptureViewport>
+            <video
+              ref={videoRef}
+              autoPlay
+              muted
+              playsInline
+              id="web-cam-container"
+              className="h-full w-full object-cover"
+            >
+              Your browser doesn&apos;t support the video tag
+            </video>
+            {isRecording && <RecIndicator />}
+          </CaptureViewport>
+          <canvas ref={canvasRef} className="hidden" />
         </div>
 
-        <div className="w-full max-w-lg rounded-xl md:mb-5">
-          <div
-            className="w-full h-full flex flex-col justify-center items-center rounded-xl p-6 sm:p-10"
-            style={{
-              backgroundColor: "#1e2f37",
-              backgroundImage: `url(${bg.src})`,
-              backgroundSize: "contain",
-            }}
-          >
-            <div id="vid-recorder" className="w-full">
-              <video
-                ref={videoRef}
-                autoPlay
-                muted
-                playsInline
-                id="web-cam-container"
-                className="rounded-xl mb-6 w-full"
-              >
-                Your browser doesn&apos;t support the video tag
-              </video>
-              <canvas ref={canvasRef} style={{ display: "none" }}></canvas>
-            </div>
-
-            <div className="flex items-center space-x-4">
-              <button
-                className={
-                  isClicked ? "switch-camera-button clicked" : "switch-camera-button"
-                }
-                onClick={switchCamera}
-              >
-                <Icons icon={icon3} text={`Switch Camera`} isFlipped={isClicked} />
-              </button>
-
-              <button onClick={handleStopMedia}>
-                {isRecording ? (
-                  <Icons icon={stopIcon} text="Stop Recording" />
-                ) : (
-                  <>
-                    {imgText === "Click to Take a Picture" ? (
-                      <div className="flex flex-col justify-center items-center gap-2 mb-6">
-                        <BsStopCircle
-                          size={24}
-                          className="w-8 h-8 md:w-12 md:h-12 lg:w-16 lg:h-16"
-                          color="#0094ff"
-                        />
-                        <span className="text-white text-xs md:text-sm lg:text-base">
-                          {imgText}
-                        </span>
-                      </div>
-                    ) : (
-                      <div className="flex flex-col justify-center items-center gap-2 mb-6">
-                        <FaRegCirclePlay
-                          size={24}
-                          className="w-8 h-8 md:w-12 md:h-12 lg:w-16 lg:h-16"
-                          color="#0094ff"
-                        />
-                        <span className="text-white text-xs md:text-sm lg:text-base">
-                          {imgText}
-                        </span>
-                      </div>
-                    )}
-                  </>
-                )}
-              </button>
-            </div>
-
-            {isRecording && (
-              <p className="text-[10px] text-[#19B1D2] mt-2 text-center">
-                Auto-save armed — if this page closes or is interrupted, your
-                recording is secured onchain automatically.
-              </p>
-            )}
-
-            {loading && (
-              <div className="fixed inset-0 z-50 bg-black bg-opacity-70 flex items-center justify-center">
-                <div className="flex flex-col items-center">
-                  <Image src="/logo.svg" alt="Loading" width={100} height={100} />
-                  <p className="text-white mt-4 text-lg">{loadingText}</p>
-                </div>
-                <style jsx>{`
-                  div {
-                    backdrop-filter: blur(10px);
-                  }
-                `}</style>
-              </div>
-            )}
-          </div>
+        <div className="flex items-center justify-center gap-6 sm:gap-8">
+          <SwitchCameraButton onClick={switchCamera} flipped={isClicked} />
+          <CaptureButton
+            onClick={handleStopMedia}
+            recording={isRecording}
+            mode={category}
+            label={isRecording ? "Stop Recording" : imgText}
+          />
+          {/* keeps the capture button optically centred */}
+          <span aria-hidden className="h-12 w-12 shrink-0" />
         </div>
-      </div>
-    </>
+
+        {isRecording && (
+          <p className="rounded-xl border border-[#19B1D2]/20 bg-[#19B1D2]/10 px-3 py-2 text-center text-[11px] leading-relaxed text-[#19B1D2]">
+            Auto-save armed — if this page closes or is interrupted, your
+            recording is secured onchain automatically.
+          </p>
+        )}
+      </CaptureCard>
+
+      {loading && <LoadingOverlay text={loadingText} />}
+    </div>
   );
 };
 

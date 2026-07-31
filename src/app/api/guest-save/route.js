@@ -7,6 +7,7 @@ import {
   getAddress,
 } from "ethers";
 import { CHAINS, CHAIN_TYPES, CRIME_RECORD_ABI } from "../../../lib/chains";
+import { queueFailedAnchors } from "../../../lib/pendingAnchors";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -31,6 +32,14 @@ function rateLimited(ip) {
 const validHash = (h) =>
   typeof h === "string" && h.length > 0 && h.length <= 200;
 
+/**
+ * ABI/argument mismatches are our bug, not a chain failure — retrying can
+ * never fix them, so fail loudly instead of filling the draft table.
+ */
+const isOurBug = (e) =>
+  e.code === "INVALID_ARGUMENT" ||
+  /no matching fragment|unconfigured name/i.test(e.message || "");
+
 export async function POST(req) {
   try {
     const ip =
@@ -39,7 +48,14 @@ export async function POST(req) {
       return NextResponse.json({ error: "Too many requests" }, { status: 429 });
     }
 
-    const { fileHash, fileHashes, chainKey, userAddress } = await req.json();
+    const {
+      fileHash,
+      contentHash,
+      fileHashes,
+      contentHashes,
+      chainKey,
+      userAddress,
+    } = await req.json();
 
     const chain = CHAINS[chainKey];
     if (!chain || chain.type !== CHAIN_TYPES.EVM || !chain.contractAddress) {
@@ -74,21 +90,55 @@ export async function POST(req) {
     const isGuest = !userAddress || !isAddress(userAddress);
     const user = isGuest ? guestWallet.address : getAddress(userAddress);
 
-    const tx = batch
-      ? await contract.storeEvidenceBatch(batch, user)
-      : await contract.storeEvidence(fileHash, user);
-    const receipt = await tx.wait();
+    // contentHash is optional — the contract accepts ""
+    const hashes = batch || [fileHash];
+    const contents = batch
+      ? (contentHashes || []).length === batch.length
+        ? contentHashes
+        : batch.map(() => "")
+      : [contentHash || ""];
 
-    return NextResponse.json({
-      txHash: receipt.hash,
-      user,
-      isGuest,
-      count: batch ? batch.length : 1,
-    });
+    try {
+      const tx = batch
+        ? await contract.storeEvidenceBatch(batch, contents, user)
+        : await contract.storeEvidence(fileHash, contents[0], user);
+      const receipt = await tx.wait();
+
+      // anchored — nothing goes to the database
+      return NextResponse.json({
+        txHash: receipt.hash,
+        user,
+        isGuest,
+        count: hashes.length,
+      });
+    } catch (chainError) {
+      const reason = chainError.shortMessage || chainError.message;
+
+      if (isOurBug(chainError)) {
+        console.error("guest-save encoding error (not queued):", chainError);
+        return NextResponse.json({ error: reason }, { status: 500 });
+      }
+
+      // genuine chain failure — the file is on IPFS, so keep the CID as a draft
+      console.error("onchain save failed, queueing:", reason);
+      await queueFailedAnchors({
+        fileHashes: hashes,
+        contentHashes: contents,
+        chainKey: chain.key,
+        user,
+        isGuest,
+        reason,
+      });
+
+      return NextResponse.json(
+        { queued: true, user, isGuest, count: hashes.length, reason },
+        { status: 202 }
+      );
+    }
   } catch (error) {
     console.error("guest-save error:", error);
     return NextResponse.json(
-      { error: "Failed to save onchain" },
+      { error: error.shortMessage || error.message || "Failed to save onchain" },
       { status: 500 }
     );
   }

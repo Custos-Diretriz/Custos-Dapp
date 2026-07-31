@@ -4,6 +4,8 @@ import { useRouter } from "next/navigation";
 import React, { useContext, useState } from "react";
 import ValidateAgreementModal from "./validateAgreement";
 import SignAgreementModal from "./signagreementmodal";
+import { PrinterIcon } from "@heroicons/react/outline";
+import { cn } from "../../../lib/utils";
 import DOMPurify from 'dompurify';
 import ReactMarkdown from 'react-markdown';
 import parse from 'html-react-parser';
@@ -35,6 +37,111 @@ const renderContent = (content) => {
       return <span>{content}</span>;
   }
 };
+
+const truncateMiddle = (value, lead = 10, tail = 8) => {
+  const str = String(value ?? "");
+  return str.length > lead + tail + 1
+    ? `${str.slice(0, lead)}…${str.slice(-tail)}`
+    : str;
+};
+
+export const CardActionButton = ({ children, className, ...props }) => (
+  <button
+    type="button"
+    className={cn(
+      "border-gradient2 inline-flex h-10 w-full items-center justify-center rounded-full bg-white/[0.04] px-4 text-xs font-medium text-white",
+      "transition-transform duration-200 hover:scale-[1.02] active:scale-[0.98]",
+      "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#0094FF]/70",
+      "disabled:cursor-not-allowed disabled:opacity-50 disabled:hover:scale-100",
+      "sm:w-auto sm:text-sm",
+      className
+    )}
+    {...props}
+  >
+    {children}
+  </button>
+);
+
+/**
+ * One card layout for both onchain and pending agreements: fluid height,
+ * clamped excerpt, and a footer that stacks on narrow screens instead of
+ * squeezing the action button.
+ */
+export const AgreementCardShell = ({
+  title,
+  counterparty,
+  timestamp,
+  content,
+  onOpen,
+  onPrint,
+  onEdit,
+  action,
+}) => (
+  <article className="border-gradient2 relative flex w-full flex-col rounded-2xl bg-[#97c7fe09] p-3 backdrop-blur-sm sm:p-4">
+    <div
+      role="button"
+      tabIndex={0}
+      onClick={onOpen}
+      onKeyDown={(e) => {
+        if (e.key === "Enter" || e.key === " ") {
+          e.preventDefault();
+          onOpen?.();
+        }
+      }}
+      className="flex flex-1 cursor-pointer flex-col gap-3 rounded-xl border-[0.5px] border-[#43b2ea38] p-3 text-left transition-colors hover:border-[#43b2ea70] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#0094FF]/70"
+    >
+      <div className="flex items-start justify-between gap-2">
+        <h2 className="min-w-0 break-words bg-gradient-to-r from-[#19B1D2] to-[#0094FF] bg-clip-text text-base font-bold text-transparent">
+          {title}
+        </h2>
+        {onEdit && (
+          <button
+            type="button"
+            onClick={onEdit}
+            aria-label="Edit agreement"
+            className="-mr-1 -mt-1 grid h-9 w-9 shrink-0 place-items-center rounded-lg transition-colors hover:bg-white/10"
+          >
+            <Image src="/pencil-edit.svg" height={18} width={18} alt="" />
+          </button>
+        )}
+      </div>
+
+      <p
+        className="truncate rounded-lg bg-white/[0.04] px-3 py-2 font-mono text-[11px] text-[#f3f2f2b0]"
+        title={String(counterparty ?? "")}
+      >
+        <span className="text-[#8E9A9A]">Second party: </span>
+        {truncateMiddle(counterparty)}
+      </p>
+
+      <p className="text-[11px] font-semibold text-white">
+        <span className="text-[#8E9A9A]">Time stamp: </span>
+        <span className="bg-gradient-to-r from-[#19B1D2] to-[#0094FF] bg-clip-text text-transparent">
+          {timestamp}
+        </span>
+      </p>
+
+      <div className="agreement-card-excerpt line-clamp-4 break-words text-xs leading-relaxed text-[#cfd8da]">
+        {content}
+      </div>
+    </div>
+
+    <div className="mt-3 flex flex-col items-stretch gap-2 sm:flex-row sm:items-center sm:justify-between">
+      <button
+        type="button"
+        onClick={(e) => {
+          e.stopPropagation();
+          onPrint?.();
+        }}
+        className="inline-flex h-10 items-center justify-center gap-2 rounded-full border border-white/12 bg-white/[0.03] px-4 text-xs text-[#EAFBFF] transition-colors hover:bg-white/[0.08] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#0094FF]/70 sm:text-sm"
+      >
+        <PrinterIcon className="h-4 w-4 shrink-0" aria-hidden />
+        Print
+      </button>
+      {action}
+    </div>
+  </article>
+);
 
 export const AgreementCard = ({
   agreement,
@@ -142,84 +249,36 @@ export const AgreementCard = ({
   // console.log("fetchedagrrement", agreement);
 
   return (
-    <>
-      <div
-        
-        className="p-3 text-base space-y-[1em] flex flex-col justify-between bg-gradient-to- border-gradient2 bg-[#97c7fe09] h-[20em] backdrop-blur-sm  text-transparent rounded-[1em] relative w-full cursor-pointer"
-      >
-        <div 
-        onClick={handleCardClick}
-        className="relative border-[#43b2ea38] h-[80%] overflow-clip flex flex-col gap-0 backdrop-blur-sm shadow-2xl border-[0.01px] rounded-lg p-2 items-start w-full">
-          <div className="w-full flex justify-between">
-            <h2 className="text-[16px] box w-fit flex text-wrap font-bold bg-gradient-to-r br  px-[16px] py-[8px] from-[#19B1D2] to-[#0094FF] bg-clip-text text-transparent">
-              {byteArrayToString(agreement.agreement_title)}
-            </h2>
-          </div>
-          <div className="br w-[75%] overflow-hidden flex px-4 font-bold min-h-[4em] max-h-[4em] text-[10px] text-[#f3f2f294] whitespace-nowrap border-gradient2">
-            <p className="py-2 whitespace-nowrap overflow-hidden overflow-ellipsis">
-              Second Party Address: {numberToHex(agreement.second_party_address)}
-            </p>
-          </div>
-          <div className="w-fit font-bold flex items-start justify-start text-left space-x-0 text-[0.7em] text-white text-nowrap mt-4 mb-4">
-            Time Stamp :
-            <span className="text-center align-middle font-bold bg-gradient-to-r from-[#19B1D2] to-[#0094FF] bg-clip-text text-transparent">
-              {hexTimestampToFormattedDate(agreement.timestamp)}
-            </span>
-          </div>
-          <div className="text-wrap w-fit text-white">
-            <p className="max-h-[8em] overflow-hidden font-bold text-[0.7em] text-left">
-              {renderContent(byteArrayToString(agreement.content))}
-            </p>
-          </div>
-        </div>
-        <div className="mt-4 flex justify-between items-center w-full ">
-          <button
-            onClick={(e) => {
-              e.stopPropagation();
-              printAgreement(agreement);
-            }}
+    <AgreementCardShell
+      title={byteArrayToString(agreement.agreement_title)}
+      counterparty={numberToHex(agreement.second_party_address)}
+      timestamp={hexTimestampToFormattedDate(agreement.timestamp)}
+      content={renderContent(byteArrayToString(agreement.content))}
+      onOpen={handleCardClick}
+      onPrint={() => printAgreement(agreement)}
+      action={
+        padAddress(numberToHex(agreement.creator)) !== address ? (
+          <CardActionButton
+            onClick={handleValidate}
+            disabled={agreement.validate_signature}
           >
-            <div className="button-transition">
-              <img
-                src="./PrintAgreement.png"
-                width={"80%"}
-                alt="C"
-              />
-            </div>
-          </button>
-
-          {padAddress(numberToHex(agreement.creator)) !== address ? (
-            <button
-              onClick={handleValidate}
-              disabled={
-                agreement.validate_signature
-              }
-              className={`w-fit px-2 py-2 text-white rounded-[2em] border-slate-800 shadow-lg transform hover:scale-105 transition-transform duration-300 border-gradient bg-opacity-50 backdrop-filter backdrop-blur-lg flex items-center justify-center relative text-[0.8em] ${
-                
-                agreement.validate_signature
-                  ? " opacity-50 cursor-not-allowed"
-                  : ""
-              }`}
-            >
-              {agreement.validate_signature? isValidating ? ' Validating' : 'Finalized' : 'Validated'}
-            </button>
-          ) : (
-            <button
-              // onClick={handleSignClick}
-              disabled={true}
-              className={`w-fit px-2 py-2 text-white rounded-[2em] border-slate-800 shadow-lg transform hover:scale-105 transition-transform duration-300 border-gradient2 bg-opacity-50 backdrop-filter backdrop-blur-lg flex items-center justify-center relative text-[0.8em] ${
-                !agreement.second_party_signature || agreement.validate_signature
-                  ? "cursor-not-allowed opacity-50 px-4"
-                  : "cursor-not-allowed opacity-50"
-              }`}
-            >
-              {agreement.validated ? (!agreement.validate_signature ? 'Awaiting Approval' : 'Finalized') : 'Finalized'}
-            </button>
-          )}
-        </div>
-      </div>
-
-    </>
+            {agreement.validate_signature
+              ? isValidating
+                ? "Validating"
+                : "Finalized"
+              : "Validated"}
+          </CardActionButton>
+        ) : (
+          <CardActionButton disabled>
+            {agreement.validated
+              ? !agreement.validate_signature
+                ? "Awaiting Approval"
+                : "Finalized"
+              : "Finalized"}
+          </CardActionButton>
+        )
+      }
+    />
   );
 };
 
@@ -266,90 +325,35 @@ export const PendingAgreementCard = ({
 
   return (
     <>
-      <div
-        onClick={handleCardClick}
-        className="p-3 text-base space-y-[1em] flex flex-col justify-between bg-gradient-to- border-gradient2 bg-[#97c7fe09] backdrop-blur-sm  text-transparent rounded-[1em] relative w-full cursor-pointer"
-      >
-        <div className="relative border-[#43b2ea38] min-h-[70%] max-h-[70%] overflow-clip flex flex-col gap-0 backdrop-blur-sm shadow-2xl border-[0.01px] rounded-lg p-2 items-start w-full">
-          <div className="w-full flex justify-between">
-            <h2 className="text-[16px] box w-fit flex text-wrap font-bold bg-gradient-to-r br  px-[16px] py-[8px] from-[#19B1D2] to-[#0094FF] bg-clip-text text-transparent">
-              {agreement.agreementType}
-            </h2>
-            {agreement.access_token && (
-              <Image
-                src={"/pencil-edit.svg"}
-                height={24}
-                width={24}
-                alt="edit"
-                onClick={handleEditClick}
-                className="cursor-pointer"
-              />
-            )}
-          </div>
-          <div className="br w-[75%] overflow-hidden flex px-4 font-bold min-h-[4em] max-h-[4em] text-[10px] text-[#f3f2f294] whitespace-nowrap border-gradient2">
-            <p className="py-2 whitespace-nowrap overflow-hidden overflow-ellipsis">
-              Second Party Address: {agreement.second_party_address}
-            </p>
-          </div>
-          <div className="w-fit font-bold flex items-start justify-start text-left space-x-0 text-[0.7em] text-white text-nowrap mt-4 mb-4">
-            Time Stamp :
-            <span className="text-center align-middle text-wrap font-bold bg-gradient-to-r from-[#19B1D2] to-[#0094FF] bg-clip-text text-transparent">
-              {formattedDate}
-            </span>
-          </div>
-          <div className="text-wrap w-fit text-white">
-            <p className="max-h-[8em] overflow-hidden font-bold text-[0.7em] text-left">
-              {renderContent(agreement.content)}
-            </p>
-          </div>
-        </div>
-        <div className="mt-4 flex justify-between items-center w-full ">
-          <button
-            onClick={(e) => {
-              e.stopPropagation();
-              printAgreement(agreement);
-            }}
-          >
-            <div className="button-transition">
-              <img
-                src="./PrintAgreement.png"
-                width={"80%"}
-                alt="Connect Wallet"
-              />
-            </div>
-          </button>
-
-          {agreement.access_token ? (
-            <button
+      <AgreementCardShell
+        title={agreement.agreementType}
+        counterparty={agreement.second_party_address}
+        timestamp={formattedDate}
+        content={renderContent(agreement.content)}
+        onOpen={handleCardClick}
+        onPrint={() => printAgreement(agreement)}
+        onEdit={agreement.access_token ? handleEditClick : undefined}
+        action={
+          agreement.access_token ? (
+            <CardActionButton
               onClick={handleValidateClick}
               disabled={
                 !agreement.second_party_signature ||
                 agreement.agreement_id !== null
               }
-              className={`w-fit px-4 py-2 text-white rounded-[2em] border-slate-800 shadow-lg transform hover:scale-105 transition-transform duration-300 border-gradient2 bg-opacity-50 backdrop-filter backdrop-blur-lg flex items-center justify-center relative text-[1em] md:text-[0.8em] sm:text-[0.7em] ${
-                !agreement.second_party_signature ||
-                agreement.agreement_id !== null
-                  ? "opacity-50 cursor-not-allowed"
-                  : ""
-              }`}
             >
               Validate Agreement
-            </button>
+            </CardActionButton>
           ) : (
-            <button
+            <CardActionButton
               onClick={handleSignClick}
-              disabled={agreement.second_party_signature != null || undefined}
-              className={`w-fit px-2 py-2 text-white rounded-[2em] border-slate-800 shadow-lg transform hover:scale-105 transition-transform duration-300 border-gradient2 bg-opacity-50 backdrop-filter backdrop-blur-lg flex items-center justify-center relative text-[0.8em] ${
-                !agreement.second_party_signature
-                  ? ""
-                  : "cursor-not-allowed opacity-50"
-              }`}
+              disabled={agreement.second_party_signature != null}
             >
               Sign Agreement
-            </button>
-          )}
-        </div>
-      </div>
+            </CardActionButton>
+          )
+        }
+      />
 
       {isModalOpen && (
         <ValidateAgreementModal

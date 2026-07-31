@@ -1,9 +1,13 @@
 import "./globals.css";
 import Footer from "../components/footer";
-import Metadata from "./metadata";
+import {
+  metadata as siteMetadata,
+  viewport as siteViewport,
+} from "./metadata";
 import BackgroundWrapper from "../components/backgroundwrapper";
 import PrivyProviders from "../components/PrivyProviders";
 import { WalletProvider } from "../components/walletprovider";
+import WalletModal from "../components/WalletModal";
 import { ModalProvider } from "../context/ModalProvider";
 import { NotificationProvider } from "../context/NotificationProvider";
 import { GlobalStateProvider } from "../context/GlobalStateProvider";
@@ -12,7 +16,10 @@ import { Analytics } from "@vercel/analytics/react";
 // Add the manifest so that it can be injected at nextjs runtime.
 // NOTE: Removing this or moving this to the metadata.js file will not allow the
 // InstallPWA component to be loaded from the InstallPWA component.
-export const metadata = { ...Metadata, manifest: "/manifest.json" };
+export const metadata = { ...siteMetadata, manifest: "/manifest.json" };
+
+// viewport-fit=cover so safe-area insets are real on notched devices
+export const viewport = siteViewport;
 
 export default function RootLayout({ children }) {
   return (
@@ -39,8 +46,6 @@ export default function RootLayout({ children }) {
           name="twitter:image"
           content="https://custosdiretriz.com/banner.png"
         />
-        <title>{Metadata.title}</title>
-        {Metadata.link}
         <link rel="icon" href="/favicon.png" />
       </head>
       <body className="flex flex-col border-none min-h-screen justify-between">
@@ -60,6 +65,7 @@ export default function RootLayout({ children }) {
                       <Footer />
                     </div>
                   </div>
+                  <WalletModal />
                 </ModalProvider>
               </WalletProvider>
             </PrivyProviders>

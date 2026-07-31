@@ -33,7 +33,7 @@ export default function PrivyProviders({ children }) {
         defaultChain: celo,
         supportedChains: [celo, celoSepolia, base],
 
-        loginMethods: ["email", "sms", "google", "wallet"],
+        loginMethods: ["google", "wallet"],
 
         embeddedWallets: {
           createOnLogin: "users-without-wallets",

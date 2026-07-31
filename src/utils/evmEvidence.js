@@ -14,16 +14,21 @@ function readContract(chain) {
  * userAddress: connected wallet address, or null for guest sessions —
  * the server substitutes its own (guest) address when null.
  */
-export async function saveEvidence({ chain, fileHash, userAddress }) {
+export async function saveEvidence({ chain, fileHash, contentHash, userAddress }) {
   const res = await fetch("/api/guest-save", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({
       fileHash,
+      contentHash: contentHash || "",
       chainKey: chain.key,
       userAddress: userAddress || null,
     }),
   });
+
+  // 202 = on IPFS, queued for anchoring — not a failure
+  if (res.status === 202) return res.json();
+
   if (!res.ok) {
     const err = await res.json().catch(() => ({}));
     throw new Error(err.error || "Onchain save failed");
@@ -32,16 +37,25 @@ export async function saveEvidence({ chain, fileHash, userAddress }) {
 }
 
 /** Batch save — used by emergency recovery. */
-export async function saveEvidenceBatch({ chain, fileHashes, userAddress }) {
+export async function saveEvidenceBatch({
+  chain,
+  fileHashes,
+  contentHashes,
+  userAddress,
+}) {
   const res = await fetch("/api/guest-save", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({
       fileHashes,
+      contentHashes: contentHashes || fileHashes.map(() => ""),
       chainKey: chain.key,
       userAddress: userAddress || null,
     }),
   });
+
+  if (res.status === 202) return res.json();
+
   if (!res.ok) {
     const err = await res.json().catch(() => ({}));
     throw new Error(err.error || "Onchain batch save failed");
@@ -54,19 +68,45 @@ export async function getRecorderAddress(chain) {
   return readContract(chain).recorder();
 }
 
-/** One address's evidence. Omit userAddress to read guest-session records. */
-export async function getEvidence({ chain, userAddress }) {
+/**
+ * One address's evidence, paged. Omit userAddress to read the guest bucket
+ * (everything recorded without a connected wallet).
+ */
+export async function getEvidence({ chain, userAddress, pageSize = 200 }) {
   const contract = readContract(chain);
   const target = userAddress || (await contract.recorder());
-  const records = await contract.getEvidence(target);
-  return records
-    .map((r) => ({
-      user: target,
-      fileHash: r.fileHash,
-      timestamp: Number(r.timestamp) * 1000,
-      isGuest: false,
-    }))
-    .sort((a, b) => b.timestamp - a.timestamp);
+  const isGuestBucket = !userAddress;
+
+  const out = [];
+  let offset = 0;
+  let total = Infinity;
+
+  while (offset < total) {
+    const [page, tot] = await contract.getEvidencePaginated(
+      target,
+      offset,
+      pageSize
+    );
+    total = Number(tot);
+    if (!page.length) break;
+
+    for (const r of page) {
+      out.push({
+        user: target,
+        fileHash: r.fileHash,
+        contentHash: r.contentHash,
+        timestamp: Number(r.timestamp) * 1000,
+        isGuest: isGuestBucket,
+      });
+    }
+    offset += page.length;
+  }
+  return out.sort((a, b) => b.timestamp - a.timestamp);
+}
+
+/** How many records an address has, without fetching them. */
+export async function getEvidenceCount({ chain, userAddress }) {
+  return Number(await readContract(chain).getEvidenceCount(userAddress));
 }
 
 /**
@@ -87,6 +127,7 @@ export async function getAllEvidence({ chain, pageSize = 200 }) {
       out.push({
         user: r.user,
         fileHash: r.fileHash,
+        contentHash: r.contentHash,
         timestamp: Number(r.timestamp) * 1000,
         isGuest: r.isGuest,
       });

@@ -40,6 +40,65 @@
   -webkit-appearance: none;
 }
 
+/* ------------------------------------------------------------------
+   Mobile hardening
+   ------------------------------------------------------------------ */
+
+/* Nothing should ever push the page sideways on a phone. */
+html,
+body {
+  max-width: 100%;
+  overflow-x: hidden;
+}
+
+/* iOS zooms the page when a focused input is under 16px. */
+@media (max-width: 640px) {
+  input,
+  select,
+  textarea {
+    font-size: 16px;
+  }
+}
+
+/* Media and embeds stay inside their column. */
+img,
+video,
+canvas,
+svg {
+  max-width: 100%;
+}
+
+/* Hover affordances are noise on touch devices; keep taps instant. */
+@media (hover: none) {
+  .button-transition:hover,
+  .launch-pad-button-container:hover,
+  .image-container:hover {
+    transform: none;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+/* Rich agreement bodies are user-authored HTML — stop long tokens and wide
+   tables from blowing out the card. */
+.agreement-card-excerpt * {
+  max-width: 100% !important;
+  word-break: break-word;
+}
+.agreement-card-excerpt img,
+.agreement-card-excerpt table {
+  height: auto;
+}
+
 #preload-banner {
   padding: 10px 0; /* Padding for the banner */
   text-align: center; /* Center the text */

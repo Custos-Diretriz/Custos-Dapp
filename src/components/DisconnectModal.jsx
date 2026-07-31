@@ -1,20 +1,23 @@
 "use client";
-import React from "react";
+import React, { useEffect } from "react";
 import { XIcon } from "@heroicons/react/outline";
 
-const DisconnectModal = ({ isOpen, onClose, onDisconnect }) => {
+const DisconnectModal = ({ isOpen, onClose, onDisconnect, address }) => {
+  useEffect(() => {
+    if (!isOpen) return;
+    const onKeyDown = (e) => e.key === "Escape" && onClose();
+    window.addEventListener("keydown", onKeyDown);
+    return () => window.removeEventListener("keydown", onKeyDown);
+  }, [isOpen, onClose]);
+
   if (!isOpen) return null;
 
   const handleClose = (e) => {
-    // Prevent click from bubbling to parent
     e.stopPropagation();
     onClose();
   };
 
-  const handleModalClick = (e) => {
-    // Prevent click from bubbling to backdrop
-    e.stopPropagation();
-  };
+  const handleModalClick = (e) => e.stopPropagation();
 
   const handleDisconnect = () => {
     onDisconnect();
@@ -23,42 +26,53 @@ const DisconnectModal = ({ isOpen, onClose, onDisconnect }) => {
 
   return (
     <div
-      className="fixed inset-0 h-screen bg-black/60 z-50 backdrop-blur-sm flex items-center justify-center"
+      className="fixed inset-0 z-[80] flex items-end justify-center bg-black/60 p-0 backdrop-blur-sm sm:items-center sm:p-4"
       onClick={handleClose}
+      role="dialog"
+      aria-modal="true"
+      aria-label="Disconnect wallet"
     >
       <div
-        className="w-full md:w-[500px] bg-[#08001F] text-center border border-[#170F2E] rounded-3xl py-12 px-6 relative"
+        className="w-full max-w-lg rounded-t-3xl border border-[#170F2E] bg-[#08001F] px-5 pb-[calc(24px+env(safe-area-inset-bottom))] pt-5 sm:rounded-3xl sm:px-8 sm:pb-8 sm:pt-6"
         onClick={handleModalClick}
       >
-        <div className=" flex justify-between items-center">
-          <h3 className="text-[18px] lg:text-2xl font-medium text-[#F9F9F9]">
+        <div className="flex items-start justify-between gap-4">
+          <h3 className="text-lg font-medium text-[#F9F9F9] lg:text-2xl">
             Disconnect wallet
           </h3>
-
           <button
+            type="button"
             onClick={handleClose}
-            className="text-gray-400 hover:text-white transition-colors"
+            aria-label="Close"
+            className="-mr-2 -mt-1 grid h-11 w-11 shrink-0 place-items-center rounded-xl text-gray-400 transition-colors hover:bg-white/5 hover:text-white"
           >
-            <XIcon className="w-8 h-8" />
+            <XIcon className="h-6 w-6" />
           </button>
         </div>
 
-        <div className="py-[30px] px-[16px] lg:py-[81px] lg:px-[55px] my-6">
-          <p className="text-[#A199B8] text-sm lg:text-base leading-[22px]">
+        <div className="my-6 space-y-3">
+          <p className="text-sm leading-relaxed text-[#A199B8] lg:text-base">
             You are disconnecting your wallet from Custos Diretriz. Are you sure
-            you want to continue with this process?
+            you want to continue?
           </p>
+          {address && (
+            <p className="break-all rounded-xl bg-white/[0.04] px-3 py-2 text-[11px] text-[#19B1D2]">
+              {address}
+            </p>
+          )}
         </div>
 
-        <div className="text-center flex justify-between items-center gap-x-4">
+        <div className="flex flex-col-reverse gap-3 sm:flex-row">
           <button
-            className="py-3 text-sm lg:text-base w-[200px] text-center lg:py-4 transition-colors px-10 border-gradient2 rounded-[32px] bg-[#1a1a1a] hover:bg-[#2a2a2a] text-white"
+            type="button"
+            className="border-gradient2 h-12 flex-1 rounded-[32px] bg-[#1a1a1a] text-sm text-white transition-colors hover:bg-[#2a2a2a] lg:text-base"
             onClick={handleClose}
           >
             Cancel
           </button>
           <button
-            className="py-3 text-sm lg:text-base w-[200px] text-center lg:py-4 transition-colors gap-3 px-10 border-gradient2 rounded-[32px] bg-[#1a1a1a] hover:bg-[#2a2a2a] text-white"
+            type="button"
+            className="border-gradient2 h-12 flex-1 rounded-[32px] bg-[#1a1a1a] text-sm text-white transition-colors hover:bg-[#2a2a2a] lg:text-base"
             onClick={handleDisconnect}
           >
             Yes, Disconnect

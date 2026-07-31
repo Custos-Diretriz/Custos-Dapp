@@ -3,12 +3,30 @@ import React, { useContext } from "react";
 import { generateAvatarURL } from "@cfx-kit/wallet-avatar";
 import { truncAddress } from "../utils/serializer";
 import Image from "next/image";
+import { cn } from "../lib/utils";
 import { WalletContext } from "./walletprovider";
 import DisconnectModal from "./DisconnectModal";
-import WalletModal from "./WalletModal";
 import ChainSelector from "./chainselector";
 
-function ConnectButtonComponent({ showChainSelector = true }) {
+/** Email/phone → a short handle: "jerydam@gmail.com" becomes "jerydam". */
+const shortHandle = (identifier) => {
+  if (!identifier) return "";
+  const at = identifier.indexOf("@");
+  return at > 0 ? identifier.slice(0, at) : identifier;
+};
+
+/**
+ * @param showChainSelector render the network switcher alongside the pill
+ * @param compact           icon-first pill for tight spots (mobile header, collapsed rail)
+ * @param full              stretch to the container width (mobile drawer)
+ * @param maxLabelChars     hard cap on the social-login handle (sidebar uses 4)
+ */
+function ConnectButtonComponent({
+  showChainSelector = true,
+  compact = false,
+  full = false,
+  maxLabelChars,
+}) {
   const {
     address,
     isGuest,
@@ -17,61 +35,109 @@ function ConnectButtonComponent({ showChainSelector = true }) {
     disconnectWallet,
     isEmbedded,
     loginIdentifier,
+    loginName,
   } = useContext(WalletContext);
   const [showDisconnectModal, setShowDisconnectModal] = React.useState(false);
 
-  return (
-    <>
-      <div className="flex items-center gap-2 justify-end">
-        {showChainSelector && <ChainSelector />}
+  const handle = isEmbedded
+    ? loginName || shortHandle(loginIdentifier)
+    : "";
 
-        <div className="justify-end flex max-w-[13em] overflow-hidden w-fit items-end">
+  let label;
+  if (handle) {
+    if (maxLabelChars) {
+      label = handle.slice(0, maxLabelChars);
+    } else {
+      label = handle.length > 14 ? `${handle.slice(0, 12)}…` : handle;
+    }
+  } else {
+    label = truncAddress(address);
+  }
+
+  const pillShell = cn(
+    "cursor-pointer border-gradient2 rounded-full p-[1px] text-[#ededef]",
+    "transition-transform duration-200 active:scale-[0.97]",
+    "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#0094FF]/70",
+    full ? "w-full" : "w-auto"
+  );
+
+  const pillInner = cn(
+    "flex h-11 items-center gap-2 rounded-full bg-[#121212]",
+    compact ? "px-2.5" : "px-3.5",
+    full && "w-full justify-center"
+  );
+
+  return (
+    <div className={cn("flex flex-col", full ? "w-full" : "w-auto")}>
+      <div
+        className={cn(
+          "flex items-center gap-2",
+          full ? "w-full flex-col items-stretch" : "justify-end"
+        )}
+      >
+        {showChainSelector && <ChainSelector full={full} />}
+
+        <div className={cn("flex min-w-0", full ? "w-full" : "justify-end")}>
           {!ready ? (
-            <div className="rounded-full py-2 px-4 bg-[#121212] text-[#19B1D2] text-sm">
-              …
+            <div
+              className={cn(
+                "flex h-11 items-center rounded-full bg-[#121212] px-4 text-sm text-[#19B1D2]",
+                full && "w-full justify-center"
+              )}
+            >
+              <span className="animate-pulse">Connecting…</span>
             </div>
           ) : !isGuest ? (
-            <div
-              className="cursor-pointer border-gradient2 w-full rounded-full text-[#ededef] p-[1px]"
+            <button
+              type="button"
+              className={pillShell}
               onClick={() => setShowDisconnectModal(true)}
+              aria-label={`Wallet ${label} — open account menu`}
             >
-              <div className="bg-[#121212] border-gradient2 rounded-full py-2 px-3 flex gap-2 items-center">
+              <span className={pillInner}>
                 <Image
-                  className="rounded-full"
+                  className="shrink-0 rounded-full"
                   src={generateAvatarURL(address)}
-                  alt="avatar"
+                  alt=""
                   width={24}
                   height={24}
                 />
-                <span className="text-sm">
-                  {isEmbedded && loginIdentifier
-                    ? loginIdentifier.length > 14
-                      ? `${loginIdentifier.slice(0, 12)}…`
-                      : loginIdentifier
-                    : truncAddress(address)}
+                <span
+                  className={cn(
+                    "truncate text-sm",
+                    compact ? "max-w-[9ch] max-[380px]:hidden" : "max-w-[14ch]"
+                  )}
+                >
+                  {label}
                 </span>
-              </div>
-            </div>
+              </span>
+            </button>
           ) : (
-            <div
-              className="cursor-pointer border-gradient2 w-full rounded-full text-[#ededef] p-[1px]"
+            <button
+              type="button"
+              className={pillShell}
               onClick={openWalletModal}
+              aria-label="Connect a wallet"
             >
-              <div className="bg-[#121212] border-gradient2 rounded-full py-2 px-4 flex gap-2 items-center">
-                <span className="text-sm">Connect</span>
-              </div>
-            </div>
+              <span className={pillInner}>
+                <span className="h-2 w-2 shrink-0 rounded-full bg-[#0094FF]" />
+                <span className="whitespace-nowrap text-sm">Connect</span>
+              </span>
+            </button>
           )}
         </div>
       </div>
 
-      {ready && isGuest && (
-        <p className="text-[10px] text-[#19B1D2] text-right mt-1">
+      {ready && isGuest && !compact && (
+        <p
+          className={cn(
+            "mt-1 text-[10px] leading-tight text-[#19B1D2]",
+            full ? "text-center" : "text-right"
+          )}
+        >
           Guest mode — evidence still saved onchain
         </p>
       )}
-
-      <WalletModal />
 
       <DisconnectModal
         isOpen={showDisconnectModal}
@@ -82,7 +148,7 @@ function ConnectButtonComponent({ showChainSelector = true }) {
         }}
         address={address}
       />
-    </>
+    </div>
   );
 }
 

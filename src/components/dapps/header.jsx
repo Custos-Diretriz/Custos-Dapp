@@ -1,32 +1,102 @@
-import React, { useEffect, useState } from "react";
-import { FaBars, FaTimes } from "react-icons/fa";
-import ConnectButtoncomponent from "../../components/connect";
+"use client";
+import React, { useEffect, useRef, useState } from "react";
+import Link from "next/link";
+import Image from "next/image";
+import { FiMenu, FiSearch, FiX } from "react-icons/fi";
+import { cn } from "../../lib/utils";
+import ConnectButtoncomponent from "../connect";
 import { UseReadContractData } from "../../utils/fetchcontract";
 import NotificationsDropdown from "../../app/agreement/components/notificationsDropdown";
 
-export const Header = ({ onToggle }) => {
-  const [isOpen, setIsOpen] = useState(false);
-  const [darkMode, setDarkMode] = useState(false);
+/** Icon button with a 44px touch target regardless of the glyph size. */
+const IconButton = React.forwardRef(function IconButton(
+  { className, active, children, ...props },
+  ref
+) {
+  return (
+    <button
+      ref={ref}
+      type="button"
+      className={cn(
+        "grid h-11 w-11 shrink-0 place-items-center rounded-xl text-neutral-300 transition-colors",
+        "hover:bg-white/[0.06] hover:text-white",
+        "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#0094FF]/70",
+        active && "bg-white/[0.06] text-white ring-1 ring-[#0094FF]/50",
+        className
+      )}
+      {...props}
+    >
+      {children}
+    </button>
+  );
+});
+
+const SearchField = ({
+  value,
+  onChange,
+  onSubmit,
+  isLoading,
+  autoFocus,
+  className,
+}) => (
+  <form onSubmit={onSubmit} role="search" className={cn("relative", className)}>
+    <FiSearch
+      aria-hidden
+      className="pointer-events-none absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-neutral-500"
+    />
+    <input
+      type="search"
+      inputMode="numeric"
+      autoFocus={autoFocus}
+      placeholder="Search by agreement ID"
+      aria-label="Search by agreement ID"
+      value={value}
+      onChange={onChange}
+      className={cn(
+        "h-11 w-full rounded-full border border-white/10 bg-[#101A20] pl-10 pr-4 text-sm text-white",
+        "placeholder:text-neutral-500",
+        "transition-colors focus:border-[#0094FF] focus:outline-none focus:ring-1 focus:ring-[#0094FF]/40"
+      )}
+    />
+    {isLoading && (
+      <span className="absolute right-4 top-1/2 -translate-y-1/2 text-[11px] text-[#19B1D2]">
+        …
+      </span>
+    )}
+  </form>
+);
+
+export const Header = ({ onOpenMenu }) => {
   const [searchTerm, setSearchTerm] = useState("");
   const [searchResult, setSearchResult] = useState(null);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState("");
+  const [mobileSearchOpen, setMobileSearchOpen] = useState(false);
+  const [notificationsOpen, setNotificationsOpen] = useState(false);
+  const notificationsRef = useRef(null);
+
   const { fetchData } = UseReadContractData();
 
-  const [notificationDropDowm, showNotificationDropDowm] = useState(false);
+  // Notifications are not wired to a feed yet — drive the badge off real data
+  // so we never show a fake count.
+  const unreadCount = 0;
 
-  const toggleDarkMode = () => {
-    setDarkMode(!darkMode);
-  };
-
-  const toggleMenu = () => {
-    const newState = !isOpen;
-    setIsOpen(newState);
-    onToggle(newState);
-  };
+  useEffect(() => {
+    const onClickOutside = (e) => {
+      if (
+        notificationsRef.current &&
+        !notificationsRef.current.contains(e.target)
+      ) {
+        setNotificationsOpen(false);
+      }
+    };
+    document.addEventListener("mousedown", onClickOutside);
+    return () => document.removeEventListener("mousedown", onClickOutside);
+  }, []);
 
   const handleSearch = async (e) => {
     e.preventDefault();
+    if (!searchTerm.trim()) return;
     setIsLoading(true);
     setError("");
     setSearchResult(null);
@@ -34,13 +104,14 @@ export const Header = ({ onToggle }) => {
     try {
       const agreementId = parseInt(searchTerm, 10);
       if (isNaN(agreementId)) {
-        throw new Error("Please enter a valid agreement ID (number)");
+        throw new Error("Enter a valid agreement ID (a number)");
       }
 
       const result = await fetchData("agreement", "get_agreement_details", [
         { low: agreementId, high: 0 },
       ]);
-      setSearchResult(result);
+      if (!result) throw new Error(`No agreement found for ID ${agreementId}`);
+      setSearchResult({ id: agreementId, data: result });
     } catch (err) {
       setError(err.message || "An error occurred while searching");
     } finally {
@@ -48,60 +119,128 @@ export const Header = ({ onToggle }) => {
     }
   };
 
+  const dismissResult = () => {
+    setSearchResult(null);
+    setError("");
+  };
+
   return (
-    <div className="backdrop-blur flex items-center justify-between w-full px-4 sm:py-4 py-6">
-      {/* Logo on the left */}
-      <div className="flex items-center md:hidden">
-        <a href="/">
-          <img src="/logo.png" alt="Logo" width={250} height={250} />
-        </a>
-      </div>
+    <header className="sticky top-0 z-50 border-b border-white/[0.06] bg-[#04080C]/80 backdrop-blur-xl">
+      <div className="flex h-16 items-center gap-2 px-3 sm:px-4 lg:px-6">
+        {/* ------------------------------------------------ mobile: menu + logo */}
+        <IconButton
+          onClick={onOpenMenu}
+          aria-label="Open navigation"
+          className="md:hidden"
+        >
+          <FiMenu className="h-6 w-6" />
+        </IconButton>
 
-      {/* Main Header Content */}
-      <div className="flex items-center justify-between flex-grow w-full">
-        {/* Search Input */}
-        <div className="relative mx-auto max-w-md w-full hidden md:block">
-          <input
-            type="search"
-            placeholder="Search"
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-            className="w-full pl-10 pr-4 py-2 bg-[#1E1E1E] text-white border border-gray-600 rounded-full focus:outline-none focus:border-[#00A3FF]"
+        <Link href="/" className="shrink-0 md:hidden" aria-label="Custos home">
+          <Image
+            src="/logo.png"
+            alt="Custos Diretriz"
+            width={132}
+            height={26}
+            className="h-[22px] w-auto"
+            priority
           />
-          <div className="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
-            <img src="/search-normal.svg" alt="Search" className="w-5 h-5" />
+        </Link>
+
+        {/* ---------------------------------------------------- desktop search */}
+        <SearchField
+          value={searchTerm}
+          onChange={(e) => setSearchTerm(e.target.value)}
+          onSubmit={handleSearch}
+          isLoading={isLoading}
+          className="mx-auto hidden w-full max-w-md md:block"
+        />
+
+        <div className="ml-auto flex items-center gap-1 sm:gap-2 md:ml-0">
+          {/* mobile search toggle */}
+          <IconButton
+            onClick={() => setMobileSearchOpen((s) => !s)}
+            aria-label={mobileSearchOpen ? "Close search" : "Open search"}
+            aria-expanded={mobileSearchOpen}
+            active={mobileSearchOpen}
+            className="md:hidden"
+          >
+            {mobileSearchOpen ? (
+              <FiX className="h-5 w-5" />
+            ) : (
+              <FiSearch className="h-5 w-5" />
+            )}
+          </IconButton>
+
+          {/* notifications */}
+          <div className="relative" ref={notificationsRef}>
+            <IconButton
+              onClick={() => setNotificationsOpen((s) => !s)}
+              aria-label="Notifications"
+              aria-expanded={notificationsOpen}
+              active={notificationsOpen}
+            >
+              <span className="relative block h-5 w-5">
+                <Image src="/bell.svg" alt="" fill sizes="20px" />
+                {unreadCount > 0 && (
+                  <span className="absolute -right-1.5 -top-1 grid min-w-[16px] place-items-center rounded-full bg-red-500 px-1 text-[10px] leading-4 text-white">
+                    {unreadCount > 9 ? "9+" : unreadCount}
+                  </span>
+                )}
+              </span>
+            </IconButton>
+            <NotificationsDropdown open={notificationsOpen} />
           </div>
-        </div>
 
-        <div className="flex items-center space-x-7 relative">
-          {/* Dark Mode Toggle */}
-          <button
-            onClick={toggleDarkMode}
-            className="text-white hidden md:block"
-          >
-            <img src="/darkmodeicon.svg" alt="Dark Mode" className="w-5 h-5" />
-          </button>
-          {/* Notification  Bell*/}
-          <button
-            className={`text-white hidden md:block rounded-md  p-[2px] hover:bg-[#2c2c2c] ${
-              notificationDropDowm ? "border  border-blue-400" : ""
-            }`}
-            onClick={() => showNotificationDropDowm(!notificationDropDowm)}
-          >
-            <img src="/bell.svg" alt="Notifications" className="w-5 h-5" />
-            <div className="rounded-full flex items-center justify-center w-[2em] h-[1em] text-[10px] bg-red-500 absolute">
-              5
-            </div>
-          </button>
-          {/* Notification Dropdown Container */}
-          <NotificationsDropdown notificationDropDowm={notificationDropDowm} />
-
-          <div className="hidden md:block">
+          <div className="hidden sm:block">
             <ConnectButtoncomponent />
           </div>
+          <div className="sm:hidden">
+            <ConnectButtoncomponent compact showChainSelector={false} />
+          </div>
         </div>
       </div>
-    </div>
+
+      {/* ---------------------------------------------------- mobile search row */}
+      {mobileSearchOpen && (
+        <div className="px-3 pb-3 md:hidden">
+          <SearchField
+            autoFocus
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            onSubmit={handleSearch}
+            isLoading={isLoading}
+          />
+        </div>
+      )}
+
+      {/* ------------------------------------------------------- search feedback */}
+      {(error || searchResult) && (
+        <div className="px-3 pb-3 sm:px-4 lg:px-6">
+          <div
+            role="status"
+            className={cn(
+              "mx-auto flex max-w-md items-start justify-between gap-3 rounded-xl border px-4 py-2.5 text-xs",
+              error
+                ? "border-red-500/30 bg-red-500/10 text-red-200"
+                : "border-[#0094FF]/30 bg-[#0094FF]/10 text-[#EAFBFF]"
+            )}
+          >
+            <span className="min-w-0 break-words">
+              {error || `Agreement #${searchResult.id} found.`}
+            </span>
+            <button
+              type="button"
+              onClick={dismissResult}
+              aria-label="Dismiss"
+              className="shrink-0 text-current opacity-70 transition-opacity hover:opacity-100"
+            >
+              <FiX className="h-4 w-4" />
+            </button>
+          </div>
+        </div>
+      )}
+    </header>
   );
 };
 

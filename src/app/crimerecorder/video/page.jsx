@@ -2,36 +2,31 @@
 import React, { useState } from "react";
 import icon4 from "../../../../public/pause.png";
 import { Recording } from "../components/Recording";
-import { Header } from "../components/Header";
+import PageHeader from "../../../components/dapps/PageHeader";
 
 const VideoRecorder = () => {
   const [isRecording, setIsRecording] = useState(false);
 
-  const toggleRecording = () => {
-    setIsRecording((prev) => !prev);
-  };
-
-  const text = {
-    text3: isRecording
-      ? `Stop recording`
-      : `Record a video to keep on the blockchain`,
-  };
+  const toggleRecording = () => setIsRecording((prev) => !prev);
 
   return (
-    <div className="h-screen w-full md:px-4 px-10">
-      <div
-        className="flex justify-center md:mt-5 mt-10"
-        id="stop-vid-recording"
-      >
-        <Recording
-          text={text.text3}
-          icon1={icon4}
-          imgText={isRecording ? `Stop Recording` : `Start Recording`}
-          category={`video`}
-          isRecording={isRecording}
-          toggleRecording={toggleRecording}
-        />
-      </div>
+    <div className="flex flex-col gap-6" id="stop-vid-recording">
+      <PageHeader
+        title="Record a video"
+        subtitle="Recording starts automatically. Auto-save keeps your footage even if the page closes mid-record."
+      />
+      <Recording
+        text={
+          isRecording
+            ? "Stop recording"
+            : "Record a video to keep on the blockchain"
+        }
+        icon1={icon4}
+        imgText={isRecording ? "Stop Recording" : "Start Recording"}
+        category="video"
+        isRecording={isRecording}
+        toggleRecording={toggleRecording}
+      />
     </div>
   );
 };

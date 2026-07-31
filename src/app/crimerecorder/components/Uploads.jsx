@@ -3,10 +3,16 @@ import React, { useContext, useEffect, useState, useCallback } from "react";
 import { UseReadContractData } from "../../../utils/fetchcontract";
 import NoRecordScreen from "./NoRecordScreen";
 import { WalletContext } from "../../../components/walletprovider";
-import Image from "next/image";
-import { ClipboardIcon } from "@heroicons/react/outline";
-import { useNotification } from "../../../context/NotificationProvider";
 import Link from "next/link";
+import {
+  ClipboardIcon,
+  DownloadIcon,
+  PlusIcon,
+} from "@heroicons/react/outline";
+import PageHeader from "../../../components/dapps/PageHeader";
+import StatusChips from "../../../components/dapps/StatusChips";
+import { LoadingOverlay } from "./CaptureFrame";
+import { useNotification } from "../../../context/NotificationProvider";
 import { CHAIN_TYPES } from "../../../lib/chains";
 import { getEvidence, getAllEvidence } from "../../../utils/evmEvidence";
 
@@ -17,6 +23,7 @@ const Uploads = () => {
   const { address, isGuest, selectedChain } = useContext(WalletContext);
   const [fileData, setFileData] = useState([]);
   const [loading, setLoading] = useState(false);
+  const [busy, setBusy] = useState({}); // cid -> bool, download only
   const NFT_STORAGE_TOKEN = process.env.NEXT_PUBLIC_IPFS_KEY;
 
   const { openNotification } = useNotification();
@@ -186,22 +193,29 @@ const Uploads = () => {
   };
 
   const handleDownload = async (file) => {
+    setBusy((b) => ({ ...b, [file.uri]: true }));
     try {
       const response = await fetch(file.ipfsUrl);
+      if (!response.ok) throw new Error(`Gateway returned ${response.status}`);
       const blob = await response.blob();
       saveToDevice(blob, file.filename);
     } catch (error) {
-      openNotification("error", "", "Error downloading the file");
       console.error("Error downloading the file:", error);
+      openNotification("error", "", "Error downloading the file");
+    } finally {
+      setBusy((b) => ({ ...b, [file.uri]: false }));
     }
   };
 
+  const shareHref = (file) =>
+    `/share?url=${encodeURIComponent(file.ipfsUrl)}&filename=${encodeURIComponent(
+      file.filename
+    )}&uri=${encodeURIComponent(file.uri)}&timestamp=${file.timestamp}&chain=${
+      selectedChain.key
+    }`;
+
   const handleShare = async (file) => {
-    const shareUrl = `${window.location.origin}/share?url=${encodeURIComponent(
-      file.ipfsUrl
-    )}&filename=${encodeURIComponent(file.filename)}&uri=${encodeURIComponent(
-      file.uri
-    )}&timestamp=${file.timestamp}&chain=${selectedChain.key}`;
+    const shareUrl = `${window.location.origin}${shareHref(file)}`;
 
     if (navigator.share) {
       try {
@@ -223,85 +237,102 @@ const Uploads = () => {
     }
   };
 
-  const shareHref = (file) =>
-    `/share?url=${encodeURIComponent(file.ipfsUrl)}&filename=${encodeURIComponent(
-      file.filename
-    )}&uri=${encodeURIComponent(file.uri)}&timestamp=${file.timestamp}&chain=${
-      selectedChain.key
-    }`;
+  if (loading) {
+    return (
+      <LoadingOverlay
+        text={`Loading evidence from ${selectedChain.name}, please wait…`}
+      />
+    );
+  }
 
   return (
-    <div className="min-h-screen relative">
-      {loading ? (
-        <div className="fixed inset-0 z-30 bg-gradient-to-r bg-opacity-70 flex items-center justify-center">
-          <div className="flex flex-col items-center">
-            <Image src="/logo.svg" alt="Loading" width={100} height={100} />
-            <p className="text-white mt-4 text-lg">
-              Loading evidence from {selectedChain.name}, please wait...
-            </p>
-          </div>
-          <style jsx>{`
-            div {
-              backdrop-filter: blur(10px);
-            }
-          `}</style>
-        </div>
-      ) : (
-        <div className="p-2">
-          <div className="flex items-center gap-2 mb-4 text-xs">
-            <span className="px-3 py-1 rounded-full bg-[#1e2f37] text-[#19B1D2]">
-              {selectedChain.name}
-            </span>
-            <span className="px-3 py-1 rounded-full bg-[#1e2f37] text-[#0094FF]">
-              {isEvm && isGuest ? "All evidence (guest view)" : "Your evidence"}
-            </span>
-          </div>
+    <div className="flex flex-col gap-6">
+      <PageHeader
+        showBack={false}
+        title="Your evidence"
+        subtitle="Everything you have anchored onchain, newest first. Share a verifiable link or download the original file."
+        actions={
+          <Link
+            href="/crimerecorder/record"
+            className="inline-flex h-11 items-center justify-center gap-2 rounded-full bg-[#0094FF] px-5 text-sm font-medium text-white transition-colors hover:bg-[#0b84dc] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#0094FF]/70"
+          >
+            <PlusIcon className="h-4 w-4" aria-hidden />
+            New recording
+          </Link>
+        }
+      >
+        <StatusChips
+          sessionLabel={
+            isEvm && isGuest ? "All evidence (guest view)" : "Your evidence"
+          }
+        />
+      </PageHeader>
 
-          {!fileData.length ? (
-            <NoRecordScreen />
-          ) : (
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 text-white">
-              {fileData.map((file, index) => (
-                <div
-                  key={`${file.uri}-${index}`}
-                  className="relative text-sm whitespace-nowrap mb-2 sm:mb-0 bg-transparent rounded-lg backdrop-blur-lg p-10 shadow-lg"
+      {!fileData.length ? (
+        <NoRecordScreen />
+      ) : (
+        <ul className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-3">
+          {fileData.map((file, index) => {
+            const isImage = isImageFile(file.filename);
+            const isVideo = isVideoFile(file.filename);
+
+            return (
+              <li
+                key={`${file.uri}-${index}`}
+                className="flex flex-col overflow-hidden rounded-2xl border border-white/[0.07] bg-white/[0.03] text-white shadow-lg backdrop-blur-lg transition-colors hover:border-white/[0.14]"
+              >
+                <Link
+                  href={shareHref(file)}
+                  className="group relative block aspect-video w-full overflow-hidden bg-black focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-[#0094FF]"
                 >
-                  {isImageFile(file.filename) ? (
-                    <Link href={shareHref(file)}>
-                      <img
-                        src={file.ipfsUrl}
-                        alt={file.filename}
-                        className="w-full h-auto rounded cursor-pointer hover:opacity-80 transition-opacity"
-                      />
-                    </Link>
-                  ) : isVideoFile(file.filename) ? (
-                    <Link href={shareHref(file)}>
-                      <video
-                        src={file.ipfsUrl}
-                        className="w-full h-auto rounded cursor-pointer hover:opacity-80 transition-opacity"
-                      />
-                    </Link>
+                  {isImage ? (
+                    // eslint-disable-next-line @next/next/no-img-element
+                    <img
+                      src={file.ipfsUrl}
+                      alt={file.filename}
+                      loading="lazy"
+                      className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-[1.03]"
+                    />
+                  ) : isVideo ? (
+                    <video
+                      src={file.ipfsUrl}
+                      muted
+                      playsInline
+                      preload="metadata"
+                      className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-[1.03]"
+                    />
                   ) : (
-                    <div className="p-4 bg-gray-800 rounded">
-                      <p className="text-center text-lg">Unsupported File</p>
-                      <p className="text-center text-sm">
-                        {file.filename} is not supported for preview.
+                    <div className="flex h-full flex-col items-center justify-center gap-1 bg-[#101A20] px-4 text-center">
+                      <p className="text-sm font-medium">Preview unavailable</p>
+                      <p className="text-xs text-[#8E9A9A]">
+                        Download the file to view it.
                       </p>
-                      <p className="text-center text-sm">Please download to view.</p>
                     </div>
                   )}
+                  {(isImage || isVideo) && (
+                    <span className="absolute right-2.5 top-2.5 rounded-full bg-black/70 px-2 py-0.5 text-[10px] font-medium uppercase tracking-wide backdrop-blur-sm">
+                      {isVideo ? "Video" : "Image"}
+                    </span>
+                  )}
+                </Link>
 
-                  <p className="text-[#0094FF] mt-4 truncate">{file.filename}</p>
+                <div className="flex flex-1 flex-col gap-2 p-4">
+                  <p
+                    className="truncate text-sm font-medium text-[#0094FF]"
+                    title={file.filename}
+                  >
+                    {file.filename}
+                  </p>
 
-                  <p className="text-sm flex mt-4">
-                    <span className="text-[#EAFBFF]">Time Stamp: </span>
-                    <span className="text-[#19B1D2] ml-1">
+                  <p className="text-xs leading-relaxed text-[#8E9A9A]">
+                    <span className="text-[#EAFBFF]">Timestamp: </span>
+                    <span className="text-[#19B1D2]">
                       {formatDate(file.timestamp)}
                     </span>
                   </p>
 
                   {isEvm && (
-                    <p className="text-[11px] mt-2 truncate">
+                    <p className="truncate text-[11px]">
                       <span className="text-[#EAFBFF]">
                         {file.isGuest ? "Guest record" : "Recorded by"}:{" "}
                       </span>
@@ -311,33 +342,31 @@ const Uploads = () => {
                     </p>
                   )}
 
-                  <div className="flex flex-col sm:flex-row justify-between items-center w-full mt-5 gap-4">
-                    <div className="p-[2px] rounded-[100px] bg-gradient-to-r from-[#19B1D2] to-[#A02294]">
-                      <button
-                        className="flex items-center justify-center w-[200px] h-[48px] bg-[#030303] text-white text-sm py-3 px-6 rounded-[100px] transition-colors duration-300 ease-in-out"
-                        onClick={() => handleShare(file)}
-                      >
-                        <ClipboardIcon className="w-4 h-4 mr-2" />
-                        <span>Share</span>
-                      </button>
-                    </div>
+                  <div className="mt-auto flex flex-col gap-2 pt-3 sm:flex-row">
+                    <button
+                      type="button"
+                      onClick={() => handleShare(file)}
+                      className="inline-flex h-11 flex-1 items-center justify-center gap-2 rounded-full border border-white/15 bg-white/[0.04] px-4 text-sm transition-colors hover:bg-white/[0.1] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#0094FF]/70"
+                    >
+                      <ClipboardIcon className="h-4 w-4 shrink-0" aria-hidden />
+                      Share
+                    </button>
 
-                    <div className="p-[2px] rounded-[100px] bg-gradient-to-r from-[#19B1D2] to-[#A02294]">
-                      <button
-                        className="flex items-center justify-center w-[200px] h-[48px] bg-[#209af1] text-white text-sm py-3 px-6 rounded-[100px] transition-colors duration-300 ease-in-out"
-                        onClick={() => handleDownload(file)}
-                      >
-                        {isVideoFile(file.filename)
-                          ? "Download Video"
-                          : "Download Image"}
-                      </button>
-                    </div>
+                    <button
+                      type="button"
+                      disabled={busy[file.uri]}
+                      onClick={() => handleDownload(file)}
+                      className="inline-flex h-11 flex-1 items-center justify-center gap-2 rounded-full bg-[#209af1] px-4 text-sm font-medium transition-colors hover:bg-[#1789da] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#0094FF]/70 disabled:opacity-60"
+                    >
+                      <DownloadIcon className="h-4 w-4 shrink-0" aria-hidden />
+                      {busy[file.uri] ? "Preparing…" : "Download"}
+                    </button>
                   </div>
                 </div>
-              ))}
-            </div>
-          )}
-        </div>
+              </li>
+            );
+          })}
+        </ul>
       )}
     </div>
   );
