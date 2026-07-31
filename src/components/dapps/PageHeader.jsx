@@ -31,18 +31,23 @@ export default function PageHeader({
         </button>
       )}
 
-      <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between sm:gap-4">
         <div className="min-w-0">
-          <h1 className="text-2xl font-bold leading-tight text-white sm:text-3xl">
+          <h1 className="break-words text-xl font-bold leading-tight text-white sm:text-2xl lg:text-3xl">
             {title}
           </h1>
           {subtitle && (
-            <p className="mt-1.5 max-w-2xl text-sm leading-relaxed text-[#8E9A9A]">
+            <p className="mt-1.5 max-w-2xl text-[13px] leading-relaxed text-[#8E9A9A] sm:text-sm">
               {subtitle}
             </p>
           )}
         </div>
-        {actions && <div className="shrink-0">{actions}</div>}
+        {actions && (
+          // full width on phones so the action isn't a cramped target
+          <div className="w-full shrink-0 [&>*]:w-full sm:w-auto sm:[&>*]:w-auto">
+            {actions}
+          </div>
+        )}
       </div>
 
       {children}

@@ -18,7 +18,8 @@ const IconButton = React.forwardRef(function IconButton(
       ref={ref}
       type="button"
       className={cn(
-        "grid h-11 w-11 shrink-0 place-items-center rounded-xl text-neutral-300 transition-colors",
+        // stays a comfortable target, but gives back a few px on tiny phones
+        "grid h-11 w-11 shrink-0 place-items-center rounded-xl text-neutral-300 transition-colors max-[380px]:h-10 max-[380px]:w-10",
         "hover:bg-white/[0.06] hover:text-white",
         "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#0094FF]/70",
         active && "bg-white/[0.06] text-white ring-1 ring-[#0094FF]/50",
@@ -126,15 +127,19 @@ export const Header = () => {
 
   return (
     <header className="sticky top-0 z-50 border-b border-white/[0.06] bg-[#04080C]/80 backdrop-blur-xl">
-      <div className="flex h-16 items-center gap-2 px-3 sm:px-4 lg:px-6">
+      <div className="flex h-16 items-center gap-1 px-3 sm:gap-2 sm:px-4 lg:px-6">
         {/* ------------------------------------------------------- mobile logo */}
-        <Link href="/" className="shrink-0 md:hidden" aria-label="Custos home">
+        <Link
+          href="/"
+          className="min-w-0 shrink md:hidden"
+          aria-label="Custos home"
+        >
           <Image
             src="/logo.png"
             alt="Custos Diretriz"
             width={132}
             height={26}
-            className="h-[22px] w-auto"
+            className="h-[18px] w-auto max-w-full sm:h-[22px]"
             priority
           />
         </Link>
@@ -148,7 +153,7 @@ export const Header = () => {
           className="mx-auto hidden w-full max-w-md md:block"
         />
 
-        <div className="ml-auto flex items-center gap-1 sm:gap-2 md:ml-0">
+        <div className="ml-auto flex shrink-0 items-center gap-0.5 sm:gap-2 md:ml-0">
           {/* mobile search toggle */}
           <IconButton
             onClick={() => setMobileSearchOpen((s) => !s)}

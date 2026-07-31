@@ -1,0 +1,8 @@
+allowBuilds:
+  '@reown/appkit': true
+  bufferutil: true
+  core-js: true
+  keccak: true
+  sharp: true
+  unrs-resolver: true
+  utf-8-validate: true

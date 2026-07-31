@@ -5,6 +5,7 @@ import {
   CaptureCard,
   CaptureViewport,
   CaptureButton,
+  CaptureModeTabs,
   SwitchCameraButton,
   RecIndicator,
   LoadingOverlay,
@@ -18,13 +19,38 @@ const PINATA_URL = "https://api.pinata.cloud/pinning/pinFileToIPFS";
 const NFT_STORAGE_TOKEN = process.env.NEXT_PUBLIC_IPFS_KEY;
 const AUTO_UPLOAD_SECONDS = 10;
 
+const MAX_VIDEO_BYTES = 4 * 1024 * 1024 * 1024; // 4GB
+const MAX_IMAGE_BYTES = 32 * 1024 * 1024; // 32MB
+
+/** Per-mode copy and limits, so one component serves both capture kinds. */
+const MODES = {
+  video: {
+    noun: "video",
+    ext: ".webm",
+    accept: "video/*",
+    idleLabel: "Click to Start Recording",
+    pickLabel: "Choose a video file",
+    maxBytes: MAX_VIDEO_BYTES,
+    maxLabel: "Maximum file size: 4GB",
+  },
+  photo: {
+    noun: "photo",
+    ext: ".png",
+    accept: "image/*",
+    idleLabel: "Click to Take a Picture",
+    pickLabel: "Choose an image file",
+    maxBytes: MAX_IMAGE_BYTES,
+    maxLabel: "Maximum file size: 32MB",
+  },
+};
+
 /** Readable default, so an unnamed file is still findable later. */
 const autoName = () =>
   `custos-${new Date().toISOString().slice(0, 19).replace(/[:T]/g, "-")}`;
 
-const extOf = (name) => {
+const extOf = (name, fallback = ".webm") => {
   const m = /\.[a-z0-9]+$/i.exec(name || "");
-  return m ? m[0] : ".webm";
+  return m ? m[0] : fallback;
 };
 
 const sanitize = (name) =>
@@ -35,14 +61,19 @@ const sanitize = (name) =>
 
 export default function VideoUploader({
   text = "Record what's happening — it's secured automatically.",
-  imgText = "Click to Start Recording",
+  imgText,
+  initialMode = "video",
 }) {
   const { selectedChain, address, isGuest } = useContext(WalletContext);
   const { openNotification } = useNotification();
+  const { openModal } = useModal();
 
+  const [mode, setMode] = useState(initialMode);
   const [videoFile, setVideoFile] = useState(null);
   const [recording, setRecording] = useState(false);
   const [previewUrl, setPreviewUrl] = useState(null);
+  // the preview element differs per kind — a still needs <img>, not <video>
+  const [previewKind, setPreviewKind] = useState("video");
   const [uploading, setUploading] = useState(false);
   const [confirmOpen, setConfirmOpen] = useState(false);
   const [countdown, setCountdown] = useState(AUTO_UPLOAD_SECONDS);
@@ -51,6 +82,7 @@ export default function VideoUploader({
   const [isClicked, setIsClicked] = useState(false);
 
   const liveVideoRef = useRef(null);
+  const canvasRef = useRef(null);
   const fileInputRef = useRef(null);
   const recorderRef = useRef(null);
   const streamRef = useRef(null);
@@ -60,13 +92,15 @@ export default function VideoUploader({
   const fileNameRef = useRef("");
   const uploadingRef = useRef(false);
   const interruptedRef = useRef(false);
+  const modeRef = useRef(initialMode);
 
   // handlers registered inside startRecording would otherwise close over
   // whatever chain/address was selected at that moment
   const ctxRef = useRef({ selectedChain, address, isGuest });
   ctxRef.current = { selectedChain, address, isGuest };
 
-  const isEvm = selectedChain?.type === CHAIN_TYPES.EVM;
+  const cfg = MODES[mode] ?? MODES.video;
+  const isPhoto = mode === "photo";
 
   // keep refs alongside state so the countdown doesn't read stale values
   const stashFile = (file, name) => {
@@ -81,19 +115,19 @@ export default function VideoUploader({
     setFileName(name);
   };
 
-  const setPreview = (blobOrFile) => {
+  const setPreview = (blobOrFile, kind) => {
     if (previewUrlRef.current) URL.revokeObjectURL(previewUrlRef.current);
     const url = URL.createObjectURL(blobOrFile);
     previewUrlRef.current = url;
+    setPreviewKind(kind);
     setPreviewUrl(url);
   };
 
-  useEffect(() => {
-    return () => {
-      if (previewUrlRef.current) URL.revokeObjectURL(previewUrlRef.current);
-      streamRef.current?.getTracks().forEach((t) => t.stop());
-    };
-  }, []);
+  const clearPreview = () => {
+    if (previewUrlRef.current) URL.revokeObjectURL(previewUrlRef.current);
+    previewUrlRef.current = null;
+    setPreviewUrl(null);
+  };
 
   // ------------------------------------------------------------------
   // Upload
@@ -116,7 +150,7 @@ export default function VideoUploader({
     }
 
     // whatever the user typed, or the auto name if they never touched it
-    const ext = extOf(file.name);
+    const ext = extOf(file.name, MODES[modeRef.current]?.ext);
     const base = sanitize(fileNameRef.current) || autoName();
     const finalName = base.toLowerCase().endsWith(ext.toLowerCase())
       ? base
@@ -154,7 +188,7 @@ export default function VideoUploader({
       if (result.queued) {
         openNotification(
           "success",
-          "Recording secured",
+          "Evidence secured",
           `"${finalName}" stored. Anchoring is pending and will retry automatically.`
         );
       } else {
@@ -164,12 +198,12 @@ export default function VideoUploader({
           silent ? "Auto-saved" : "Evidence anchored",
           `"${finalName}" saved on ${chain.name}${link ? ` — ${link}` : ""}`
         );
-        if (!silent) openModal("success");
+        if (!silent) openModal?.("success");
       }
     } catch (err) {
       console.error("Upload failed:", err);
       openNotification("error", "Upload failed", err.message);
-      if (!silent) openModal("error");
+      if (!silent) openModal?.("error");
     } finally {
       uploadingRef.current = false;
       setUploading(false);
@@ -220,10 +254,24 @@ export default function VideoUploader({
   // Camera
   // ------------------------------------------------------------------
 
-  const startCamera = async (facingMode = currentFacingMode) => {
+  const stopCamera = () => {
+    streamRef.current?.getTracks().forEach((t) => t.stop());
+    streamRef.current = null;
+    if (liveVideoRef.current) liveVideoRef.current.srcObject = null;
+  };
+
+  /**
+   * Always hands back a fresh stream: the mic is only requested for video, so
+   * a mode switch has to renegotiate rather than reuse.
+   */
+  const startCamera = async (
+    facingMode = currentFacingMode,
+    forMode = modeRef.current
+  ) => {
+    stopCamera();
     const mediaStream = await navigator.mediaDevices.getUserMedia({
       video: { facingMode },
-      audio: true,
+      audio: forMode === "video",
     });
     streamRef.current = mediaStream;
 
@@ -235,11 +283,19 @@ export default function VideoUploader({
     return mediaStream;
   };
 
-  const stopCamera = () => {
-    streamRef.current?.getTracks().forEach((t) => t.stop());
-    streamRef.current = null;
-    if (liveVideoRef.current) liveVideoRef.current.srcObject = null;
-  };
+  /** Live viewfinder from the moment the page opens, in both modes. */
+  useEffect(() => {
+    startCamera().catch((err) => {
+      console.error("Error accessing camera:", err);
+      openNotification("error", "Camera error", err.message);
+    });
+
+    return () => {
+      if (previewUrlRef.current) URL.revokeObjectURL(previewUrlRef.current);
+      streamRef.current?.getTracks().forEach((t) => t.stop());
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   /** Only between recordings — MediaRecorder is bound to the stream it
    *  started with, so swapping mid-recording loses the feed. */
@@ -255,10 +311,39 @@ export default function VideoUploader({
     setIsClicked((prev) => !prev);
     const next = currentFacingMode === "user" ? "environment" : "user";
     setCurrentFacingMode(next);
-    stopCamera();
     try {
       await startCamera(next);
     } catch (err) {
+      openNotification("error", "Camera error", err.message);
+    }
+  };
+
+  // ------------------------------------------------------------------
+  // Mode switching
+  // ------------------------------------------------------------------
+
+  const switchMode = async (next) => {
+    if (next === mode) return;
+    if (recording) {
+      openNotification(
+        "error",
+        "Stop recording first",
+        "Finish the recording before switching to photo mode."
+      );
+      return;
+    }
+    if (uploading) return;
+
+    modeRef.current = next;
+    setMode(next);
+    setConfirmOpen(false);
+    clearPreview();
+    videoFileRef.current = null;
+    setVideoFile(null);
+    try {
+      await startCamera(currentFacingMode, next);
+    } catch (err) {
+      console.error("Error accessing camera:", err);
       openNotification("error", "Camera error", err.message);
     }
   };
@@ -270,15 +355,12 @@ export default function VideoUploader({
   const startRecording = async () => {
     try {
       // drop any previous preview so the live element renders again
-      if (previewUrlRef.current) {
-        URL.revokeObjectURL(previewUrlRef.current);
-        previewUrlRef.current = null;
-      }
-      setPreviewUrl(null);
+      clearPreview();
       setConfirmOpen(false);
       interruptedRef.current = false;
 
-      const mediaStream = await startCamera();
+      const live = streamRef.current?.getVideoTracks()[0]?.readyState === "live";
+      const mediaStream = live ? streamRef.current : await startCamera();
 
       chunksRef.current = [];
       const recorder = new MediaRecorder(mediaStream);
@@ -295,7 +377,7 @@ export default function VideoUploader({
         const blob = new Blob(chunksRef.current, { type: "video/webm" });
         const name = autoName();
         const file = new File([blob], `${name}.webm`, { type: "video/webm" });
-        setPreview(blob);
+        setPreview(blob, "video");
         stashFile(file, name);
 
         if (interruptedRef.current) {
@@ -333,7 +415,64 @@ export default function VideoUploader({
     setRecording(false);
   };
 
-  const handleStopMedia = async () => {
+  // ------------------------------------------------------------------
+  // Photo
+  // ------------------------------------------------------------------
+
+  const takePicture = async () => {
+    const video = liveVideoRef.current;
+    const canvas = canvasRef.current;
+
+    if (!video || !canvas || !video.videoWidth) {
+      openNotification(
+        "error",
+        "Camera not ready",
+        "Give the camera a moment to start, then try again."
+      );
+      return;
+    }
+
+    canvas.width = video.videoWidth;
+    canvas.height = video.videoHeight;
+    canvas.getContext("2d").drawImage(video, 0, 0, canvas.width, canvas.height);
+
+    const blob = await new Promise((resolve) =>
+      canvas.toBlob(resolve, "image/png")
+    );
+    if (!blob) {
+      openNotification("error", "Capture failed", "Could not read the frame.");
+      return;
+    }
+
+    const name = autoName();
+    const file = new File([blob], `${name}.png`, { type: "image/png" });
+    setPreview(blob, "photo");
+    stashFile(file, name);
+    stopCamera();
+
+    setCountdown(AUTO_UPLOAD_SECONDS);
+    setConfirmOpen(true);
+  };
+
+  /** Back to the viewfinder after a capture, without saving. */
+  const retake = async () => {
+    setConfirmOpen(false);
+    clearPreview();
+    videoFileRef.current = null;
+    setVideoFile(null);
+    try {
+      await startCamera();
+    } catch (err) {
+      openNotification("error", "Camera error", err.message);
+    }
+  };
+
+  const handleCapture = async () => {
+    if (isPhoto) {
+      if (previewUrl) await retake();
+      else await takePicture();
+      return;
+    }
     if (recording) stopRecording();
     else await startRecording();
   };
@@ -343,30 +482,52 @@ export default function VideoUploader({
   // ------------------------------------------------------------------
 
   const acceptFile = (file) => {
-    if (!file || file.size > 4 * 1024 * 1024 * 1024) {
-      openNotification("error", "Invalid file", "Please choose a video under 4GB.");
+    if (!file) return;
+    if (file.size > cfg.maxBytes) {
+      openNotification(
+        "error",
+        "File too large",
+        `Please choose a ${cfg.noun} under ${cfg.maxLabel
+          .split(": ")
+          .pop()}.`
+      );
       return;
     }
-    setPreview(file);
+    stopCamera();
+    setPreview(file, file.type.startsWith("image/") ? "photo" : "video");
     // seed the input with the original name, extension stripped
     stashFile(file, file.name.replace(/\.[a-z0-9]+$/i, ""));
     setCountdown(AUTO_UPLOAD_SECONDS);
     setConfirmOpen(true);
   };
 
-  const handleFileChange = (e) => acceptFile(e.target.files?.[0]);
+  const handleFileChange = (e) => {
+    acceptFile(e.target.files?.[0]);
+    e.target.value = ""; // re-picking the same file should still fire
+  };
 
   const handleDrop = (e) => {
     e.preventDefault();
     const file = e.dataTransfer.files[0];
-    if (file && !file.type.startsWith("video/")) {
-      openNotification("error", "Invalid file", "That doesn't look like a video.");
+    const expected = isPhoto ? "image/" : "video/";
+    if (file && !file.type.startsWith(expected)) {
+      openNotification(
+        "error",
+        "Invalid file",
+        `That doesn't look like ${isPhoto ? "an image" : "a video"}.`
+      );
       return;
     }
     acceptFile(file);
   };
 
   // ------------------------------------------------------------------
+
+  const captureLabel = recording
+    ? "Stop Recording"
+    : previewUrl && isPhoto
+    ? "Retake"
+    : imgText || cfg.idleLabel;
 
   return (
     <div className="flex w-full flex-col items-center gap-5">
@@ -375,18 +536,34 @@ export default function VideoUploader({
       <StatusChips />
 
       <CaptureCard>
+        <CaptureModeTabs
+          mode={mode}
+          onChange={switchMode}
+          disabled={recording || uploading}
+        />
+
         <div id="vid-recorder">
           <CaptureViewport>
             {/* distinct keys force a fresh element — otherwise React reuses
                 the live one and its srcObject overrides src */}
             {previewUrl ? (
-              <video
-                key="preview"
-                src={previewUrl}
-                controls
-                playsInline
-                className="h-full w-full object-contain"
-              />
+              previewKind === "photo" ? (
+                // eslint-disable-next-line @next/next/no-img-element
+                <img
+                  key="preview-photo"
+                  src={previewUrl}
+                  alt="Captured photo"
+                  className="h-full w-full object-contain"
+                />
+              ) : (
+                <video
+                  key="preview"
+                  src={previewUrl}
+                  controls
+                  playsInline
+                  className="h-full w-full object-contain"
+                />
+              )
             ) : (
               <video
                 key="live"
@@ -402,6 +579,7 @@ export default function VideoUploader({
             )}
             {recording && <RecIndicator />}
           </CaptureViewport>
+          <canvas ref={canvasRef} className="hidden" />
         </div>
 
         <div className="flex items-center justify-center gap-6 sm:gap-8">
@@ -411,11 +589,11 @@ export default function VideoUploader({
             disabled={uploading}
           />
           <CaptureButton
-            onClick={handleStopMedia}
+            onClick={handleCapture}
             recording={recording}
             disabled={uploading}
-            mode="video"
-            label={recording ? "Stop Recording" : imgText}
+            mode={mode === "photo" ? "image" : "video"}
+            label={captureLabel}
           />
           {/* keeps the capture button optically centred */}
           <span aria-hidden className="h-12 w-12 shrink-0" />
@@ -444,17 +622,15 @@ export default function VideoUploader({
           className="flex w-full cursor-pointer flex-col items-center justify-center gap-1 rounded-xl border border-dashed border-[#19B1D2]/40 px-4 py-5 text-center transition-colors hover:border-[#19B1D2] hover:bg-[#19B1D2]/5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#0094FF]/70"
         >
           <span className="text-sm text-[#EAFBFF]">
-            <span className="underline">Choose a video file</span>
+            <span className="underline">{cfg.pickLabel}</span>
             <span className="hidden sm:inline"> or drag &amp; drop</span>
           </span>
-          <span className="text-[11px] text-[#8E9A9A]">
-            Maximum file size: 4GB
-          </span>
+          <span className="text-[11px] text-[#8E9A9A]">{cfg.maxLabel}</span>
         </button>
         <input
           ref={fileInputRef}
           type="file"
-          accept="video/*"
+          accept={cfg.accept}
           className="hidden"
           onChange={handleFileChange}
         />
@@ -524,7 +700,7 @@ export default function VideoUploader({
 
       {uploading && (
         <LoadingOverlay
-          text={`Securing your recording on ${selectedChain?.name}, please wait…`}
+          text={`Securing your ${cfg.noun} on ${selectedChain?.name}, please wait…`}
         />
       )}
     </div>

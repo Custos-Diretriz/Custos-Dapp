@@ -1,7 +1,7 @@
 "use client";
 import React from "react";
 import Image from "next/image";
-import { MdFlipCameraIos } from "react-icons/md";
+import { MdFlipCameraIos, MdPhotoCamera, MdVideocam } from "react-icons/md";
 import bg from "../../../../public/Rectangle.png";
 import { cn } from "../../../lib/utils";
 
@@ -41,6 +41,48 @@ export const CaptureViewport = ({ children, className }) => (
     )}
   >
     {children}
+  </div>
+);
+
+const MODES = [
+  { key: "video", label: "Video", Icon: MdVideocam },
+  { key: "photo", label: "Photo", Icon: MdPhotoCamera },
+];
+
+/**
+ * Video ⇆ Photo switch for the capture surface. Full width on phones so both
+ * targets stay comfortably tappable.
+ */
+export const CaptureModeTabs = ({ mode, onChange, disabled }) => (
+  <div
+    role="tablist"
+    aria-label="Capture mode"
+    className="flex w-full gap-1 rounded-full border border-white/10 bg-[#04080C]/80 p-1 sm:mx-auto sm:w-auto"
+  >
+    {MODES.map(({ key, label, Icon }) => {
+      const active = mode === key;
+      return (
+        <button
+          key={key}
+          type="button"
+          role="tab"
+          aria-selected={active}
+          disabled={disabled}
+          onClick={() => onChange(key)}
+          className={cn(
+            "flex h-10 flex-1 items-center justify-center gap-2 whitespace-nowrap rounded-full px-4 text-sm transition-colors sm:px-8",
+            "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#0094FF]/70",
+            "disabled:cursor-not-allowed disabled:opacity-50",
+            active
+              ? "bg-white/[0.08] font-medium text-white ring-1 ring-[#409ddb8b]"
+              : "text-[#9aa4a4] hover:bg-white/[0.04] hover:text-white"
+          )}
+        >
+          <Icon className="h-4 w-4 shrink-0" aria-hidden />
+          {label}
+        </button>
+      );
+    })}
   </div>
 );
 

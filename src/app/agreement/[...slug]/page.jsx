@@ -291,7 +291,7 @@ const AgreementSlug = ({ params }) => {
   }
 
   return (
-    <div className="space-y-4 text-[#EAFBFF] w-full overflow-clip flex flex-col">
+    <div className="space-y-4 text-[#EAFBFF] w-full overflow-x-clip flex flex-col">
       <Slugnav agreement={agreement} />
       <div className="p-4 rounded-lg shadow-lg bg-gradient-to-r w-full">
         <div className="w-full flex max-lg:flex-col header align-baseline justify-start gap-4 mb-8">
