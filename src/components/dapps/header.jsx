@@ -2,7 +2,7 @@
 import React, { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
-import { FiMenu, FiSearch, FiX } from "react-icons/fi";
+import { FiSearch, FiX } from "react-icons/fi";
 import { cn } from "../../lib/utils";
 import ConnectButtoncomponent from "../connect";
 import { UseReadContractData } from "../../utils/fetchcontract";
@@ -66,7 +66,7 @@ const SearchField = ({
   </form>
 );
 
-export const Header = ({ onOpenMenu }) => {
+export const Header = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const [searchResult, setSearchResult] = useState(null);
   const [isLoading, setIsLoading] = useState(false);
@@ -127,15 +127,7 @@ export const Header = ({ onOpenMenu }) => {
   return (
     <header className="sticky top-0 z-50 border-b border-white/[0.06] bg-[#04080C]/80 backdrop-blur-xl">
       <div className="flex h-16 items-center gap-2 px-3 sm:px-4 lg:px-6">
-        {/* ------------------------------------------------ mobile: menu + logo */}
-        <IconButton
-          onClick={onOpenMenu}
-          aria-label="Open navigation"
-          className="md:hidden"
-        >
-          <FiMenu className="h-6 w-6" />
-        </IconButton>
-
+        {/* ------------------------------------------------------- mobile logo */}
         <Link href="/" className="shrink-0 md:hidden" aria-label="Custos home">
           <Image
             src="/logo.png"

@@ -280,12 +280,9 @@ const AgreementModal = ({ initialStep, ttitle, tcontent, agreement }) => {
     try {
       setInitCreationLoad(true);
       const res = await fetch(
-        "${process.env.NEXT_PUBLIC_BACKEND_URL}/agreement/agreement/",
+        `${process.env.NEXT_PUBLIC_BACKEND_URL}/agreement/agreement/`,
         {
           method: "POST",
-          headers: {
-            // Don't set Content-Type header; fetch will set it automatically for FormData
-          },
           body: formData,
         }
       );
