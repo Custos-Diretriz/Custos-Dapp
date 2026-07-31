@@ -1,11 +1,16 @@
 import { BrowserProvider, Contract, JsonRpcProvider } from "ethers";
 import { AGREEMENT_ABI } from "../lib/chains";
-import { sha256Hex } from "./verify";
 
 /** SHA-256 of a string, as the bytes32 the contract expects. */
 export async function hashText(text) {
   const bytes = new TextEncoder().encode(text ?? "");
-  return "0x" + (await sha256Hex(bytes.buffer));
+  const digest = await crypto.subtle.digest("SHA-256", bytes);
+  return (
+    "0x" +
+    Array.from(new Uint8Array(digest))
+      .map((b) => b.toString(16).padStart(2, "0"))
+      .join("")
+  );
 }
 
 function readContract(chain) {
