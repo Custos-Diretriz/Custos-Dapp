@@ -32,7 +32,7 @@ export const NAV_LINKS = [
     label: "Settings",
     shortLabel: "Settings",
     icon: "/setting.svg",
-    activeIcon: "/settingSelected.svg",
+    activeIcon: "/setting.svg",
   },
 ];
 
