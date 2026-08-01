@@ -1,6 +1,7 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useContext, useEffect, useState } from "react";
+import { WalletContext } from "../../components/walletprovider";
 
 /**
  * Settings hub. The Hidden Guardian (background power-button recorder) is a
@@ -14,6 +15,7 @@ const deepLink = (params) =>
   `#Intent;scheme=custos;package=com.custosdiretriz.app;end`;
 
 export default function SettingsPage() {
+  const { address } = useContext(WalletContext) || {};
   const [inApp, setInApp] = useState(false);
 
   // Guardian options.
@@ -42,6 +44,8 @@ export default function SettingsPage() {
         camera,
         alert: alert ? "1" : "0",
         countdown: String(countdown),
+        // Attribute recordings to the connected wallet; empty → guest bucket.
+        ...(address ? { address } : {}),
       })
     );
   const stop = () => fire(deepLink({ action: "stop" }));
@@ -150,6 +154,18 @@ export default function SettingsPage() {
             <p className="text-xs text-[#8E9A9A]">
               Arming applies the options above. Change an option and tap “Arm
               Guardian” again to update it.
+              {address ? (
+                <>
+                  {" "}Recordings will be filed under your wallet
+                  ({address.slice(0, 6)}…{address.slice(-4)}) and appear in your
+                  Evidence.
+                </>
+              ) : (
+                <>
+                  {" "}You are not connected — recordings go to the shared guest
+                  bucket. Connect a wallet, then re-arm, to file them under it.
+                </>
+              )}
             </p>
           </div>
         ) : (
