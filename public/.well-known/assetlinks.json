@@ -1,0 +1,14 @@
+[
+  {
+    "relation": [
+      "delegate_permission/common.handle_all_urls"
+    ],
+    "target": {
+      "namespace": "android_app",
+      "package_name": "com.custosdiretriz.app",
+      "sha256_cert_fingerprints": [
+        "7B:09:A5:51:8D:6A:E0:4E:B9:6D:E5:40:65:06:31:A6:24:DF:DA:3C:BF:F3:66:F3:CB:15:EE:67:C3:3D:07:0A"
+      ]
+    }
+  }
+]

@@ -93,6 +93,16 @@ export const WalletProvider = ({ children }) => {
   const address = isEvm ? evmAddress : starknetAddress;
   const isGuest = !address;
 
+  // When running inside the Custos mobile shell (React Native WebView), push the
+  // connected address to the native side so hidden-cam recordings are attributed
+  // to this wallet instead of the shared guest bucket. No-op on the web.
+  useEffect(() => {
+    try {
+      window.__CUSTOS_ADDRESS__ = address || null;
+      window.CustosNative?.setAddress?.(address || null);
+    } catch {}
+  }, [address]);
+
   const isEmbedded = privyWallet?.walletClientType === "privy";
   const loginIdentifier =
     user?.email?.address || user?.phone?.number || user?.google?.email || null;

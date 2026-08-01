@@ -26,7 +26,7 @@ export default function Home() {
         <div className="bg-black py-8 flex md:flex-ro items-center justify-center gap-8 md:gap-40">
           <div className="flex flex-col items-center justify-center space-y-4 md:flex">
             <Image
-              src={"./seccure.svg"}
+              src={"/seccure.svg"}
               alt="Card Image"
               // layout="responsive"
               width={70}
@@ -37,7 +37,7 @@ export default function Home() {
           </div>
           <div className="flex flex-col items-center justify-center space-y-4">
             <Image
-              src={"./tamper-proof.svg"}
+              src={"/tamper-proof.svg"}
               alt="Card Image"
               // layout="responsive"
               width={70}
@@ -48,7 +48,7 @@ export default function Home() {
           </div>
           <div className="flex flex-col items-center justify-center space-y-4">
             <Image
-              src={"./immutable.svg"}
+              src={"/immutable.svg"}
               alt="Card Image"
               // layout="responsive"
               width={70}
